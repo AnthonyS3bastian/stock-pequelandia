@@ -1,0 +1,157 @@
+<div class="login">
+
+  <!-- ==========================
+       PANEL IZQUIERDO
+  =========================== -->
+
+  <section class="login__banner">
+
+    <img
+      src="/logo/LogoPequelandia.png"
+      alt="Logo Pequelandia"
+      class="login__logo">
+
+  </section>
+
+  <!-- ==========================
+       PANEL DERECHO
+  =========================== -->
+
+  <section class="login__panel">
+
+    <div class="card-login">
+
+      <div class="icono">
+        🏪
+      </div>
+
+      <span class="subtitulo">
+        Inicia sesión para continuar
+      </span>
+
+      <h1>BIENVENIDO</h1>
+
+      <form
+        [formGroup]="loginForm"
+        (ngSubmit)="iniciarSesion()">
+
+        <!-- ==========================
+             USUARIO
+        =========================== -->
+
+        <div class="campo">
+
+          <span class="campo__icono">
+            👤
+          </span>
+
+          <input
+            type="text"
+            placeholder="Usuario"
+            formControlName="nombre_usuario">
+
+        </div>
+
+        @if (usuario.invalid && usuario.touched) {
+
+          <small class="error">
+
+            @if (usuario.hasError('required')) {
+
+              El usuario es obligatorio.
+
+            } @else if (usuario.hasError('minlength')) {
+
+              Debe tener al menos 3 caracteres.
+
+            }
+
+          </small>
+
+        }
+
+        <!-- ==========================
+             CONTRASEÑA
+        =========================== -->
+
+        <div class="campo">
+
+          <span class="campo__icono">
+            🔒
+          </span>
+
+          <input
+            [type]="ocultarPassword() ? 'password' : 'text'"
+            placeholder="Contraseña"
+            formControlName="password">
+
+          <button
+            type="button"
+            class="btn-password"
+            (click)="cambiarVisibilidad()">
+
+            {{ ocultarPassword() ? '👁️' : '🙈' }}
+
+          </button>
+
+        </div>
+
+        @if (password.invalid && password.touched) {
+
+          <small class="error">
+
+            @if (password.hasError('required')) {
+
+              La contraseña es obligatoria.
+
+            } @else if (password.hasError('minlength')) {
+
+              Debe tener al menos 6 caracteres.
+
+            }
+
+          </small>
+
+        }
+
+        <!-- ==========================
+             BOTÓN LOGIN
+        =========================== -->
+
+        <button
+          type="submit"
+          class="btn-login"
+          [disabled]="cargando()">
+
+          @if (!cargando()) {
+
+            Ingresar
+
+          } @else {
+
+            Ingresando...
+
+          }
+
+        </button>
+
+      </form>
+
+    </div>
+
+    <div class="descripcion">
+
+      <h3>
+        SISTEMA DE INVENTARIO Y VENTAS
+      </h3>
+
+      <p>
+        Administra tus productos, ventas e inventario
+        de forma rápida, sencilla y segura.
+      </p>
+
+    </div>
+
+  </section>
+
+</div>

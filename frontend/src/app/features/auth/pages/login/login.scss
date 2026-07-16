@@ -1,0 +1,433 @@
+/* =====================================================
+   RESET
+===================================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+/* =====================================================
+   CONTENEDOR
+===================================================== */
+
+.login{
+
+    display:flex;
+    width:100%;
+    min-height:100vh;
+    overflow:hidden;
+
+}
+
+/* =====================================================
+   PANEL IZQUIERDO
+===================================================== */
+
+.login__banner{
+
+    width:50%;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:linear-gradient(
+        180deg,
+        #2b63f1 0%,
+        #9d19c6 100%
+    );
+
+}
+
+.login__logo{
+
+    width:70%;
+    max-width:470px;
+
+    transition:.35s;
+
+}
+
+.login__logo:hover{
+
+    transform:scale(1.03);
+
+}
+
+/* =====================================================
+   PANEL DERECHO
+===================================================== */
+
+.login__panel{
+
+    width:50%;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    background:#ffffff;
+
+}
+
+/* =====================================================
+   CARD
+===================================================== */
+
+.card-login{
+
+    width:420px;
+    max-width:90%;
+
+    padding:45px;
+
+    background:#fff;
+
+    border-radius:22px;
+
+    box-shadow:
+    0 15px 40px rgba(0,0,0,.15);
+
+    text-align:center;
+
+    animation:aparecer .5s ease;
+
+}
+
+.icono{
+
+    font-size:46px;
+
+    margin-bottom:10px;
+
+}
+
+.subtitulo{
+
+    color:#777;
+
+    font-size:13px;
+
+}
+
+.card-login h1{
+
+    margin-top:12px;
+    margin-bottom:35px;
+
+    font-size:42px;
+    font-weight:700;
+
+    color:#222;
+
+}
+
+/* =====================================================
+   FORM
+===================================================== */
+
+.card-login form{
+
+    width:100%;
+
+}
+
+/* =====================================================
+   CAMPOS
+===================================================== */
+
+.campo{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    border:1px solid #ddd;
+
+    border-radius:12px;
+
+    padding:15px;
+
+    margin-bottom:8px;
+
+    transition:.25s;
+
+}
+
+.campo:hover{
+
+    border-color:#9d19c6;
+
+}
+
+.campo:focus-within{
+
+    border-color:#2b63f1;
+
+    box-shadow:
+    0 0 0 4px rgba(43,99,241,.15);
+
+}
+
+.campo__icono{
+
+    font-size:18px;
+
+}
+
+.campo input{
+
+    flex:1;
+
+    border:none;
+    outline:none;
+
+    background:transparent;
+
+    font-size:15px;
+
+}
+
+.campo input::placeholder{
+
+    color:#999;
+
+}
+
+/* =====================================================
+   BOTON OJO
+===================================================== */
+
+.btn-password{
+
+    border:none;
+    background:transparent;
+
+    cursor:pointer;
+
+    font-size:18px;
+
+    padding:0;
+
+    width:auto;
+
+    transition:.25s;
+
+}
+
+.btn-password:hover{
+
+    transform:scale(1.12);
+
+}
+
+/* =====================================================
+   MENSAJES
+===================================================== */
+
+.error{
+
+    display:block;
+
+    margin-bottom:16px;
+    margin-left:5px;
+
+    text-align:left;
+
+    color:#e53935;
+
+    font-size:13px;
+
+}
+
+/* =====================================================
+   BOTON LOGIN
+===================================================== */
+
+.btn-login{
+
+    width:100%;
+
+    margin-top:12px;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#f23d97;
+
+    color:white;
+
+    font-size:17px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.btn-login:hover:not(:disabled){
+
+    background:#d92b82;
+
+    transform:translateY(-2px);
+
+}
+
+.btn-login:active{
+
+    transform:scale(.98);
+
+}
+
+.btn-login:disabled{
+
+    background:#bdbdbd;
+
+    cursor:not-allowed;
+
+    transform:none;
+
+}
+
+/* =====================================================
+   DESCRIPCION
+===================================================== */
+
+.descripcion{
+
+    margin-top:55px;
+
+    text-align:center;
+
+}
+
+.descripcion h3{
+
+    color:#6b38ff;
+
+    font-size:18px;
+
+    font-weight:700;
+
+}
+
+.descripcion p{
+
+    margin-top:12px;
+
+    width:330px;
+
+    color:#777;
+
+    line-height:1.6;
+
+}
+
+/* =====================================================
+   ANIMACION
+===================================================== */
+
+@keyframes aparecer{
+
+    from{
+
+        opacity:0;
+        transform:translateY(25px);
+
+    }
+
+    to{
+
+        opacity:1;
+        transform:translateY(0);
+
+    }
+
+}
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media(max-width:992px){
+
+    .login{
+
+        flex-direction:column;
+
+    }
+
+    .login__banner{
+
+        width:100%;
+        height:35vh;
+
+    }
+
+    .login__panel{
+
+        width:100%;
+        min-height:65vh;
+
+        padding:35px 20px;
+
+    }
+
+    .login__logo{
+
+        width:45%;
+
+    }
+
+}
+
+/* =====================================================
+   MOVIL
+===================================================== */
+
+@media(max-width:576px){
+
+    .card-login{
+
+        width:100%;
+
+        padding:30px 22px;
+
+    }
+
+    .card-login h1{
+
+        font-size:32px;
+
+    }
+
+    .descripcion{
+
+        margin-top:35px;
+
+    }
+
+    .descripcion p{
+
+        width:100%;
+
+    }
+
+    .login__logo{
+
+        width:70%;
+
+    }
+
+} 
