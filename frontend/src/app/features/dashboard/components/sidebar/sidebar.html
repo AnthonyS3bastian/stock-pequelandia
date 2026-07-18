@@ -1,1 +1,76 @@
-<p>sidebar works!</p>
+<div class="sidebar">
+
+    <div class="logo">
+
+        <div class="logo-icon">
+            <mat-icon>storefront</mat-icon>
+        </div>
+
+        <div class="logo-texto">
+            <h2>Pequelandia</h2>
+            <span>Multiservicios</span>
+        </div>
+
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="menu">
+
+        <h4>PRINCIPAL</h4>
+
+        <mat-nav-list>
+
+            @for (item of principal; track item.titulo) {
+
+                <a
+                    mat-list-item
+                    [routerLink]="item.ruta"
+                    routerLinkActive="activo">
+
+                    <mat-icon matListItemIcon>
+                        {{ item.icono }}
+                    </mat-icon>
+
+                    <span matListItemTitle>
+                        {{ item.titulo }}
+                    </span>
+
+                </a>
+
+            }
+
+        </mat-nav-list>
+
+    </div>
+
+    <div class="menu">
+
+        <h4>GESTIÓN</h4>
+
+        <mat-nav-list>
+
+            @for (item of gestion; track item.titulo) {
+
+                <a
+                    mat-list-item
+                    [routerLink]="item.ruta"
+                    routerLinkActive="activo">
+
+                    <mat-icon matListItemIcon>
+                        {{ item.icono }}
+                    </mat-icon>
+
+                    <span matListItemTitle>
+                        {{ item.titulo }}
+                    </span>
+
+                </a>
+
+            }
+
+        </mat-nav-list>
+
+    </div>
+
+</div>
