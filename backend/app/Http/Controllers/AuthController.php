@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Services\UsuarioService;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -15,21 +15,21 @@ class AuthController extends Controller
     }
 
     public function login(Request $request)
-{
-    $request->validate([
-        'nombre_usuario' => 'required|string',
-        'password' => 'required|string',
-    ]);
+    {
+        $request->validate([
+            'nombre_usuario' => 'required|string',
+            'password' => 'required|string',
+        ]);
 
-    $resultado = $this->usuarioService->login(
-        $request->nombre_usuario,
-        $request->password
-    );
+        $resultado = $this->usuarioService->login(
+            $request->nombre_usuario,
+            $request->password
+        );
 
-    return response()->json([
-        'mensaje' => 'Inicio de sesion exitoso.',
-        'usuario' => $resultado['usuario'],
-        'token' => $resultado['token'],
-    ]);
-}
+        return response()->json([
+            'mensaje' => 'Inicio de sesion exitoso.',
+            'usuario' => $resultado['usuario'],
+            'token' => $resultado['token'],
+        ]);
+    }
 }

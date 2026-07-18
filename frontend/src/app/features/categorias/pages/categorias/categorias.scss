@@ -1,0 +1,132 @@
+.contenedor {
+
+    padding: 30px;
+
+}
+
+.cabecera {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+}
+
+h1 {
+
+    margin: 0;
+
+}
+
+.btn-agregar {
+
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+
+}
+
+.btn-agregar:hover {
+
+    background: #1d4ed8;
+
+}
+
+table {
+
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+
+}
+
+th,
+td {
+
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+
+}
+
+th {
+
+    background: #2563eb;
+    color: white;
+
+}
+
+tr:nth-child(even) {
+
+    background: #f7f7f7;
+
+}
+
+.activo {
+
+    color: #16a34a;
+    font-weight: 600;
+
+}
+
+.inactivo {
+
+    color: #dc2626;
+    font-weight: 600;
+
+}
+
+.btn-editar {
+
+    background: #f59e0b;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    margin-right: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+
+}
+
+.btn-eliminar {
+
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+
+}
+
+.btn-editar:hover {
+
+    background: #d97706;
+
+}
+
+.btn-eliminar:hover {
+
+    background: #b91c1c;
+
+}
+
+.mensaje {
+
+    padding: 20px;
+    text-align: center;
+    font-weight: 600;
+
+}
+
+.sin-registros {
+
+    text-align: center;
+    padding: 20px;
+
+}
