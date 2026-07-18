@@ -1,0 +1,41 @@
+.toolbar{
+
+    height:70px;
+
+    background:#ffffff;
+
+    border-bottom:1px solid #e5e7eb;
+
+    display:flex;
+
+    align-items:center;
+
+    padding:0 25px;
+
+}
+
+.titulo{
+
+    font-size:28px;
+
+    font-weight:600;
+
+}
+
+.espacio{
+
+    flex:1;
+
+}
+
+.usuario{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    font-weight:500;
+
+}
