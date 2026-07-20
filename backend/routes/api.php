@@ -1,13 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\VentaController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Autenticación
+| Autenticacion
 |--------------------------------------------------------------------------
 */
 
@@ -15,7 +16,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 /*
 |--------------------------------------------------------------------------
-| Categorías
+| Categorias
 |--------------------------------------------------------------------------
 */
 
@@ -33,10 +34,24 @@ Route::delete('/categorias/{id}', [CategoriaController::class, 'destroy']);
 
 Route::get('/productos', [ProductoController::class, 'index']);
 
-// IMPORTANTE: esta ruta debe ir antes de /productos/{id}
-Route::get('/productos/codigo/{codigo}', [ProductoController::class, 'buscarPorCodigo']);
+/*
+ * Esta ruta debe ir antes de /productos/{id},
+ * porque "codigo" podría interpretarse como un ID.
+ */
+Route::get(
+    '/productos/codigo/{codigo}',
+    [ProductoController::class, 'buscarPorCodigo']
+);
 
 Route::get('/productos/{id}', [ProductoController::class, 'show']);
 Route::post('/productos', [ProductoController::class, 'store']);
 Route::put('/productos/{id}', [ProductoController::class, 'update']);
 Route::delete('/productos/{id}', [ProductoController::class, 'destroy']);
+
+/*
+|--------------------------------------------------------------------------
+| Ventas
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/ventas', [VentaController::class, 'registrar']);
