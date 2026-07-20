@@ -5,27 +5,44 @@ import { Observable } from 'rxjs';
 import { Producto } from '../interfaces/producto.interface';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class ProductoService {
 
-  private http = inject(HttpClient);
+    private http = inject(HttpClient);
 
-  private api = 'http://127.0.0.1:8000/api/productos';
+    private api = 'http://127.0.0.1:8000/api/productos';
 
-  listar(): Observable<any> {
+    /**
+     * Listar productos.
+     */
+    listar(): Observable<any> {
 
-    return this.http.get<any>(this.api);
+        return this.http.get<any>(this.api);
 
-  }
+    }
 
-  registrar(producto: Producto): Observable<any> {
+    /**
+     * Buscar producto por código de barras.
+     */
+    buscarPorCodigo(codigo: string): Observable<any> {
 
-    return this.http.post<any>(
-      this.api,
-      producto
-    );
+        return this.http.get<any>(
+            `${this.api}/codigo/${codigo}`
+        );
 
-  }
+    }
+
+    /**
+     * Registrar producto.
+     */
+    registrar(producto: Producto): Observable<any> {
+
+        return this.http.post<any>(
+            this.api,
+            producto
+        );
+
+    }
 
 }

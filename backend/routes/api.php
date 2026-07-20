@@ -32,6 +32,10 @@ Route::delete('/categorias/{id}', [CategoriaController::class, 'destroy']);
 */
 
 Route::get('/productos', [ProductoController::class, 'index']);
+
+// IMPORTANTE: esta ruta debe ir antes de /productos/{id}
+Route::get('/productos/codigo/{codigo}', [ProductoController::class, 'buscarPorCodigo']);
+
 Route::get('/productos/{id}', [ProductoController::class, 'show']);
 Route::post('/productos', [ProductoController::class, 'store']);
 Route::put('/productos/{id}', [ProductoController::class, 'update']);

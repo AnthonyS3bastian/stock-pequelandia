@@ -34,16 +34,43 @@ class ProductoController extends Controller
     public function show(int $id): JsonResponse
     {
         try {
+
             $producto = $this->productoService->obtenerPorId($id);
 
             return response()->json([
                 'mensaje' => 'Producto encontrado.',
                 'data' => $producto,
             ]);
+
         } catch (ModelNotFoundException $e) {
+
             return response()->json([
                 'mensaje' => 'El producto no existe.',
             ], 404);
+
+        }
+    }
+
+    /**
+     * Buscar un producto por código de barras.
+     */
+    public function buscarPorCodigo(string $codigo): JsonResponse
+    {
+        try {
+
+            $producto = $this->productoService->buscarPorCodigo($codigo);
+
+            return response()->json([
+                'mensaje' => 'Producto encontrado.',
+                'data' => $producto,
+            ]);
+
+        } catch (ModelNotFoundException $e) {
+
+            return response()->json([
+                'mensaje' => 'Producto no encontrado.',
+            ], 404);
+
         }
     }
 
@@ -68,6 +95,7 @@ class ProductoController extends Controller
     public function update(UpdateProductoRequest $request, int $id): JsonResponse
     {
         try {
+
             $producto = $this->productoService->actualizar(
                 $id,
                 $request->validated()
@@ -77,10 +105,13 @@ class ProductoController extends Controller
                 'mensaje' => 'Producto actualizado correctamente.',
                 'data' => $producto,
             ]);
+
         } catch (ModelNotFoundException $e) {
+
             return response()->json([
                 'mensaje' => 'El producto no existe.',
             ], 404);
+
         }
     }
 
@@ -90,15 +121,19 @@ class ProductoController extends Controller
     public function destroy(int $id): JsonResponse
     {
         try {
+
             $this->productoService->eliminar($id);
 
             return response()->json([
                 'mensaje' => 'Producto eliminado correctamente.',
             ]);
+
         } catch (ModelNotFoundException $e) {
+
             return response()->json([
                 'mensaje' => 'El producto no existe.',
             ], 404);
+
         }
     }
 }

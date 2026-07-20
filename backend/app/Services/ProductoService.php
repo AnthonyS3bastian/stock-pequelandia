@@ -27,6 +27,16 @@ class ProductoService
     }
 
     /**
+     * Buscar un producto por código de barras.
+     */
+    public function buscarPorCodigo(string $codigo): Producto
+    {
+        return Producto::with('categoria')
+            ->where('codigo_producto', $codigo)
+            ->firstOrFail();
+    }
+
+    /**
      * Crear un nuevo producto.
      */
     public function crear(array $datos): Producto
