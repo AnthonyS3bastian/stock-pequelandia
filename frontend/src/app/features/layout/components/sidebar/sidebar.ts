@@ -32,20 +32,15 @@ export class SidebarComponent {
       titulo: 'Dashboard',
       icono: 'dashboard',
       ruta: '/dashboard'
+    },
+    {
+      titulo: 'Inventario',
+      icono: 'inventory_2',
+      ruta: '/inventario'
     }
   ];
 
   gestion: MenuItem[] = [
-    {
-      titulo: 'Categorías',
-      icono: 'category',
-      ruta: '/categorias'
-    },
-    {
-      titulo: 'Productos',
-      icono: 'inventory_2',
-      ruta: '/productos'
-    },
     {
       titulo: 'Clientes',
       icono: 'groups',

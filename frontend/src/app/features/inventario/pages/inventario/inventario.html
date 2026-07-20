@@ -1,0 +1,147 @@
+<mat-sidenav-container class="contenedor-sidenav">
+
+    <!-- ========================= -->
+    <!-- DRAWER -->
+    <!-- ========================= -->
+
+    <mat-sidenav
+        #drawer
+        mode="over"
+        position="end"
+        [opened]="drawerAbierto"
+        (closed)="cerrarDrawer()"
+        class="drawer">
+
+        <app-drawer-producto
+            [categorias]="categorias"
+            (cerrar)="cerrarDrawer()">
+        </app-drawer-producto>
+
+    </mat-sidenav>
+
+    <!-- ========================= -->
+    <!-- CONTENIDO -->
+    <!-- ========================= -->
+
+    <mat-sidenav-content>
+
+        <div class="contenedor">
+
+            <!-- Cabecera -->
+
+            <div class="cabecera">
+
+                <div>
+
+                    <h1>Inventario</h1>
+
+                    <p class="subtitulo">
+
+                        Gestión de productos del sistema.
+
+                    </p>
+
+                </div>
+
+                <button
+                    class="btn-nuevo"
+                    (click)="abrirDrawer()">
+
+                    + Nuevo Producto
+
+                </button>
+
+            </div>
+
+            <!-- Filtros -->
+
+            <div class="filtros">
+
+                <div class="busqueda">
+
+                    <span class="icono">
+
+                        🔍
+
+                    </span>
+
+                    <input
+                        type="text"
+                        placeholder="Buscar producto..."
+                        [(ngModel)]="textoBusqueda"
+                        (keyup)="buscarProducto()">
+
+                </div>
+
+                <select
+                    [(ngModel)]="categoriaSeleccionada"
+                    (change)="cambiarCategoria()">
+
+                    <option [value]="0">
+
+                        Todas las categorías
+
+                    </option>
+
+                    @for (categoria of categorias; track categoria.id_categoria) {
+
+                        <option [value]="categoria.id_categoria">
+
+                            {{ categoria.nombre_categoria }}
+
+                        </option>
+
+                    }
+
+                </select>
+
+            </div>
+
+            <!-- Tabla -->
+
+            <div class="tabla-contenedor">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Stock</th>
+                            <th>Compra</th>
+                            <th>Venta</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+
+                            <td
+                                colspan="8"
+                                class="sin-registros">
+
+                                No existen productos registrados.
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </mat-sidenav-content>
+
+</mat-sidenav-container>

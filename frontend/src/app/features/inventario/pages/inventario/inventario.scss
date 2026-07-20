@@ -1,0 +1,249 @@
+/* ===========================
+   CONTENEDOR
+=========================== */
+
+.contenedor {
+
+    padding: 30px;
+
+}
+
+/* ===========================
+   CABECERA
+=========================== */
+
+.cabecera {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    gap: 20px;
+
+}
+
+.cabecera h1 {
+
+    margin: 0;
+    font-size: 32px;
+    color: #1e293b;
+
+}
+
+.subtitulo {
+
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 15px;
+
+}
+
+/* ===========================
+   BOTÓN NUEVO
+=========================== */
+
+.btn-nuevo {
+
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 22px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .25s;
+
+}
+
+.btn-nuevo:hover {
+
+    background: #1d4ed8;
+    transform: translateY(-2px);
+
+}
+
+/* ===========================
+   FILTROS
+=========================== */
+
+.filtros {
+
+    display: flex;
+    gap: 20px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+
+}
+
+/* ===========================
+   BUSCADOR
+=========================== */
+
+.busqueda {
+
+    flex: 1;
+    min-width: 280px;
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 1px solid #dbe2ea;
+    border-radius: 10px;
+    overflow: hidden;
+
+}
+
+.icono {
+
+    padding: 0 14px;
+    font-size: 18px;
+    color: #64748b;
+
+}
+
+.busqueda input {
+
+    width: 100%;
+    border: none;
+    outline: none;
+    padding: 13px 10px;
+    font-size: 15px;
+    background: transparent;
+
+}
+
+/* ===========================
+   SELECT
+=========================== */
+
+select {
+
+    min-width: 230px;
+    padding: 13px;
+    border-radius: 10px;
+    border: 1px solid #dbe2ea;
+    background: white;
+    font-size: 15px;
+    cursor: pointer;
+    outline: none;
+
+}
+
+select:focus {
+
+    border-color: #2563eb;
+
+}
+
+/* ===========================
+   TABLA
+=========================== */
+
+.tabla-contenedor {
+
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0,0,0,.06);
+
+}
+
+table {
+
+    width: 100%;
+    border-collapse: collapse;
+
+}
+
+thead {
+
+    background: #2563eb;
+    color: white;
+
+}
+
+th {
+
+    padding: 15px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+
+}
+
+td {
+
+    padding: 15px;
+    border-bottom: 1px solid #edf2f7;
+    font-size: 14px;
+
+}
+
+tbody tr:hover {
+
+    background: #f8fafc;
+
+}
+
+/* ===========================
+   MENSAJE
+=========================== */
+
+.sin-registros {
+
+    text-align: center;
+    padding: 50px;
+    color: #64748b;
+    font-weight: 600;
+
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+
+@media (max-width: 900px) {
+
+    .cabecera {
+
+        flex-direction: column;
+        align-items: flex-start;
+
+    }
+
+    .btn-nuevo {
+
+        width: 100%;
+
+    }
+
+    .filtros {
+
+        flex-direction: column;
+
+    }
+
+    .busqueda {
+
+        width: 100%;
+
+    }
+
+    select {
+
+        width: 100%;
+
+    }
+
+}
+.contenedor-sidenav {
+
+    height: calc(100vh - 64px);
+
+}
+
+.drawer {
+
+    width: 420px;
+
+}

@@ -1,0 +1,199 @@
+<div class="drawer">
+
+    <div class="header">
+
+        <h2>Nuevo Producto</h2>
+
+        <button
+            mat-icon-button
+            type="button"
+            (click)="cerrarDrawer()">
+
+            <mat-icon>close</mat-icon>
+
+        </button>
+
+    </div>
+
+    <form
+        class="formulario"
+        [formGroup]="formulario"
+        (ngSubmit)="guardar()">
+
+        <label>Código de Barras</label>
+
+        <div class="codigo">
+
+            <mat-form-field appearance="outline">
+
+                <input
+                    matInput
+                    formControlName="codigo_producto">
+
+            </mat-form-field>
+
+            <button
+                mat-mini-fab
+                color="primary"
+                type="button"
+                (click)="generarCodigo()">
+
+                <mat-icon>qr_code</mat-icon>
+
+            </button>
+
+        </div>
+
+        <label>Nombre del Producto</label>
+
+        <mat-form-field appearance="outline">
+
+            <input
+                matInput
+                formControlName="nombre_producto">
+
+        </mat-form-field>
+
+        <label>Descripción</label>
+
+        <mat-form-field appearance="outline">
+
+            <textarea
+                matInput
+                rows="2"
+                formControlName="descripcion_producto">
+            </textarea>
+
+        </mat-form-field>
+
+        <label>Categoría</label>
+
+        <mat-form-field appearance="outline">
+
+            <mat-select formControlName="id_categoria">
+
+                @for (categoria of categorias; track categoria.id_categoria) {
+
+                    <mat-option
+                        [value]="categoria.id_categoria">
+
+                        {{ categoria.nombre_categoria }}
+
+                    </mat-option>
+
+                }
+
+            </mat-select>
+
+        </mat-form-field>
+
+        <div class="dos-columnas">
+
+            <div>
+
+                <label>P. Compra</label>
+
+                <mat-form-field appearance="outline">
+
+                    <input
+                        matInput
+                        type="number"
+                        formControlName="costo_producto">
+
+                </mat-form-field>
+
+            </div>
+
+            <div>
+
+                <label>P. Venta</label>
+
+                <mat-form-field appearance="outline">
+
+                    <input
+                        matInput
+                        type="number"
+                        formControlName="precio_producto">
+
+                </mat-form-field>
+
+            </div>
+
+        </div>
+
+        <div class="dos-columnas">
+
+            <div>
+
+                <label>Stock Inicial</label>
+
+                <mat-form-field appearance="outline">
+
+                    <input
+                        matInput
+                        type="number"
+                        formControlName="stock_producto">
+
+                </mat-form-field>
+
+            </div>
+
+            <div>
+
+                <label>Estado</label>
+
+                <mat-form-field appearance="outline">
+
+                    <mat-select formControlName="estado">
+
+                        <mat-option [value]="true">
+
+                            Activo
+
+                        </mat-option>
+
+                        <mat-option [value]="false">
+
+                            Inactivo
+
+                        </mat-option>
+
+                    </mat-select>
+
+                </mat-form-field>
+
+            </div>
+
+        </div>
+
+        <label>Fecha de Caducidad</label>
+
+        <mat-form-field appearance="outline">
+
+            <input
+                matInput
+                [matDatepicker]="picker"
+                formControlName="fecha_caducidad_producto">
+
+            <mat-datepicker-toggle
+                matSuffix
+                [for]="picker">
+            </mat-datepicker-toggle>
+
+            <mat-datepicker #picker></mat-datepicker>
+
+        </mat-form-field>
+
+        <button
+            mat-flat-button
+            color="primary"
+            class="guardar"
+            type="submit">
+
+            Guardar Producto
+
+        </button>
+
+    </form>
+
+</div>
