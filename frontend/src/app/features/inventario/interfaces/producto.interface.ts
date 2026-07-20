@@ -20,4 +20,12 @@ export interface Producto {
 
   estado: boolean;
 
+  categoria?: {
+
+    id_categoria: number;
+
+    nombre_categoria: string;
+
+  };
+
 }

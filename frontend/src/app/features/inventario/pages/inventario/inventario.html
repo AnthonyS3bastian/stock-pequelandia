@@ -122,17 +122,99 @@
 
                     <tbody>
 
-                        <tr>
+                        @if (productos.length > 0) {
 
-                            <td
-                                colspan="8"
-                                class="sin-registros">
+                            @for (producto of productos; track producto.id_producto) {
 
-                                No existen productos registrados.
+                                <tr>
 
-                            </td>
+                                    <td>
 
-                        </tr>
+                                        {{ producto.codigo_producto }}
+
+                                    </td>
+
+                                    <td>
+
+                                        {{ producto.nombre_producto }}
+
+                                    </td>
+
+                                    <td>
+
+                                        {{ producto.categoria?.nombre_categoria }}
+
+                                    </td>
+
+                                    <td>
+
+                                        {{ producto.stock_producto }}
+
+                                    </td>
+
+                                    <td>
+
+                                        S/. {{ producto.costo_producto }}
+
+                                    </td>
+
+                                    <td>
+
+                                        S/. {{ producto.precio_producto }}
+
+                                    </td>
+
+                                    <td>
+
+                                        @if (producto.estado) {
+
+                                            <span class="estado activo">
+
+                                                Activo
+
+                                            </span>
+
+                                        } @else {
+
+                                            <span class="estado inactivo">
+
+                                                Inactivo
+
+                                            </span>
+
+                                        }
+
+                                    </td>
+
+                                    <td>
+
+                                        <button class="btn-editar">
+
+                                            Editar
+
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                            }
+
+                        } @else {
+
+                            <tr>
+
+                                <td
+                                    colspan="8"
+                                    class="sin-registros">
+
+                                    No existen productos registrados.
+
+                                </td>
+
+                            </tr>
+
+                        }
 
                     </tbody>
 

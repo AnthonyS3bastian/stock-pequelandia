@@ -1,11 +1,19 @@
-import { Component, OnInit, inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  ChangeDetectorRef
+} from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 import { MatSidenavModule } from '@angular/material/sidenav';
 
 import { Categoria } from '../../interfaces/categoria.interface';
+import { Producto } from '../../interfaces/producto.interface';
+
 import { CategoriaService } from '../../services/categoria';
+import { ProductoService } from '../../services/producto';
 
 import { DrawerProductoComponent } from '../../components/drawer-producto/drawer-producto';
 
@@ -24,8 +32,11 @@ import { DrawerProductoComponent } from '../../components/drawer-producto/drawer
 export class InventarioComponent implements OnInit {
 
   private categoriaService = inject(CategoriaService);
+  private productoService = inject(ProductoService);
+  private cdr = inject(ChangeDetectorRef);
 
   categorias: Categoria[] = [];
+  productos: Producto[] = [];
 
   cargando = false;
 
@@ -38,26 +49,45 @@ export class InventarioComponent implements OnInit {
   ngOnInit(): void {
 
     this.obtenerCategorias();
+    this.obtenerProductos();
 
   }
 
   obtenerCategorias(): void {
-
-    this.cargando = true;
 
     this.categoriaService.listar().subscribe({
 
       next: (response) => {
 
         this.categorias = response.data;
-        this.cargando = false;
 
       },
 
       error: (error) => {
 
         console.error(error);
-        this.cargando = false;
+
+      }
+
+    });
+
+  }
+
+  obtenerProductos(): void {
+
+    this.productoService.listar().subscribe({
+
+      next: (response) => {
+
+        this.productos = [...response.data];
+
+        this.cdr.detectChanges();
+
+      },
+
+      error: (error) => {
+
+        console.error(error);
 
       }
 
@@ -86,6 +116,8 @@ export class InventarioComponent implements OnInit {
   cerrarDrawer(): void {
 
     this.drawerAbierto = false;
+
+    this.obtenerProductos();
 
   }
 
