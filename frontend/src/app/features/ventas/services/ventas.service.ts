@@ -1,27 +1,40 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 
+export interface DetalleVentaRequest {
+    id_producto: number;
+    cantidad: number;
+}
+
+export interface RegistrarVentaRequest {
+    detalles: DetalleVentaRequest[];
+}
+
+export interface RegistrarVentaResponse {
+    ok: boolean;
+    mensaje: string;
+    venta: any;
+}
+
 @Injectable({
     providedIn: 'root'
 })
-export class VentasService {
+export class VentaService {
 
     private http = inject(HttpClient);
 
-    registrarVenta(productos: any[]): Observable<any> {
+    private apiUrl = `${environment.apiUrl}/ventas`;
 
-        return this.http.post(
+    registrar(
+        datos: RegistrarVentaRequest
+    ): Observable<RegistrarVentaResponse> {
 
-            `${environment.apiUrl}/ventas`,
-
-            {
-                productos
-            }
-
+        return this.http.post<RegistrarVentaResponse>(
+            this.apiUrl,
+            datos
         );
 
     }
