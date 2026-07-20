@@ -1,0 +1,237 @@
+.ventas-container {
+
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+
+}
+
+.titulo {
+
+    margin: 0;
+    font-size: 30px;
+    font-weight: 600;
+
+}
+
+.contenido-ventas {
+
+    display: grid;
+    grid-template-columns: 2.3fr 1fr;
+    gap: 20px;
+    align-items: stretch;
+
+}
+
+/*=========================================
+PANEL PRODUCTOS
+=========================================*/
+
+.panel-productos {
+
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    min-height: 700px;
+
+}
+
+.panel-productos h2 {
+
+    margin: 0 0 20px;
+    font-size: 22px;
+
+}
+
+/*=========================================
+CODIGO DE BARRAS
+=========================================*/
+
+.barra-codigo {
+
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 20px;
+
+}
+
+.campo-codigo {
+
+    flex: 1;
+
+}
+
+.campo-codigo .mat-mdc-form-field-subscript-wrapper {
+
+    display: none;
+
+}
+
+/*=========================================
+TABLA
+=========================================*/
+
+.tabla {
+
+    width: 100%;
+
+}
+
+.sin-datos {
+
+    flex: 1;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    min-height: 350px;
+
+    color: #888;
+
+}
+
+/*=========================================
+PIE PRODUCTOS
+=========================================*/
+
+.pie-productos {
+
+    margin-top: auto;
+
+    border-top: 1px solid #e5e5e5;
+
+    padding-top: 20px;
+
+}
+
+.totales {
+
+    width: 260px;
+
+    margin-left: auto;
+
+}
+
+.linea {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 10px;
+
+    font-size: 16px;
+
+}
+
+.total {
+
+    font-size: 22px;
+    font-weight: bold;
+
+}
+
+.botones {
+
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 20px;
+
+}
+
+/*=========================================
+PANEL COMPROBANTE
+=========================================*/
+
+.panel-comprobante {
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 20px;
+
+}
+
+.panel-comprobante h2 {
+
+    margin: 0 0 20px;
+
+    font-size: 22px;
+
+}
+
+.panel-comprobante p {
+
+    margin: 8px 0;
+
+}
+
+.panel-comprobante mat-form-field {
+
+    width: 100%;
+
+    margin-bottom: 10px;
+
+}
+
+.panel-comprobante hr {
+
+    margin: 20px 0;
+
+    border: none;
+    border-top: 1px solid #e5e5e5;
+
+}
+
+/*=========================================
+RESPONSIVE
+=========================================*/
+
+@media (max-width: 992px) {
+
+    .contenido-ventas {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .panel-productos {
+
+        min-height: auto;
+
+    }
+
+    .totales {
+
+        width: 100%;
+
+    }
+
+}
+
+@media (max-width: 768px) {
+
+    .barra-codigo {
+
+        flex-direction: column;
+        align-items: stretch;
+
+    }
+
+    .campo-codigo {
+
+        width: 100%;
+
+    }
+
+    .botones {
+
+        flex-direction: column;
+
+    }
+
+}
