@@ -56,7 +56,7 @@
             </div>
 
             <!-- ====================================== -->
-            <!-- TABLA -->
+            <!-- TABLA DE PRODUCTOS -->
             <!-- ====================================== -->
 
             <table
@@ -102,29 +102,35 @@
                         mat-cell
                         *matCellDef="let elemento">
 
-                        <button
-                            mat-icon-button
-                            [disabled]="registrando"
-                            (click)="disminuirCantidad(elemento)">
+                        <div class="control-cantidad">
 
-                            <mat-icon>
-                                remove
-                            </mat-icon>
+                            <button
+                                mat-icon-button
+                                [disabled]="registrando"
+                                (click)="disminuirCantidad(elemento)">
 
-                        </button>
+                                <mat-icon>
+                                    remove
+                                </mat-icon>
 
-                        {{ elemento.cantidad }}
+                            </button>
 
-                        <button
-                            mat-icon-button
-                            [disabled]="registrando"
-                            (click)="aumentarCantidad(elemento)">
+                            <span>
+                                {{ elemento.cantidad }}
+                            </span>
 
-                            <mat-icon>
-                                add
-                            </mat-icon>
+                            <button
+                                mat-icon-button
+                                [disabled]="registrando"
+                                (click)="aumentarCantidad(elemento)">
 
-                        </button>
+                                <mat-icon>
+                                    add
+                                </mat-icon>
+
+                            </button>
+
+                        </div>
 
                     </td>
 
@@ -227,12 +233,18 @@
                 class="sin-datos"
                 *ngIf="ventas.length === 0">
 
-                No hay productos agregados.
+                <mat-icon>
+                    shopping_cart
+                </mat-icon>
+
+                <span>
+                    No hay productos agregados.
+                </span>
 
             </div>
 
             <!-- ====================================== -->
-            <!-- PIE -->
+            <!-- TOTALES Y BOTONES -->
             <!-- ====================================== -->
 
             <div class="pie-productos">
@@ -291,6 +303,10 @@
                         "
                         (click)="limpiarVenta()">
 
+                        <mat-icon>
+                            delete_sweep
+                        </mat-icon>
+
                         Limpiar
 
                     </button>
@@ -300,7 +316,8 @@
                         color="primary"
                         [disabled]="
                             ventas.length === 0 ||
-                            registrando
+                            registrando ||
+                            consultandoDocumento
                         "
                         (click)="registrarVenta()">
 
@@ -332,72 +349,405 @@
                 Comprobante
             </h2>
 
-            <p>
+            <!-- ====================================== -->
+            <!-- TIPO DE COMPROBANTE -->
+            <!-- ====================================== -->
+
+            <p class="subtitulo-panel">
                 Tipo de comprobante
             </p>
 
-            <p>
-                ● Venta rápida
-            </p>
+            <div class="tipos-comprobante">
 
-            <p>
-                ○ Boleta
-            </p>
+                <button
+                    type="button"
+                    class="opcion-comprobante"
+                    [class.seleccionado]="
+                        tipoComprobante === 'VENTA RAPIDA'
+                    "
+                    [disabled]="
+                        registrando ||
+                        consultandoDocumento
+                    "
+                    (click)="
+                        seleccionarTipoComprobante(
+                            'VENTA RAPIDA'
+                        )
+                    ">
 
-            <p>
-                ○ Factura
-            </p>
+                    <mat-icon>
+                        {{
+                            tipoComprobante ===
+                            'VENTA RAPIDA'
+                                ? 'radio_button_checked'
+                                : 'radio_button_unchecked'
+                        }}
+                    </mat-icon>
+
+                    <div>
+
+                        <strong>
+                            Venta rápida
+                        </strong>
+
+                        <span>
+                            Público General
+                        </span>
+
+                    </div>
+
+                </button>
+
+                <button
+                    type="button"
+                    class="opcion-comprobante"
+                    [class.seleccionado]="
+                        tipoComprobante === 'BOLETA'
+                    "
+                    [disabled]="
+                        registrando ||
+                        consultandoDocumento
+                    "
+                    (click)="
+                        seleccionarTipoComprobante(
+                            'BOLETA'
+                        )
+                    ">
+
+                    <mat-icon>
+                        {{
+                            tipoComprobante ===
+                            'BOLETA'
+                                ? 'radio_button_checked'
+                                : 'radio_button_unchecked'
+                        }}
+                    </mat-icon>
+
+                    <div>
+
+                        <strong>
+                            Boleta
+                        </strong>
+
+                        <span>
+                            Cliente con DNI
+                        </span>
+
+                    </div>
+
+                </button>
+
+                <button
+                    type="button"
+                    class="opcion-comprobante"
+                    [class.seleccionado]="
+                        tipoComprobante === 'FACTURA'
+                    "
+                    [disabled]="
+                        registrando ||
+                        consultandoDocumento
+                    "
+                    (click)="
+                        seleccionarTipoComprobante(
+                            'FACTURA'
+                        )
+                    ">
+
+                    <mat-icon>
+                        {{
+                            tipoComprobante ===
+                            'FACTURA'
+                                ? 'radio_button_checked'
+                                : 'radio_button_unchecked'
+                        }}
+                    </mat-icon>
+
+                    <div>
+
+                        <strong>
+                            Factura
+                        </strong>
+
+                        <span>
+                            Empresa con RUC
+                        </span>
+
+                    </div>
+
+                </button>
+
+            </div>
 
             <hr>
 
-            <p>
-                <strong>
+            <!-- ====================================== -->
+            <!-- DATOS DEL CLIENTE -->
+            <!-- ====================================== -->
+
+            <div class="encabezado-cliente">
+
+                <p class="subtitulo-panel">
                     Cliente
-                </strong>
-            </p>
+                </p>
 
-            <p>
-                Público General
-            </p>
+                <span
+                    class="estado-consulta correcto"
+                    *ngIf="
+                        documentoConsultado &&
+                        tipoComprobante !== 'VENTA RAPIDA'
+                    ">
+
+                    <mat-icon>
+                        check_circle
+                    </mat-icon>
+
+                    Consultado
+
+                </span>
+
+            </div>
+
+            <!-- VENTA RÁPIDA -->
+
+            <div
+                class="cliente-publico"
+                *ngIf="
+                    tipoComprobante === 'VENTA RAPIDA'
+                ">
+
+                <mat-icon>
+                    person
+                </mat-icon>
+
+                <div>
+
+                    <strong>
+                        PUBLICO GENERAL
+                    </strong>
+
+                    <span>
+                        Venta sin documento
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- DNI O RUC -->
+
+            <div
+                class="consulta-documento"
+                *ngIf="
+                    tipoComprobante !== 'VENTA RAPIDA'
+                ">
+
+                <mat-form-field appearance="outline">
+
+                    <mat-label>
+                        {{
+                            tipoComprobante === 'BOLETA'
+                                ? 'DNI'
+                                : 'RUC'
+                        }}
+                    </mat-label>
+
+                    <input
+                        matInput
+                        inputmode="numeric"
+                        autocomplete="off"
+                        [placeholder]="
+                            tipoComprobante === 'BOLETA'
+                                ? 'Ingrese 8 dígitos'
+                                : 'Ingrese 11 dígitos'
+                        "
+                        [maxlength]="
+                            tipoComprobante === 'BOLETA'
+                                ? 8
+                                : 11
+                        "
+                        [(ngModel)]="numeroDocumento"
+                        [disabled]="
+                            registrando ||
+                            consultandoDocumento
+                        "
+                        (ngModelChange)="
+                            limpiarNumeroDocumento()
+                        "
+                        (keyup.enter)="
+                            consultarDocumento()
+                        ">
+
+                </mat-form-field>
+
+                <button
+                    mat-raised-button
+                    color="primary"
+                    class="boton-consultar"
+                    [disabled]="
+                        registrando ||
+                        consultandoDocumento ||
+                        !numeroDocumento
+                    "
+                    (click)="consultarDocumento()">
+
+                    <mat-icon>
+                        search
+                    </mat-icon>
+
+                    {{
+                        consultandoDocumento
+                            ? 'Consultando...'
+                            : 'Consultar'
+                    }}
+
+                </button>
+
+            </div>
+
+            <!-- NOMBRE O RAZÓN SOCIAL -->
+
+            <div
+                *ngIf="
+                    tipoComprobante !== 'VENTA RAPIDA'
+                ">
+
+                <mat-form-field appearance="outline">
+
+                    <mat-label>
+                        {{
+                            tipoComprobante === 'BOLETA'
+                                ? 'Nombre completo'
+                                : 'Razón social'
+                        }}
+                    </mat-label>
+
+                    <input
+                        matInput
+                        [value]="nombreCliente"
+                        disabled>
+
+                </mat-form-field>
+
+            </div>
+
+            <!-- DIRECCIÓN -->
+
+            <div
+                *ngIf="
+                    tipoComprobante === 'FACTURA'
+                ">
+
+                <mat-form-field appearance="outline">
+
+                    <mat-label>
+                        Dirección fiscal
+                    </mat-label>
+
+                    <textarea
+                        matInput
+                        rows="3"
+                        [value]="direccionCliente"
+                        disabled>
+                    </textarea>
+
+                </mat-form-field>
+
+            </div>
+
+            <!-- ESTADO SIN CONSULTA -->
+
+            <div
+                class="aviso-documento"
+                *ngIf="
+                    tipoComprobante !== 'VENTA RAPIDA' &&
+                    !documentoConsultado &&
+                    !consultandoDocumento
+                ">
+
+                <mat-icon>
+                    info
+                </mat-icon>
+
+                <span>
+                    {{
+                        tipoComprobante === 'BOLETA'
+                            ? 'Ingrese y consulte el DNI del cliente.'
+                            : 'Ingrese y consulte el RUC de la empresa.'
+                    }}
+                </span>
+
+            </div>
+
+            <!-- ESTADO CONSULTANDO -->
+
+            <div
+                class="aviso-documento consultando"
+                *ngIf="consultandoDocumento">
+
+                <mat-icon>
+                    hourglass_top
+                </mat-icon>
+
+                <span>
+                    Consultando información...
+                </span>
+
+            </div>
 
             <hr>
 
-            <p>
-                DNI / RUC
-            </p>
+            <!-- ====================================== -->
+            <!-- RESUMEN -->
+            <!-- ====================================== -->
 
-            <mat-form-field appearance="outline">
+            <div class="resumen-comprobante">
 
-                <input
-                    matInput
-                    disabled>
+                <div>
 
-            </mat-form-field>
+                    <span>
+                        Comprobante
+                    </span>
 
-            <p>
-                Nombre / Razón Social
-            </p>
+                    <strong>
+                        {{ tipoComprobante }}
+                    </strong>
 
-            <mat-form-field appearance="outline">
+                </div>
 
-                <input
-                    matInput
-                    value="PUBLICO GENERAL"
-                    disabled>
+                <div>
 
-            </mat-form-field>
+                    <span>
+                        Cliente
+                    </span>
 
-            <p>
-                Dirección
-            </p>
+                    <strong>
+                        {{
+                            nombreCliente ||
+                            'Sin consultar'
+                        }}
+                    </strong>
 
-            <mat-form-field appearance="outline">
+                </div>
 
-                <input
-                    matInput
-                    disabled>
+                <div
+                    *ngIf="
+                        tipoComprobante !== 'VENTA RAPIDA'
+                    ">
 
-            </mat-form-field>
+                    <span>
+                        Documento
+                    </span>
+
+                    <strong>
+                        {{
+                            numeroDocumento ||
+                            'Sin ingresar'
+                        }}
+                    </strong>
+
+                </div>
+
+            </div>
 
         </mat-card>
 
