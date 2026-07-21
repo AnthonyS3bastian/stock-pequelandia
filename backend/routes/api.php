@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\ConsultaDocumentoController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,22 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::post('/login', [AuthController::class, 'login']);
+
+/*
+|--------------------------------------------------------------------------
+| Consultas DNI y RUC
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/consultas/dni/{dni}',
+    [ConsultaDocumentoController::class, 'consultarDni']
+);
+
+Route::get(
+    '/consultas/ruc/{ruc}',
+    [ConsultaDocumentoController::class, 'consultarRuc']
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -36,7 +53,7 @@ Route::get('/productos', [ProductoController::class, 'index']);
 
 /*
  * Esta ruta debe ir antes de /productos/{id},
- * porque "codigo" podría interpretarse como un ID.
+ * porque "codigo" podria interpretarse como un ID.
  */
 Route::get(
     '/productos/codigo/{codigo}',

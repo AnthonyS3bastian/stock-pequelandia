@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Cliente;
 use App\Models\DetalleVenta;
 use App\Models\Producto;
 use App\Models\SerieComprobante;
@@ -14,32 +13,155 @@ use Throwable;
 
 class VentaService
 {
+    public function __construct(
+        private ConsultaDocumentoService $consultaDocumentoService,
+        private ClienteService $clienteService
+    ) {
+    }
+
     /**
      * Registrar una nueva venta.
-     *
-     * Temporalmente se utilizarán:
-     * id_usuario = 1
-     * id_cliente = 1
-     * id_serie_comprobante = 1
      */
     public function registrar(array $datos): array
     {
+        /*
+         * El usuario todavía se mantiene temporalmente con ID 1.
+         * Más adelante se obtendrá desde el usuario autenticado.
+         */
+        $idUsuario = 1;
+
+        $tipoComprobante = strtoupper(
+            trim((string) ($datos['tipo_comprobante'] ?? ''))
+        );
+
+        $numeroDocumento = preg_replace(
+            '/\D/',
+            '',
+            (string) ($datos['numero_documento'] ?? '')
+        );
+
+        /*
+         * Consultar APIsPERU antes de iniciar la transacción.
+         *
+         * Esto evita mantener bloqueadas las tablas mientras
+         * esperamos la respuesta de un servicio externo.
+         */
+        $datosClienteConsultado = null;
+
+        if ($tipoComprobante === 'BOLETA') {
+            $datosClienteConsultado =
+                $this->consultaDocumentoService
+                    ->consultarDni($numeroDocumento);
+
+            if (
+                !isset($datosClienteConsultado['dni'])
+                || !isset($datosClienteConsultado['nombres'])
+            ) {
+                throw ValidationException::withMessages([
+                    'numero_documento' => [
+                        'APIsPERU no devolvió información válida para el DNI.',
+                    ],
+                ]);
+            }
+        }
+
+        if ($tipoComprobante === 'FACTURA') {
+            $datosClienteConsultado =
+                $this->consultaDocumentoService
+                    ->consultarRuc($numeroDocumento);
+
+            if (
+                !isset($datosClienteConsultado['ruc'])
+                || !isset($datosClienteConsultado['razonSocial'])
+            ) {
+                throw ValidationException::withMessages([
+                    'numero_documento' => [
+                        'APIsPERU no devolvió información válida para el RUC.',
+                    ],
+                ]);
+            }
+        }
+
         DB::beginTransaction();
 
         try {
-            $idUsuario = 1;
-            $idCliente = 1;
-            $idSerieComprobante = 1;
+            /*
+             * Verificar el usuario temporal.
+             */
+            if (
+                !Usuario::query()
+                    ->where('id_usuario', $idUsuario)
+                    ->exists()
+            ) {
+                throw ValidationException::withMessages([
+                    'id_usuario' => [
+                        'No existe el usuario temporal con ID 1.',
+                    ],
+                ]);
+            }
 
             /*
-             * El frontend puede enviar la lista con el nombre
-             * "detalles" o "productos".
+             * Resolver el cliente según el comprobante.
+             */
+            $cliente = match ($tipoComprobante) {
+                'VENTA RAPIDA' =>
+                    $this->clienteService
+                        ->obtenerPublicoGeneral(),
+
+                'BOLETA' =>
+                    $this->clienteService
+                        ->guardarClienteNatural(
+                            $datosClienteConsultado ?? []
+                        ),
+
+                'FACTURA' =>
+                    $this->clienteService
+                        ->guardarClienteEmpresa(
+                            $datosClienteConsultado ?? []
+                        ),
+
+                default =>
+                    throw ValidationException::withMessages([
+                        'tipo_comprobante' => [
+                            'El tipo de comprobante no es válido.',
+                        ],
+                    ]),
+            };
+
+            /*
+             * Buscar la serie correspondiente al tipo de comprobante.
+             *
+             * VENTA RAPIDA -> NV001
+             * BOLETA       -> B001
+             * FACTURA      -> F001
+             */
+            $serieComprobante = SerieComprobante::query()
+                ->where(
+                    'tipo_documento_serie',
+                    $tipoComprobante
+                )
+                ->lockForUpdate()
+                ->first();
+
+            if (!$serieComprobante) {
+                throw ValidationException::withMessages([
+                    'tipo_comprobante' => [
+                        "No existe una serie configurada para {$tipoComprobante}.",
+                    ],
+                ]);
+            }
+
+            /*
+             * Obtener los productos enviados.
              */
             $detallesRecibidos = $datos['detalles']
                 ?? $datos['productos']
                 ?? [];
 
-            if (!is_array($detallesRecibidos) || count($detallesRecibidos) === 0) {
+            if (
+                !is_array($detallesRecibidos)
+                || count($detallesRecibidos) === 0
+            ) {
                 throw ValidationException::withMessages([
                     'detalles' => [
                         'La venta debe contener al menos un producto.',
@@ -48,52 +170,13 @@ class VentaService
             }
 
             /*
-             * Verificar que existan temporalmente el usuario
-             * y el cliente con ID 1.
-             */
-            if (!Usuario::where('id_usuario', $idUsuario)->exists()) {
-                throw ValidationException::withMessages([
-                    'id_usuario' => [
-                        'No existe el usuario temporal con ID 1.',
-                    ],
-                ]);
-            }
-
-            if (!Cliente::where('id_cliente', $idCliente)->exists()) {
-                throw ValidationException::withMessages([
-                    'id_cliente' => [
-                        'No existe el cliente temporal con ID 1.',
-                    ],
-                ]);
-            }
-
-            /*
-             * Bloquear la serie mientras se genera el comprobante
-             * para evitar números duplicados.
-             */
-            $serieComprobante = SerieComprobante::query()
-                ->where('id_serie_comprobante', $idSerieComprobante)
-                ->lockForUpdate()
-                ->first();
-
-            if (!$serieComprobante) {
-                throw ValidationException::withMessages([
-                    'id_serie_comprobante' => [
-                        'No existe la serie de comprobante temporal con ID 1.',
-                    ],
-                ]);
-            }
-
-            /*
-             * Agrupar productos repetidos.
-             *
-             * Se acepta cualquiera de estos nombres para la cantidad:
-             * cantidad
-             * cantidad_detalle_venta
+             * Agrupar los productos repetidos.
              */
             $cantidadesPorProducto = [];
 
-            foreach ($detallesRecibidos as $indice => $detalleRecibido) {
+            foreach (
+                $detallesRecibidos as $indice => $detalleRecibido
+            ) {
                 if (!is_array($detalleRecibido)) {
                     throw ValidationException::withMessages([
                         "detalles.$indice" => [
@@ -102,10 +185,14 @@ class VentaService
                     ]);
                 }
 
-                $idProducto = $detalleRecibido['id_producto'] ?? null;
+                $idProducto =
+                    $detalleRecibido['id_producto'] ?? null;
 
-                $cantidadRecibida = $detalleRecibido['cantidad']
-                    ?? $detalleRecibido['cantidad_detalle_venta']
+                $cantidadRecibida =
+                    $detalleRecibido['cantidad']
+                    ?? $detalleRecibido[
+                        'cantidad_detalle_venta'
+                    ]
                     ?? null;
 
                 if (
@@ -122,7 +209,8 @@ class VentaService
                 if (
                     !is_numeric($cantidadRecibida)
                     || (float) $cantidadRecibida <= 0
-                    || (int) $cantidadRecibida != (float) $cantidadRecibida
+                    || (int) $cantidadRecibida
+                        != (float) $cantidadRecibida
                 ) {
                     throw ValidationException::withMessages([
                         "detalles.$indice.cantidad" => [
@@ -134,16 +222,20 @@ class VentaService
                 $idProducto = (int) $idProducto;
                 $cantidad = (int) $cantidadRecibida;
 
-                if (!isset($cantidadesPorProducto[$idProducto])) {
+                if (
+                    !isset(
+                        $cantidadesPorProducto[$idProducto]
+                    )
+                ) {
                     $cantidadesPorProducto[$idProducto] = 0;
                 }
 
-                $cantidadesPorProducto[$idProducto] += $cantidad;
+                $cantidadesPorProducto[$idProducto] +=
+                    $cantidad;
             }
 
             /*
-             * Ordenar los productos ayuda a mantener siempre
-             * el mismo orden de bloqueo dentro de la transacción.
+             * Mantener un orden constante de bloqueo.
              */
             ksort($cantidadesPorProducto);
 
@@ -151,10 +243,12 @@ class VentaService
             $totalVenta = 0;
 
             /*
-             * Consultar y bloquear cada producto para evitar
-             * que dos ventas descuenten el mismo stock al mismo tiempo.
+             * Consultar, bloquear y validar los productos.
              */
-            foreach ($cantidadesPorProducto as $idProducto => $cantidad) {
+            foreach (
+                $cantidadesPorProducto
+                as $idProducto => $cantidad
+            ) {
                 $producto = Producto::query()
                     ->where('id_producto', $idProducto)
                     ->lockForUpdate()
@@ -176,7 +270,9 @@ class VentaService
                     ]);
                 }
 
-                if ($producto->stock_producto < $cantidad) {
+                if (
+                    $producto->stock_producto < $cantidad
+                ) {
                     throw ValidationException::withMessages([
                         'stock' => [
                             "Stock insuficiente para {$producto->nombre_producto}. "
@@ -209,14 +305,19 @@ class VentaService
             }
 
             /*
-             * Generar el número de comprobante.
+             * Generar el número del comprobante.
              *
-             * Ejemplo:
-             * NV01-00000001
+             * Ejemplos:
+             * NV001-00000003
+             * B001-00000001
+             * F001-00000001
              */
-            $numeroCorrelativo = (int) $serieComprobante->numero_correlativo;
+            $numeroCorrelativo =
+                (int) $serieComprobante
+                    ->numero_correlativo;
 
-            $numeroComprobante = $serieComprobante->serie_documento
+            $numeroComprobante =
+                $serieComprobante->serie_documento
                 . '-'
                 . str_pad(
                     (string) $numeroCorrelativo,
@@ -238,43 +339,64 @@ class VentaService
              */
             $venta = Venta::create([
                 'fecha_venta' => now(),
-                'numero_comprobante' => $numeroComprobante,
+                'numero_comprobante' =>
+                    $numeroComprobante,
                 'total_venta' => $totalVenta,
                 'id_usuario' => $idUsuario,
-                'id_serie_comprobante' => $idSerieComprobante,
-                'id_cliente' => $idCliente,
+                'id_serie_comprobante' =>
+                    $serieComprobante
+                        ->id_serie_comprobante,
+                'id_cliente' =>
+                    $cliente->id_cliente,
             ]);
 
             /*
-             * Registrar los detalles y descontar el stock.
+             * Registrar los detalles y descontar stock.
              */
-            foreach ($productosVenta as $productoVenta) {
+            foreach (
+                $productosVenta as $productoVenta
+            ) {
                 /** @var Producto $producto */
-                $producto = $productoVenta['producto'];
+                $producto =
+                    $productoVenta['producto'];
 
-                $cantidad = $productoVenta['cantidad'];
+                $cantidad =
+                    $productoVenta['cantidad'];
 
-                $precioUnitario = $productoVenta['precio_unitario'];
+                $precioUnitario =
+                    $productoVenta[
+                        'precio_unitario'
+                    ];
 
                 DetalleVenta::create([
-                    'precio_publico_venta' => $precioUnitario,
+                    'precio_publico_venta' =>
+                        $precioUnitario,
+
                     'costo_detalle_venta' => round(
-                        (float) $producto->costo_producto,
+                        (float) $producto
+                            ->costo_producto,
                         2
                     ),
-                    'cantidad_detalle_venta' => $cantidad,
-                    'id_producto' => $producto->id_producto,
-                    'id_venta' => $venta->id_venta,
+
+                    'cantidad_detalle_venta' =>
+                        $cantidad,
+
+                    'id_producto' =>
+                        $producto->id_producto,
+
+                    'id_venta' =>
+                        $venta->id_venta,
                 ]);
 
                 $producto->stock_producto =
-                    $producto->stock_producto - $cantidad;
+                    $producto->stock_producto
+                    - $cantidad;
 
                 $producto->save();
             }
 
             /*
-             * Incrementar el correlativo para la siguiente venta.
+             * Incrementar el correlativo de la serie utilizada.
              */
             $serieComprobante->numero_correlativo =
                 $numeroCorrelativo + 1;
@@ -294,7 +416,9 @@ class VentaService
             ]);
 
             return [
-                'mensaje' => 'Venta registrada correctamente.',
+                'mensaje' =>
+                    'Venta registrada correctamente.',
+
                 'venta' => $venta,
             ];
         } catch (Throwable $e) {
