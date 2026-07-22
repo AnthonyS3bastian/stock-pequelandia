@@ -95,6 +95,8 @@ export class AuthService {
             usuarioNormalizado
           );
 
+          this.registrarActividad();
+
         })
       );
 
@@ -148,16 +150,64 @@ export class AuthService {
   }
 
   /**
+   * Guarda la fecha y hora de la ultima actividad.
+   */
+  registrarActividad(): void {
+
+    localStorage.setItem(
+      'ultima_actividad',
+      Date.now().toString()
+    );
+
+  }
+
+  /**
+   * Devuelve la ultima actividad registrada.
+   */
+  getUltimaActividad(): number | null {
+
+    const valor =
+      localStorage.getItem(
+        'ultima_actividad'
+      );
+
+    if (!valor) {
+
+      return null;
+
+    }
+
+    const ultimaActividad =
+      Number(valor);
+
+    if (
+      Number.isNaN(ultimaActividad)
+    ) {
+
+      localStorage.removeItem(
+        'ultima_actividad'
+      );
+
+      return null;
+
+    }
+
+    return ultimaActividad;
+
+  }
+
+  /**
    * Limpia la sesion sin llamar al backend.
-   *
-   * Se utiliza cuando el token no existe,
-   * es invalido o la sesion ya expiro.
    */
   limpiarSesionLocal(): void {
 
     localStorage.removeItem('token');
 
     localStorage.removeItem('usuario');
+
+    localStorage.removeItem(
+      'ultima_actividad'
+    );
 
     this.usuarioSignal.set(null);
 
