@@ -143,4 +143,10 @@ Route::middleware('auth:sanctum')->group(function (): void {
         '/reportes/semanal',
         [ReporteController::class, 'semanal']
     );
+
+    Route::get(
+        '/reportes/mensual',
+        [ReporteController::class, 'mensual']
+    );
+
 });

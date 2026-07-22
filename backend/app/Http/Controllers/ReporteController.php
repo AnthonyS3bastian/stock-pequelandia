@@ -15,65 +15,61 @@ class ReporteController extends Controller
     ) {
     }
 
-    /**
-     * Obtener el reporte diario.
-     */
     public function diario(
         Request $request
     ): JsonResponse {
-        try {
-            $reporte = $this->reporteService
-                ->obtenerReporteDiario(
-                    $request->query('fecha')
-                );
-
-            return response()->json([
-                'ok' => true,
-                'mensaje' =>
-                    'Reporte diario obtenido correctamente.',
-                'reporte' => $reporte,
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'ok' => false,
-                'mensaje' =>
-                    'No se pudo obtener el reporte diario.',
-                'errores' => $e->errors(),
-            ], 422);
-        } catch (Throwable $e) {
-            report($e);
-
-            return response()->json([
-                'ok' => false,
-                'mensaje' =>
-                    'Ocurrió un error al obtener el reporte diario.',
-            ], 500);
-        }
+        return $this->responderReporte(
+            fn (): array =>
+                $this->reporteService
+                    ->obtenerReporteDiario(
+                        $request->query('fecha')
+                    ),
+            'diario'
+        );
     }
 
-    /**
-     * Obtener el reporte semanal.
-     */
     public function semanal(
         Request $request
     ): JsonResponse {
-        try {
-            $reporte = $this->reporteService
-                ->obtenerReporteSemanal(
-                    $request->query('fecha')
-                );
+        return $this->responderReporte(
+            fn (): array =>
+                $this->reporteService
+                    ->obtenerReporteSemanal(
+                        $request->query('fecha')
+                    ),
+            'semanal'
+        );
+    }
 
+    public function mensual(
+        Request $request
+    ): JsonResponse {
+        return $this->responderReporte(
+            fn (): array =>
+                $this->reporteService
+                    ->obtenerReporteMensual(
+                        $request->query('fecha')
+                    ),
+            'mensual'
+        );
+    }
+
+    private function responderReporte(
+        callable $consulta,
+        string $tipoReporte
+    ): JsonResponse {
+        try {
             return response()->json([
                 'ok' => true,
                 'mensaje' =>
-                    'Reporte semanal obtenido correctamente.',
-                'reporte' => $reporte,
+                    "Reporte {$tipoReporte} obtenido correctamente.",
+                'reporte' => $consulta(),
             ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'ok' => false,
                 'mensaje' =>
-                    'No se pudo obtener el reporte semanal.',
+                    "No se pudo obtener el reporte {$tipoReporte}.",
                 'errores' => $e->errors(),
             ], 422);
         } catch (Throwable $e) {
@@ -82,7 +78,7 @@ class ReporteController extends Controller
             return response()->json([
                 'ok' => false,
                 'mensaje' =>
-                    'Ocurrió un error al obtener el reporte semanal.',
+                    "Ocurrió un error al obtener el reporte {$tipoReporte}.",
             ], 500);
         }
     }

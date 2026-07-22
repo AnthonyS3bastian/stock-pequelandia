@@ -1,9 +1,5 @@
 <div class="contenedor-reportes">
 
-    <!-- ========================= -->
-    <!-- CABECERA PRINCIPAL -->
-    <!-- ========================= -->
-
     <div class="cabecera">
 
         <div>
@@ -20,17 +16,9 @@
 
     </div>
 
-    <!-- ========================= -->
-    <!-- PESTAÑAS DE REPORTES -->
-    <!-- ========================= -->
-
     <mat-tab-group
         animationDuration="250ms"
         mat-stretch-tabs="false">
-
-        <!-- ========================= -->
-        <!-- REPORTE DIARIO -->
-        <!-- ========================= -->
 
         <mat-tab label="Diario">
 
@@ -43,47 +31,23 @@
 
         </mat-tab>
 
-        <!-- ========================= -->
-        <!-- REPORTE SEMANAL -->
-        <!-- ========================= -->
-<mat-tab label="Semanal">
+        <mat-tab label="Semanal">
 
-    <div class="contenido-pestana">
+            <div class="contenido-pestana">
 
-        <app-reporte-semanal>
-        </app-reporte-semanal>
+                <app-reporte-semanal>
+                </app-reporte-semanal>
 
-    </div>
+            </div>
 
-</mat-tab>
-        <!-- ========================= -->
-        <!-- REPORTE MENSUAL -->
-        <!-- ========================= -->
+        </mat-tab>
 
         <mat-tab label="Mensual">
 
             <div class="contenido-pestana">
 
-                <div class="contenido-vacio">
-
-                    <div class="icono-vacio">
-
-                        <mat-icon>
-                            calendar_month
-                        </mat-icon>
-
-                    </div>
-
-                    <h2>
-                        Reporte mensual
-                    </h2>
-
-                    <p>
-                        Aquí se mostrará el resumen completo
-                        del mes seleccionado.
-                    </p>
-
-                </div>
+                <app-reporte-mensual>
+                </app-reporte-mensual>
 
             </div>
 

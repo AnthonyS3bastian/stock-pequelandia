@@ -1,287 +1,1051 @@
-import { CommonModule } from '@angular/common';
-import {
-    ChangeDetectorRef,
-    Component,
-    OnInit,
-    inject
-} from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+<div class="reporte-mensual">
 
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import {
-    MatSnackBar,
-    MatSnackBarModule
-} from '@angular/material/snack-bar';
-import { MatTableModule } from '@angular/material/table';
+    <!-- ========================= -->
+    <!-- CABECERA -->
+    <!-- ========================= -->
 
-import {
-    ProductoMasVendidoReporte,
-    ReporteService,
-    UltimaVentaReporte,
-    VentaPorUsuarioReporte
-} from '../../services/reporte.service';
+    <div class="cabecera-mensual">
 
-@Component({
-    selector: 'app-reporte-diario',
-    standalone: true,
-    imports: [
-        CommonModule,
-        FormsModule,
-        MatButtonModule,
-        MatCardModule,
-        MatIconModule,
-        MatProgressSpinnerModule,
-        MatSnackBarModule,
-        MatTableModule
-    ],
-    templateUrl: './reporte-diario.html',
-    styleUrl: './reporte-diario.scss'
-})
-export class ReporteDiarioComponent implements OnInit {
+        <div>
 
-    private readonly reporteService =
-        inject(ReporteService);
+            <h2>
+                Reporte mensual
+            </h2>
 
-    private readonly snackBar =
-        inject(MatSnackBar);
+            <p>
+                Consulta el rendimiento completo de un mes.
+            </p>
 
-    private readonly changeDetectorRef =
-        inject(ChangeDetectorRef);
+            @if (nombreMes && anio) {
 
-    fechaSeleccionada = '';
+                <span class="rango-mes">
 
-    fechaMaxima = '';
+                    <mat-icon>
+                        calendar_month
+                    </mat-icon>
 
-    totalVendido = 0;
+                    {{ nombreMes | titlecase }}
+                    de {{ anio }}
 
-    costoEstimado = 0;
+                </span>
 
-    gananciaEstimada = 0;
+            }
 
-    ventasRealizadas = 0;
+        </div>
 
-    productosVendidos = 0;
+        <div class="selector-mes">
 
-    ticketPromedio = 0;
+            <label for="mesReporteMensual">
+                Selecciona un mes
+            </label>
 
-    metaDiaria = 100;
+            <input
+                id="mesReporteMensual"
+                type="month"
+                [(ngModel)]="mesSeleccionado"
+                [max]="mesMaximo"
+                [disabled]="cargando"
+                (change)="cambiarMes()">
 
-    porcentajeMeta = 0;
+        </div>
 
-    metaCumplida = false;
+    </div>
 
-    productoMasVendido:
-        ProductoMasVendidoReporte | null = null;
+    <!-- ========================= -->
+    <!-- CARGANDO -->
+    <!-- ========================= -->
 
-    ventasPorUsuario:
-        VentaPorUsuarioReporte[] = [];
+    @if (cargando) {
 
-    ultimasVentas:
-        UltimaVentaReporte[] = [];
+        <div class="cargando-reporte">
 
-    cargando = false;
+            <mat-spinner
+                diameter="42">
+            </mat-spinner>
 
-    columnasVentas: string[] = [
-        'hora',
-        'venta',
-        'productos',
-        'usuario',
-        'total'
-    ];
+            <span>
+                Cargando reporte mensual...
+            </span>
 
-    ngOnInit(): void {
+        </div>
 
-        const fechaActualPeru =
-            this.obtenerFechaActualPeru();
-
-        this.fechaSeleccionada =
-            fechaActualPeru;
-
-        this.fechaMaxima =
-            fechaActualPeru;
-
-        this.cargarReporteDiario();
     }
 
-    cambiarFecha(): void {
+    <!-- ========================= -->
+    <!-- CONTENIDO -->
+    <!-- ========================= -->
 
-        if (
-            !this.fechaSeleccionada
-            || this.cargando
-        ) {
-            return;
-        }
+    <div
+        class="contenido-mensual"
+        [class.contenido-cargando]="cargando">
 
-        if (
-            this.fechaSeleccionada
-            > this.fechaMaxima
-        ) {
-            this.fechaSeleccionada =
-                this.fechaMaxima;
+        <!-- ========================= -->
+        <!-- RESUMEN -->
+        <!-- ========================= -->
 
-            this.mostrarMensaje(
-                'No se pueden consultar fechas futuras.'
-            );
+        <div class="grid-resumen">
 
-            return;
-        }
+            <mat-card class="tarjeta-resumen">
 
-        this.cargarReporteDiario();
-    }
+                <mat-card-content>
 
-    cargarReporteDiario(): void {
+                    <div class="icono-resumen">
 
-        if (
-            !this.fechaSeleccionada
-            || this.cargando
-        ) {
-            return;
-        }
+                        <mat-icon>
+                            payments
+                        </mat-icon>
 
-        this.cargando = true;
+                    </div>
 
-        this.changeDetectorRef.detectChanges();
+                    <div>
 
-        this.reporteService
-            .obtenerReporteDiario(
-                this.fechaSeleccionada
-            )
-            .pipe(
-                finalize(() => {
+                        <span class="etiqueta">
+                            Total vendido
+                        </span>
 
-                    this.cargando = false;
+                        <strong>
+                            S/
+                            {{
+                                totalVendido
+                                    | number:'1.2-2'
+                            }}
+                        </strong>
 
-                    this.changeDetectorRef
-                        .detectChanges();
-                })
-            )
-            .subscribe({
-                next: response => {
+                    </div>
 
-                    const reporte =
-                        response.reporte;
+                </mat-card-content>
 
-                    this.totalVendido =
-                        reporte.total_vendido;
+            </mat-card>
 
-                    this.costoEstimado =
-                        reporte.costo_estimado;
+            <mat-card class="tarjeta-resumen">
 
-                    this.gananciaEstimada =
-                        reporte.ganancia_estimada;
+                <mat-card-content>
 
-                    this.ventasRealizadas =
-                        reporte.numero_ventas;
+                    <div class="icono-resumen">
 
-                    this.productosVendidos =
-                        reporte.productos_vendidos;
+                        <mat-icon>
+                            shopping_bag
+                        </mat-icon>
 
-                    this.ticketPromedio =
-                        reporte.ticket_promedio;
+                    </div>
 
-                    this.metaDiaria =
-                        reporte.meta_diaria;
+                    <div>
 
-                    this.porcentajeMeta =
-                        reporte.porcentaje_meta;
+                        <span class="etiqueta">
+                            Costo estimado
+                        </span>
 
-                    this.metaCumplida =
-                        reporte.meta_cumplida;
+                        <strong>
+                            S/
+                            {{
+                                costoEstimado
+                                    | number:'1.2-2'
+                            }}
+                        </strong>
 
-                    this.productoMasVendido =
-                        reporte.producto_mas_vendido;
+                    </div>
 
-                    this.ventasPorUsuario =
-                        reporte.ventas_por_usuario;
+                </mat-card-content>
 
-                    this.ultimasVentas =
-                        reporte.ultimas_ventas;
+            </mat-card>
 
-                    this.changeDetectorRef
-                        .detectChanges();
-                },
-                error: error => {
+            <mat-card class="tarjeta-resumen">
 
-                    this.limpiarReporte();
+                <mat-card-content>
 
-                    const mensaje =
-                        error?.error?.mensaje
-                        ?? 'No se pudo cargar el reporte diario.';
+                    <div class="icono-resumen">
 
-                    this.mostrarMensaje(
-                        mensaje
-                    );
+                        <mat-icon>
+                            trending_up
+                        </mat-icon>
 
-                    this.changeDetectorRef
-                        .detectChanges();
+                    </div>
+
+                    <div>
+
+                        <span class="etiqueta">
+                            Ganancia estimada
+                        </span>
+
+                        <strong>
+                            S/
+                            {{
+                                gananciaEstimada
+                                    | number:'1.2-2'
+                            }}
+                        </strong>
+
+                    </div>
+
+                </mat-card-content>
+
+            </mat-card>
+
+            <mat-card class="tarjeta-resumen">
+
+                <mat-card-content>
+
+                    <div class="icono-resumen">
+
+                        <mat-icon>
+                            receipt_long
+                        </mat-icon>
+
+                    </div>
+
+                    <div>
+
+                        <span class="etiqueta">
+                            Ventas realizadas
+                        </span>
+
+                        <strong>
+                            {{ ventasRealizadas }}
+                        </strong>
+
+                    </div>
+
+                </mat-card-content>
+
+            </mat-card>
+
+            <mat-card class="tarjeta-resumen">
+
+                <mat-card-content>
+
+                    <div class="icono-resumen">
+
+                        <mat-icon>
+                            inventory_2
+                        </mat-icon>
+
+                    </div>
+
+                    <div>
+
+                        <span class="etiqueta">
+                            Productos vendidos
+                        </span>
+
+                        <strong>
+                            {{ productosVendidos }}
+                        </strong>
+
+                    </div>
+
+                </mat-card-content>
+
+            </mat-card>
+
+            <mat-card class="tarjeta-resumen">
+
+                <mat-card-content>
+
+                    <div class="icono-resumen">
+
+                        <mat-icon>
+                            calculate
+                        </mat-icon>
+
+                    </div>
+
+                    <div>
+
+                        <span class="etiqueta">
+                            Ticket promedio
+                        </span>
+
+                        <strong>
+                            S/
+                            {{
+                                ticketPromedio
+                                    | number:'1.2-2'
+                            }}
+                        </strong>
+
+                    </div>
+
+                </mat-card-content>
+
+            </mat-card>
+
+        </div>
+
+        <!-- ========================= -->
+        <!-- DESTACADOS -->
+        <!-- ========================= -->
+
+        <div class="grid-destacados">
+
+            <mat-card class="tarjeta-meta">
+
+                <mat-card-header>
+
+                    <mat-card-title>
+                        Meta mensual
+                    </mat-card-title>
+
+                    <mat-card-subtitle>
+                        Meta diaria de S/
+                        {{ metaDiaria | number:'1.2-2' }}
+                        durante {{ cantidadDiasMes }} días.
+                    </mat-card-subtitle>
+
+                </mat-card-header>
+
+                <mat-card-content>
+
+                    <div class="meta-cabecera">
+
+                        <div>
+
+                            <span>
+                                Meta establecida
+                            </span>
+
+                            <strong>
+                                S/
+                                {{
+                                    metaMensual
+                                        | number:'1.2-2'
+                                }}
+                            </strong>
+
+                        </div>
+
+                        <div>
+
+                            <span>
+                                Cumplimiento
+                            </span>
+
+                            <strong>
+                                {{
+                                    porcentajeMeta
+                                        | number:'1.0-2'
+                                }}
+                                %
+                            </strong>
+
+                        </div>
+
+                        <div>
+
+                            <span>
+                                Días con meta cumplida
+                            </span>
+
+                            <strong>
+                                {{ diasMetaCumplida }}
+                                de {{ cantidadDiasMes }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                    <div class="barra-meta">
+
+                        <div
+                            class="barra-meta-progreso"
+                            [style.width.%]="
+                                porcentajeMeta > 100
+                                    ? 100
+                                    : porcentajeMeta
+                            ">
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="estado-meta"
+                        [class.meta-cumplida]="metaCumplida"
+                        [class.meta-pendiente]="!metaCumplida">
+
+                        <mat-icon>
+                            {{
+                                metaCumplida
+                                    ? 'check_circle'
+                                    : 'schedule'
+                            }}
+                        </mat-icon>
+
+                        <span>
+                            {{
+                                metaCumplida
+                                    ? 'Meta mensual cumplida'
+                                    : 'Meta mensual pendiente'
+                            }}
+                        </span>
+
+                    </div>
+
+                </mat-card-content>
+
+            </mat-card>
+
+            <mat-card class="tarjeta-destacada">
+
+                <mat-card-header>
+
+                    <mat-card-title>
+                        Mejor día del mes
+                    </mat-card-title>
+
+                </mat-card-header>
+
+                <mat-card-content>
+
+                    @if (mejorDia) {
+
+                        <div class="destacado-contenido">
+
+                            <div class="destacado-icono">
+
+                                <mat-icon>
+                                    emoji_events
+                                </mat-icon>
+
+                            </div>
+
+                            <div>
+
+                                <span class="destacado-etiqueta">
+                                    Día {{ mejorDia.numero_dia }}
+                                    · {{ mejorDia.dia | titlecase }}
+                                </span>
+
+                                <strong>
+                                    S/
+                                    {{
+                                        mejorDia.total_vendido
+                                            | number:'1.2-2'
+                                    }}
+                                </strong>
+
+                                <small>
+                                    {{ mejorDia.numero_ventas }}
+                                    ventas y
+                                    {{ mejorDia.productos_vendidos }}
+                                    productos
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    } @else {
+
+                        <div class="contenido-sin-datos">
+
+                            <mat-icon>
+                                event_busy
+                            </mat-icon>
+
+                            <span>
+                                No hay ventas registradas
+                                durante este mes.
+                            </span>
+
+                        </div>
+
+                    }
+
+                </mat-card-content>
+
+            </mat-card>
+
+            <mat-card class="tarjeta-destacada">
+
+                <mat-card-header>
+
+                    <mat-card-title>
+                        Producto más vendido
+                    </mat-card-title>
+
+                </mat-card-header>
+
+                <mat-card-content>
+
+                    @if (productoMasVendido) {
+
+                        <div class="destacado-contenido">
+
+                            <div class="destacado-icono producto">
+
+                                <mat-icon>
+                                    workspace_premium
+                                </mat-icon>
+
+                            </div>
+
+                            <div>
+
+                                <span class="destacado-etiqueta">
+                                    Producto destacado
+                                </span>
+
+                                <strong>
+                                    {{
+                                        productoMasVendido
+                                            .nombre_producto
+                                    }}
+                                </strong>
+
+                                <small>
+                                    {{
+                                        productoMasVendido
+                                            .cantidad
+                                    }}
+                                    unidades vendidas
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    } @else {
+
+                        <div class="contenido-sin-datos">
+
+                            <mat-icon>
+                                inventory_2
+                            </mat-icon>
+
+                            <span>
+                                No hay productos vendidos
+                                durante este mes.
+                            </span>
+
+                        </div>
+
+                    }
+
+                </mat-card-content>
+
+            </mat-card>
+
+        </div>
+
+        <!-- ========================= -->
+        <!-- VENTAS POR DÍA -->
+        <!-- ========================= -->
+
+        <mat-card class="tarjeta-seccion">
+
+            <mat-card-header>
+
+                <mat-card-title>
+                    Ventas por día
+                </mat-card-title>
+
+                <mat-card-subtitle>
+                    Rendimiento diario del mes seleccionado.
+                </mat-card-subtitle>
+
+            </mat-card-header>
+
+            <mat-card-content>
+
+                @if (ventasPorDia.length > 0) {
+
+                    <div class="tabla-contenedor">
+
+                        <table
+                            mat-table
+                            [dataSource]="ventasPorDia">
+
+                            <ng-container matColumnDef="numeroDia">
+
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef>
+
+                                    Día N.°
+
+                                </th>
+
+                                <td
+                                    mat-cell
+                                    *matCellDef="let item">
+
+                                    <strong>
+                                        {{ item.numero_dia }}
+                                    </strong>
+
+                                </td>
+
+                            </ng-container>
+
+                            <ng-container matColumnDef="dia">
+
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef>
+
+                                    Día
+
+                                </th>
+
+                                <td
+                                    mat-cell
+                                    *matCellDef="let item">
+
+                                    {{ item.dia | titlecase }}
+
+                                </td>
+
+                            </ng-container>
+
+                            <ng-container matColumnDef="fecha">
+
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef>
+
+                                    Fecha
+
+                                </th>
+
+                                <td
+                                    mat-cell
+                                    *matCellDef="let item">
+
+                                    {{ item.fecha | date:'dd/MM/yyyy' }}
+
+                                </td>
+
+                            </ng-container>
+
+                            <ng-container matColumnDef="ventas">
+
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef>
+
+                                    Ventas
+
+                                </th>
+
+                                <td
+                                    mat-cell
+                                    *matCellDef="let item">
+
+                                    {{ item.numero_ventas }}
+
+                                </td>
+
+                            </ng-container>
+
+                            <ng-container matColumnDef="productos">
+
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef>
+
+                                    Productos
+
+                                </th>
+
+                                <td
+                                    mat-cell
+                                    *matCellDef="let item">
+
+                                    {{ item.productos_vendidos }}
+
+                                </td>
+
+                            </ng-container>
+
+                            <ng-container matColumnDef="total">
+
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef>
+
+                                    Total vendido
+
+                                </th>
+
+                                <td
+                                    mat-cell
+                                    *matCellDef="let item">
+
+                                    <strong>
+                                        S/
+                                        {{
+                                            item.total_vendido
+                                                | number:'1.2-2'
+                                        }}
+                                    </strong>
+
+                                </td>
+
+                            </ng-container>
+
+                            <ng-container matColumnDef="meta">
+
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef>
+
+                                    Meta diaria
+
+                                </th>
+
+                                <td
+                                    mat-cell
+                                    *matCellDef="let item">
+
+                                    <span
+                                        class="estado-dia"
+                                        [class.dia-cumplido]="
+                                            item.meta_cumplida
+                                        "
+                                        [class.dia-pendiente]="
+                                            !item.meta_cumplida
+                                        ">
+
+                                        <mat-icon>
+                                            {{
+                                                item.meta_cumplida
+                                                    ? 'check_circle'
+                                                    : 'schedule'
+                                            }}
+                                        </mat-icon>
+
+                                        {{
+                                            item.meta_cumplida
+                                                ? 'Cumplida'
+                                                : 'Pendiente'
+                                        }}
+
+                                    </span>
+
+                                </td>
+
+                            </ng-container>
+
+                            <tr
+                                mat-header-row
+                                *matHeaderRowDef="columnasDias">
+                            </tr>
+
+                            <tr
+                                mat-row
+                                *matRowDef="
+                                    let row;
+                                    columns: columnasDias
+                                ">
+                            </tr>
+
+                        </table>
+
+                    </div>
+
                 }
-            });
-    }
 
-    verVenta(idVenta: number): void {
+            </mat-card-content>
 
-        console.log(
-            'Venta seleccionada:',
-            idVenta
-        );
-    }
+        </mat-card>
 
-    private limpiarReporte(): void {
+        <!-- ========================= -->
+        <!-- VENTAS POR USUARIO -->
+        <!-- ========================= -->
 
-        this.totalVendido = 0;
+        <mat-card class="tarjeta-seccion">
 
-        this.costoEstimado = 0;
+            <mat-card-header>
 
-        this.gananciaEstimada = 0;
+                <mat-card-title>
+                    Ventas por usuario
+                </mat-card-title>
 
-        this.ventasRealizadas = 0;
+                <mat-card-subtitle>
+                    Resumen mensual por cada usuario.
+                </mat-card-subtitle>
 
-        this.productosVendidos = 0;
+            </mat-card-header>
 
-        this.ticketPromedio = 0;
+            <mat-card-content>
 
-        this.porcentajeMeta = 0;
+                @if (ventasPorUsuario.length > 0) {
 
-        this.metaCumplida = false;
+                    <div class="lista-usuarios">
 
-        this.productoMasVendido = null;
+                        @for (
+                            item of ventasPorUsuario;
+                            track item.id_usuario
+                        ) {
 
-        this.ventasPorUsuario = [];
+                            <div class="usuario-item">
 
-        this.ultimasVentas = [];
-    }
+                                <div class="usuario-info">
 
-    private mostrarMensaje(
-        mensaje: string
-    ): void {
+                                    <div class="usuario-avatar">
 
-        this.snackBar.open(
-            mensaje,
-            'Cerrar',
-            {
-                duration: 5000,
-                horizontalPosition: 'end',
-                verticalPosition: 'top'
-            }
-        );
-    }
+                                        <mat-icon>
+                                            person
+                                        </mat-icon>
 
-    private obtenerFechaActualPeru(): string {
+                                    </div>
 
-        return new Intl.DateTimeFormat(
-            'en-CA',
-            {
-                timeZone: 'America/Lima',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            }
-        ).format(
-            new Date()
-        );
-    }
-}
+                                    <div>
+
+                                        <strong>
+                                            {{ item.usuario }}
+                                        </strong>
+
+                                        <span>
+                                            {{ item.cantidad_ventas }}
+                                            ventas realizadas
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                                <strong class="usuario-total">
+                                    S/
+                                    {{
+                                        item.total_vendido
+                                            | number:'1.2-2'
+                                    }}
+                                </strong>
+
+                            </div>
+
+                        }
+
+                    </div>
+
+                } @else {
+
+                    <div class="contenido-sin-datos">
+
+                        <mat-icon>
+                            group_off
+                        </mat-icon>
+
+                        <span>
+                            No hay ventas registradas
+                            por usuarios en este mes.
+                        </span>
+
+                    </div>
+
+                }
+
+            </mat-card-content>
+
+        </mat-card>
+
+        <!-- ========================= -->
+        <!-- ÚLTIMAS VENTAS -->
+        <!-- ========================= -->
+
+        <mat-card class="tarjeta-seccion">
+
+            <mat-card-header>
+
+                <mat-card-title>
+                    Últimas ventas del mes
+                </mat-card-title>
+
+                <mat-card-subtitle>
+                    Las diez ventas más recientes del periodo.
+                </mat-card-subtitle>
+
+            </mat-card-header>
+
+            <mat-card-content>
+
+                @if (ultimasVentas.length > 0) {
+
+                    <div class="tabla-contenedor">
+
+                        <table
+                            mat-table
+                            [dataSource]="ultimasVentas">
+
+                            <ng-container matColumnDef="fecha">
+
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef>
+
+                                    Fecha
+
+                                </th>
+
+                                <td
+                                    mat-cell
+                                    *matCellDef="let venta">
+
+                                    {{
+                                        venta.fecha
+                                            | date:'dd/MM/yyyy'
+                                    }}
+
+                                </td>
+
+                            </ng-container>
+
+                            <ng-container matColumnDef="hora">
+
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef>
+
+                                    Hora
+
+                                </th>
+
+                                <td
+                                    mat-cell
+                                    *matCellDef="let venta">
+
+                                    {{ venta.hora }}
+
+                                </td>
+
+                            </ng-container>
+
+                            <ng-container matColumnDef="venta">
+
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef>
+
+                                    Venta
+
+                                </th>
+
+                                <td
+                                    mat-cell
+                                    *matCellDef="let venta">
+
+                                    <button
+                                        type="button"
+                                        class="boton-venta"
+                                        (click)="
+                                            verVenta(
+                                                venta.id_venta
+                                            )
+                                        ">
+
+                                        {{ venta.numero_venta }}
+
+                                    </button>
+
+                                </td>
+
+                            </ng-container>
+
+                            <ng-container matColumnDef="productos">
+
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef>
+
+                                    Productos
+
+                                </th>
+
+                                <td
+                                    mat-cell
+                                    *matCellDef="let venta">
+
+                                    {{ venta.productos }}
+
+                                </td>
+
+                            </ng-container>
+
+                            <ng-container matColumnDef="usuario">
+
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef>
+
+                                    Usuario
+
+                                </th>
+
+                                <td
+                                    mat-cell
+                                    *matCellDef="let venta">
+
+                                    {{ venta.usuario }}
+
+                                </td>
+
+                            </ng-container>
+
+                            <ng-container matColumnDef="total">
+
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef>
+
+                                    Total
+
+                                </th>
+
+                                <td
+                                    mat-cell
+                                    *matCellDef="let venta">
+
+                                    <strong>
+                                        S/
+                                        {{
+                                            venta.total
+                                                | number:'1.2-2'
+                                        }}
+                                    </strong>
+
+                                </td>
+
+                            </ng-container>
+
+                            <tr
+                                mat-header-row
+                                *matHeaderRowDef="columnasVentas">
+                            </tr>
+
+                            <tr
+                                mat-row
+                                *matRowDef="
+                                    let row;
+                                    columns: columnasVentas
+                                ">
+                            </tr>
+
+                        </table>
+
+                    </div>
+
+                } @else {
+
+                    <div class="contenido-sin-datos">
+
+                        <mat-icon>
+                            receipt_long
+                        </mat-icon>
+
+                        <span>
+                            No existen ventas registradas
+                            durante este mes.
+                        </span>
+
+                    </div>
+
+                }
+
+            </mat-card-content>
+
+        </mat-card>
+
+    </div>
+
+</div>

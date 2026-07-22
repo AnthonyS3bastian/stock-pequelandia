@@ -106,8 +106,6 @@ class ReporteService
 
     /**
      * Obtener el reporte completo de una semana.
-     *
-     * La semana inicia el lunes y finaliza el domingo.
      */
     public function obtenerReporteSemanal(
         ?string $fecha
@@ -162,7 +160,8 @@ class ReporteService
         $ventasPorDia =
             $this->obtenerVentasPorDia(
                 $ventas,
-                $inicioSemana
+                $inicioSemana,
+                7
             );
 
         $diasMetaCumplida = collect(
@@ -244,7 +243,160 @@ class ReporteService
     }
 
     /**
-     * Consultar ventas de un periodo.
+     * Obtener el reporte completo de un mes.
+     */
+    public function obtenerReporteMensual(
+        ?string $fecha
+    ): array {
+        $fechaReporte = $this->resolverFecha(
+            $fecha
+        );
+
+        $inicioMes = $fechaReporte
+            ->startOfMonth()
+            ->startOfDay();
+
+        $finMes = $fechaReporte
+            ->endOfMonth()
+            ->endOfDay();
+
+        $cantidadDiasMes =
+            $fechaReporte->daysInMonth;
+
+        $ventas = $this->consultarVentas(
+            $inicioMes,
+            $finMes
+        );
+
+        $detalles = $this->obtenerDetalles(
+            $ventas
+        );
+
+        $resumen = $this->calcularResumen(
+            $ventas,
+            $detalles
+        );
+
+        $metaMensual = round(
+            self::META_DIARIA
+            *
+            $cantidadDiasMes,
+            2
+        );
+
+        $porcentajeMeta =
+            $metaMensual > 0
+                ? round(
+                    (
+                        $resumen['total_vendido']
+                        /
+                        $metaMensual
+                    ) * 100,
+                    2
+                )
+                : 0.00;
+
+        $ventasPorDia =
+            $this->obtenerVentasPorDia(
+                $ventas,
+                $inicioMes,
+                $cantidadDiasMes
+            );
+
+        $diasMetaCumplida = collect(
+            $ventasPorDia
+        )
+            ->where(
+                'meta_cumplida',
+                true
+            )
+            ->count();
+
+        return [
+            'fecha_referencia' =>
+                $fechaReporte->toDateString(),
+
+            'inicio_mes' =>
+                $inicioMes->toDateString(),
+
+            'fin_mes' =>
+                $finMes->toDateString(),
+
+            'mes' =>
+                $fechaReporte->month,
+
+            'anio' =>
+                $fechaReporte->year,
+
+            'nombre_mes' =>
+                $this->obtenerNombreMes(
+                    $fechaReporte->month
+                ),
+
+            'cantidad_dias_mes' =>
+                $cantidadDiasMes,
+
+            'total_vendido' =>
+                $resumen['total_vendido'],
+
+            'costo_estimado' =>
+                $resumen['costo_estimado'],
+
+            'ganancia_estimada' =>
+                $resumen['ganancia_estimada'],
+
+            'numero_ventas' =>
+                $resumen['numero_ventas'],
+
+            'productos_vendidos' =>
+                $resumen['productos_vendidos'],
+
+            'ticket_promedio' =>
+                $resumen['ticket_promedio'],
+
+            'meta_diaria' =>
+                self::META_DIARIA,
+
+            'meta_mensual' =>
+                $metaMensual,
+
+            'porcentaje_meta' =>
+                $porcentajeMeta,
+
+            'meta_cumplida' =>
+                $resumen['total_vendido']
+                    >= $metaMensual,
+
+            'dias_meta_cumplida' =>
+                $diasMetaCumplida,
+
+            'mejor_dia' =>
+                $this->obtenerMejorDia(
+                    $ventasPorDia
+                ),
+
+            'producto_mas_vendido' =>
+                $this->obtenerProductoMasVendido(
+                    $detalles
+                ),
+
+            'ventas_por_usuario' =>
+                $this->obtenerVentasPorUsuario(
+                    $ventas
+                ),
+
+            'ventas_por_dia' =>
+                $ventasPorDia,
+
+            'ultimas_ventas' =>
+                $this->obtenerUltimasVentas(
+                    $ventas
+                ),
+        ];
+    }
+
+    /**
+     * Consultar ventas dentro de un periodo.
      */
     private function consultarVentas(
         CarbonImmutable $inicio,
@@ -268,7 +420,7 @@ class ReporteService
     }
 
     /**
-     * Obtener todos los detalles de las ventas.
+     * Obtener los detalles de todas las ventas.
      */
     private function obtenerDetalles(
         Collection $ventas
@@ -314,11 +466,13 @@ class ReporteService
             2
         );
 
-        $numeroVentas = $ventas->count();
+        $numeroVentas =
+            $ventas->count();
 
-        $productosVendidos = (int) $detalles->sum(
-            'cantidad_detalle_venta'
-        );
+        $productosVendidos =
+            (int) $detalles->sum(
+                'cantidad_detalle_venta'
+            );
 
         $ticketPromedio =
             $numeroVentas > 0
@@ -352,7 +506,7 @@ class ReporteService
     }
 
     /**
-     * Resolver y validar la fecha solicitada.
+     * Resolver y validar una fecha.
      */
     private function resolverFecha(
         ?string $fecha
@@ -415,11 +569,12 @@ class ReporteService
     }
 
     /**
-     * Obtener las ventas agrupadas por día.
+     * Obtener ventas agrupadas por cada día del periodo.
      */
     private function obtenerVentasPorDia(
         Collection $ventas,
-        CarbonImmutable $inicioSemana
+        CarbonImmutable $inicioPeriodo,
+        int $cantidadDias
     ): array {
         $ventasAgrupadas = $ventas->groupBy(
             function (
@@ -432,21 +587,17 @@ class ReporteService
             }
         );
 
-        $diasSemana = [
-            'lunes',
-            'martes',
-            'miércoles',
-            'jueves',
-            'viernes',
-            'sábado',
-            'domingo',
-        ];
-
         $resultado = [];
 
-        for ($indice = 0; $indice < 7; $indice++) {
-            $fechaDia = $inicioSemana
-                ->addDays($indice);
+        for (
+            $indice = 0;
+            $indice < $cantidadDias;
+            $indice++
+        ) {
+            $fechaDia =
+                $inicioPeriodo->addDays(
+                    $indice
+                );
 
             $fechaTexto =
                 $fechaDia->toDateString();
@@ -473,7 +624,12 @@ class ReporteService
                     $fechaTexto,
 
                 'dia' =>
-                    $diasSemana[$indice],
+                    $this->obtenerNombreDia(
+                        $fechaDia->dayOfWeekIso
+                    ),
+
+                'numero_dia' =>
+                    $fechaDia->day,
 
                 'total_vendido' =>
                     $resumenDia['total_vendido'],
@@ -522,7 +678,7 @@ class ReporteService
     }
 
     /**
-     * Obtener el producto con más unidades vendidas.
+     * Obtener el producto más vendido.
      */
     private function obtenerProductoMasVendido(
         Collection $detalles
@@ -531,7 +687,7 @@ class ReporteService
             return null;
         }
 
-        $productosAgrupados = $detalles
+        return $detalles
             ->groupBy('id_producto')
             ->map(
                 function (
@@ -559,13 +715,12 @@ class ReporteService
                 }
             )
             ->sortByDesc('cantidad')
-            ->values();
-
-        return $productosAgrupados->first();
+            ->values()
+            ->first();
     }
 
     /**
-     * Agrupar las ventas por usuario.
+     * Agrupar ventas por usuario.
      */
     private function obtenerVentasPorUsuario(
         Collection $ventas
@@ -681,5 +836,46 @@ class ReporteService
             )
             ->values()
             ->all();
+    }
+
+    /**
+     * Obtener nombre español de un día.
+     */
+    private function obtenerNombreDia(
+        int $numeroDia
+    ): string {
+        return match ($numeroDia) {
+            1 => 'lunes',
+            2 => 'martes',
+            3 => 'miércoles',
+            4 => 'jueves',
+            5 => 'viernes',
+            6 => 'sábado',
+            7 => 'domingo',
+            default => '',
+        };
+    }
+
+    /**
+     * Obtener nombre español de un mes.
+     */
+    private function obtenerNombreMes(
+        int $numeroMes
+    ): string {
+        return match ($numeroMes) {
+            1 => 'enero',
+            2 => 'febrero',
+            3 => 'marzo',
+            4 => 'abril',
+            5 => 'mayo',
+            6 => 'junio',
+            7 => 'julio',
+            8 => 'agosto',
+            9 => 'septiembre',
+            10 => 'octubre',
+            11 => 'noviembre',
+            12 => 'diciembre',
+            default => '',
+        };
     }
 }
