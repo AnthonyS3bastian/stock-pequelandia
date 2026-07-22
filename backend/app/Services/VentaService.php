@@ -7,6 +7,7 @@ use App\Models\Producto;
 use App\Models\SerieComprobante;
 use App\Models\Usuario;
 use App\Models\Venta;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -25,10 +26,30 @@ class VentaService
     public function registrar(array $datos): array
     {
         /*
-         * El usuario todavía se mantiene temporalmente con ID 1.
-         * Más adelante se obtendrá desde el usuario autenticado.
+         * Obtener al usuario autenticado mediante Laravel Sanctum.
+         *
+         * El ID del usuario ya no se recibe desde Angular
+         * ni se mantiene con un valor fijo.
          */
-        $idUsuario = 1;
+        $usuarioAutenticado = Auth::user();
+
+        if (!$usuarioAutenticado instanceof Usuario) {
+            throw ValidationException::withMessages([
+                'usuario' => [
+                    'No existe un usuario autenticado para registrar la venta.',
+                ],
+            ]);
+        }
+
+        if (!$usuarioAutenticado->estado_usuario) {
+            throw ValidationException::withMessages([
+                'usuario' => [
+                    'El usuario autenticado se encuentra inactivo.',
+                ],
+            ]);
+        }
+
+        $idUsuario = (int) $usuarioAutenticado->id_usuario;
 
         $tipoComprobante = strtoupper(
             trim((string) ($datos['tipo_comprobante'] ?? ''))
@@ -86,16 +107,17 @@ class VentaService
 
         try {
             /*
-             * Verificar el usuario temporal.
+             * Verificar que el usuario autenticado siga existiendo.
              */
-            if (
-                !Usuario::query()
-                    ->where('id_usuario', $idUsuario)
-                    ->exists()
-            ) {
+            $usuarioExiste = Usuario::query()
+                ->where('id_usuario', $idUsuario)
+                ->where('estado_usuario', true)
+                ->exists();
+
+            if (!$usuarioExiste) {
                 throw ValidationException::withMessages([
-                    'id_usuario' => [
-                        'No existe el usuario temporal con ID 1.',
+                    'usuario' => [
+                        'El usuario autenticado no existe o se encuentra inactivo.',
                     ],
                 ]);
             }

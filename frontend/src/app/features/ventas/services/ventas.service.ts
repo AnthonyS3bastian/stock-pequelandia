@@ -1,8 +1,12 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {
+    HttpClient,
+    HttpHeaders
+} from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../core/services/auth.service';
 
 export type TipoComprobante =
     | 'VENTA RAPIDA'
@@ -21,6 +25,7 @@ export interface RegistrarVentaRequest {
 }
 
 export interface RegistrarVentaResponse {
+    ok: boolean;
     mensaje: string;
     venta: any;
 }
@@ -65,7 +70,10 @@ export class VentaService {
 
     private http = inject(HttpClient);
 
-    private apiUrl = `${environment.apiUrl}/ventas`;
+    private authService = inject(AuthService);
+
+    private apiUrl =
+        `${environment.apiUrl}/ventas`;
 
     private consultasUrl =
         `${environment.apiUrl}/consultas`;
@@ -74,11 +82,15 @@ export class VentaService {
         datos: RegistrarVentaRequest
     ): Observable<RegistrarVentaResponse> {
 
+        const headers = this.obtenerHeadersAutenticacion();
+
         return this.http.post<RegistrarVentaResponse>(
             this.apiUrl,
-            datos
+            datos,
+            {
+                headers
+            }
         );
-
     }
 
     consultarDni(
@@ -88,7 +100,6 @@ export class VentaService {
         return this.http.get<ConsultaDniResponse>(
             `${this.consultasUrl}/dni/${dni}`
         );
-
     }
 
     consultarRuc(
@@ -98,7 +109,23 @@ export class VentaService {
         return this.http.get<ConsultaRucResponse>(
             `${this.consultasUrl}/ruc/${ruc}`
         );
-
     }
 
+    private obtenerHeadersAutenticacion(): HttpHeaders {
+
+        const token = this.authService.getToken();
+
+        if (!token) {
+            return new HttpHeaders({
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            });
+        }
+
+        return new HttpHeaders({
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+        });
+    }
 }

@@ -52,6 +52,11 @@ export class SidebarComponent {
       ruta: '/ventas'
     },
     {
+      titulo: 'Reportes',
+      icono: 'bar_chart',
+      ruta: '/reportes'
+    },
+    {
       titulo: 'Usuarios',
       icono: 'person',
       ruta: '/usuarios'

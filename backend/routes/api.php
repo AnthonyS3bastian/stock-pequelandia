@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ConsultaDocumentoController;
 use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::post('/login', [AuthController::class, 'login']);
+
+/*
+|--------------------------------------------------------------------------
+| Rutas publicas
+|--------------------------------------------------------------------------
+*/
 
 /*
 |--------------------------------------------------------------------------
@@ -67,8 +74,31 @@ Route::delete('/productos/{id}', [ProductoController::class, 'destroy']);
 
 /*
 |--------------------------------------------------------------------------
-| Ventas
+| Rutas protegidas con Laravel Sanctum
 |--------------------------------------------------------------------------
 */
 
-Route::post('/ventas', [VentaController::class, 'registrar']);
+Route::middleware('auth:sanctum')->group(function (): void {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ventas
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post(
+        '/ventas',
+        [VentaController::class, 'registrar']
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reportes
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/reportes/diario',
+        [ReporteController::class, 'diario']
+    );
+});
