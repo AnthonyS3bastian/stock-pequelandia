@@ -7,13 +7,18 @@ import {
     ReporteDiarioComponent
 } from '../../components/reporte-diario/reporte-diario';
 
+import {
+    ReporteSemanalComponent
+} from '../../components/reporte-semanal/reporte-semanal';
+
 @Component({
     selector: 'app-reportes',
     standalone: true,
     imports: [
         MatIconModule,
         MatTabsModule,
-        ReporteDiarioComponent
+        ReporteDiarioComponent,
+        ReporteSemanalComponent
     ],
     templateUrl: './reportes.html',
     styleUrl: './reportes.scss'

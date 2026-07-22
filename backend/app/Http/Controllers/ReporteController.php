@@ -18,8 +18,9 @@ class ReporteController extends Controller
     /**
      * Obtener el reporte diario.
      */
-    public function diario(Request $request): JsonResponse
-    {
+    public function diario(
+        Request $request
+    ): JsonResponse {
         try {
             $reporte = $this->reporteService
                 ->obtenerReporteDiario(
@@ -28,13 +29,15 @@ class ReporteController extends Controller
 
             return response()->json([
                 'ok' => true,
-                'mensaje' => 'Reporte diario obtenido correctamente.',
+                'mensaje' =>
+                    'Reporte diario obtenido correctamente.',
                 'reporte' => $reporte,
             ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'ok' => false,
-                'mensaje' => 'No se pudo obtener el reporte diario.',
+                'mensaje' =>
+                    'No se pudo obtener el reporte diario.',
                 'errores' => $e->errors(),
             ], 422);
         } catch (Throwable $e) {
@@ -42,7 +45,44 @@ class ReporteController extends Controller
 
             return response()->json([
                 'ok' => false,
-                'mensaje' => 'Ocurrió un error al obtener el reporte diario.',
+                'mensaje' =>
+                    'Ocurrió un error al obtener el reporte diario.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener el reporte semanal.
+     */
+    public function semanal(
+        Request $request
+    ): JsonResponse {
+        try {
+            $reporte = $this->reporteService
+                ->obtenerReporteSemanal(
+                    $request->query('fecha')
+                );
+
+            return response()->json([
+                'ok' => true,
+                'mensaje' =>
+                    'Reporte semanal obtenido correctamente.',
+                'reporte' => $reporte,
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'ok' => false,
+                'mensaje' =>
+                    'No se pudo obtener el reporte semanal.',
+                'errores' => $e->errors(),
+            ], 422);
+        } catch (Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'ok' => false,
+                'mensaje' =>
+                    'Ocurrió un error al obtener el reporte semanal.',
             ], 500);
         }
     }

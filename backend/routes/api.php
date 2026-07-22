@@ -44,11 +44,30 @@ Route::get(
 |--------------------------------------------------------------------------
 */
 
-Route::get('/categorias', [CategoriaController::class, 'index']);
-Route::get('/categorias/{id}', [CategoriaController::class, 'show']);
-Route::post('/categorias', [CategoriaController::class, 'store']);
-Route::put('/categorias/{id}', [CategoriaController::class, 'update']);
-Route::delete('/categorias/{id}', [CategoriaController::class, 'destroy']);
+Route::get(
+    '/categorias',
+    [CategoriaController::class, 'index']
+);
+
+Route::get(
+    '/categorias/{id}',
+    [CategoriaController::class, 'show']
+);
+
+Route::post(
+    '/categorias',
+    [CategoriaController::class, 'store']
+);
+
+Route::put(
+    '/categorias/{id}',
+    [CategoriaController::class, 'update']
+);
+
+Route::delete(
+    '/categorias/{id}',
+    [CategoriaController::class, 'destroy']
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -56,7 +75,10 @@ Route::delete('/categorias/{id}', [CategoriaController::class, 'destroy']);
 |--------------------------------------------------------------------------
 */
 
-Route::get('/productos', [ProductoController::class, 'index']);
+Route::get(
+    '/productos',
+    [ProductoController::class, 'index']
+);
 
 /*
  * Esta ruta debe ir antes de /productos/{id},
@@ -67,10 +89,25 @@ Route::get(
     [ProductoController::class, 'buscarPorCodigo']
 );
 
-Route::get('/productos/{id}', [ProductoController::class, 'show']);
-Route::post('/productos', [ProductoController::class, 'store']);
-Route::put('/productos/{id}', [ProductoController::class, 'update']);
-Route::delete('/productos/{id}', [ProductoController::class, 'destroy']);
+Route::get(
+    '/productos/{id}',
+    [ProductoController::class, 'show']
+);
+
+Route::post(
+    '/productos',
+    [ProductoController::class, 'store']
+);
+
+Route::put(
+    '/productos/{id}',
+    [ProductoController::class, 'update']
+);
+
+Route::delete(
+    '/productos/{id}',
+    [ProductoController::class, 'destroy']
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -100,5 +137,10 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get(
         '/reportes/diario',
         [ReporteController::class, 'diario']
+    );
+
+    Route::get(
+        '/reportes/semanal',
+        [ReporteController::class, 'semanal']
     );
 });
