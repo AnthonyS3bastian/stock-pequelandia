@@ -1,4 +1,14 @@
-import { Routes } from '@angular/router';
+import {
+  Routes
+} from '@angular/router';
+
+import {
+  authGuard
+} from './core/guards/auth.guard';
+
+import {
+  rolGuard
+} from './core/guards/rol.guard';
 
 export const routes: Routes = [
 
@@ -11,15 +21,26 @@ export const routes: Routes = [
   {
     path: 'login',
     loadComponent: () =>
-      import('./features/auth/pages/login/login')
-        .then(m => m.Login)
+      import(
+        './features/auth/pages/login/login'
+      )
+        .then(
+          modulo => modulo.Login
+        )
   },
 
   {
     path: '',
+    canActivate: [
+      authGuard
+    ],
     loadComponent: () =>
-      import('./features/layout/pages/layout/layout')
-        .then(m => m.LayoutComponent),
+      import(
+        './features/layout/pages/layout/layout'
+      )
+        .then(
+          modulo => modulo.LayoutComponent
+        ),
 
     children: [
 
@@ -32,29 +53,61 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         loadComponent: () =>
-          import('./features/dashboard/pages/dashboard/dashboard')
-            .then(m => m.DashboardComponent)
+          import(
+            './features/dashboard/pages/dashboard/dashboard'
+          )
+            .then(
+              modulo =>
+                modulo.DashboardComponent
+            )
       },
 
       {
         path: 'inventario',
         loadComponent: () =>
-          import('./features/inventario/pages/inventario/inventario')
-            .then(m => m.InventarioComponent)
+          import(
+            './features/inventario/pages/inventario/inventario'
+          )
+            .then(
+              modulo =>
+                modulo.InventarioComponent
+            )
       },
 
       {
         path: 'ventas',
         loadComponent: () =>
-          import('./features/ventas/pages/ventas/ventas')
-            .then(m => m.Ventas)
+          import(
+            './features/ventas/pages/ventas/ventas'
+          )
+            .then(
+              modulo => modulo.Ventas
+            )
       },
 
       {
         path: 'reportes',
+        canActivate: [
+          rolGuard
+        ],
+        data: {
+          roles: [
+            'ADMINISTRADOR'
+          ]
+        },
         loadComponent: () =>
-          import('./features/reportes/pages/reportes/reportes')
-            .then(m => m.ReportesComponent)
+          import(
+            './features/reportes/pages/reportes/reportes'
+          )
+            .then(
+              modulo =>
+                modulo.ReportesComponent
+            )
+      },
+
+      {
+        path: '**',
+        redirectTo: 'dashboard'
       }
 
     ]

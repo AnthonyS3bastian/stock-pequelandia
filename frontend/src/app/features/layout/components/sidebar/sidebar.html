@@ -1,76 +1,98 @@
-<div class="sidebar">
+<aside class="sidebar">
 
     <div class="logo">
 
-        <div class="logo-icon">
-            <mat-icon>storefront</mat-icon>
-        </div>
+        <a
+            class="logo-enlace"
+            routerLink="/dashboard"
+            aria-label="Ir al Dashboard">
 
-        <div class="logo-texto">
-            <h2>Pequelandia</h2>
-            <span>Multiservicios</span>
-        </div>
+            <img
+                class="logo-imagen"
+                src="/logo/LogoPequelandia.png"
+                alt="Pequelandia A&A">
+
+        </a>
 
     </div>
 
     <mat-divider></mat-divider>
 
-    <div class="menu">
+    <nav
+        class="navegacion"
+        aria-label="Navegacion principal">
 
-        <h4>PRINCIPAL</h4>
+        <section class="grupo-menu">
 
-        <mat-nav-list>
+            <h2>
+                PRINCIPAL
+            </h2>
 
-            @for (item of principal; track item.titulo) {
+            <mat-nav-list>
 
-                <a
-                    mat-list-item
-                    [routerLink]="item.ruta"
-                    routerLinkActive="activo">
+                @for (
+                    item of principal;
+                    track item.ruta
+                ) {
 
-                    <mat-icon matListItemIcon>
-                        {{ item.icono }}
-                    </mat-icon>
+                    <a
+                        mat-list-item
+                        [routerLink]="item.ruta"
+                        routerLinkActive="activo"
+                        [routerLinkActiveOptions]="{
+                            exact: true
+                        }">
 
-                    <span matListItemTitle>
-                        {{ item.titulo }}
-                    </span>
+                        <mat-icon matListItemIcon>
+                            {{ item.icono }}
+                        </mat-icon>
 
-                </a>
+                        <span matListItemTitle>
+                            {{ item.titulo }}
+                        </span>
 
-            }
+                    </a>
 
-        </mat-nav-list>
+                }
 
-    </div>
+            </mat-nav-list>
 
-    <div class="menu">
+        </section>
 
-        <h4>GESTIÓN</h4>
+        <section class="grupo-menu">
 
-        <mat-nav-list>
+            <h2>
+                GESTION
+            </h2>
 
-            @for (item of gestion; track item.titulo) {
+            <mat-nav-list>
 
-                <a
-                    mat-list-item
-                    [routerLink]="item.ruta"
-                    routerLinkActive="activo">
+                @for (
+                    item of gestion();
+                    track item.ruta
+                ) {
 
-                    <mat-icon matListItemIcon>
-                        {{ item.icono }}
-                    </mat-icon>
+                    <a
+                        mat-list-item
+                        [routerLink]="item.ruta"
+                        routerLinkActive="activo">
 
-                    <span matListItemTitle>
-                        {{ item.titulo }}
-                    </span>
+                        <mat-icon matListItemIcon>
+                            {{ item.icono }}
+                        </mat-icon>
 
-                </a>
+                        <span matListItemTitle>
+                            {{ item.titulo }}
+                        </span>
 
-            }
+                    </a>
 
-        </mat-nav-list>
+                }
 
-    </div>
+            </mat-nav-list>
 
-</div>
+        </section>
+
+    </nav>
+
+</aside>

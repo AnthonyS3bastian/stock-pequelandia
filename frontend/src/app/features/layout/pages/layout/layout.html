@@ -1,10 +1,22 @@
-<div class="layout">
+<mat-sidenav-container class="layout">
 
-    <app-sidebar></app-sidebar>
+    <mat-sidenav
+        class="panel-lateral"
+        [mode]="esMovil ? 'over' : 'side'"
+        [fixedInViewport]="esMovil"
+        [autoFocus]="false"
+        [(opened)]="menuAbierto"
+        (backdropClick)="cerrarMenuMovil()">
 
-    <div class="contenido">
+        <app-sidebar></app-sidebar>
 
-        <app-toolbar></app-toolbar>
+    </mat-sidenav>
+
+    <mat-sidenav-content class="contenido">
+
+        <app-toolbar
+            (menuSolicitado)="alternarMenu()">
+        </app-toolbar>
 
         <main class="pagina">
 
@@ -12,6 +24,6 @@
 
         </main>
 
-    </div>
+    </mat-sidenav-content>
 
-</div>
+</mat-sidenav-container>

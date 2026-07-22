@@ -1,31 +1,84 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100dvh;
+}
+
 .layout {
+  width: 100%;
+  height: 100dvh;
+  background: #f5f3ff;
+}
 
-    display: flex;
-
-    width: 100%;
-
-    min-height: 100vh;
-
-    background: #eef2f7;
-
+.panel-lateral {
+  width: 254px;
+  min-height: 100dvh;
+  border: 0;
+  border-radius: 0 !important;
+  background: #1e1b4b;
+  box-shadow: none;
 }
 
 .contenido {
-
-    flex: 1;
-
-    display: flex;
-
-    flex-direction: column;
-
-    min-width: 0;
-
+  min-width: 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f5f3ff;
 }
 
 .pagina {
+  flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #f5f3ff;
+}
 
-    flex: 1;
+::ng-deep .panel-lateral.mat-drawer {
+  border-radius: 0 !important;
+}
 
-    overflow-y: auto;
+::ng-deep .panel-lateral .mat-drawer-inner-container {
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-radius: 0 !important;
+}
+
+::ng-deep .mat-drawer-backdrop.mat-drawer-shown {
+  background: rgba(15, 23, 42, 0.48);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Tablet
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 1024px) and (min-width: 769px) {
+
+  .panel-lateral {
+    width: 84px;
+  }
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| Celular
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 768px) {
+
+  .panel-lateral {
+    width: min(280px, 88vw);
+  }
+
+  .pagina {
+    width: 100%;
+  }
 
 }

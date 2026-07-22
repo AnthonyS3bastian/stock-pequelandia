@@ -1,66 +1,263 @@
-  import { Injectable, inject } from '@angular/core';
-  import { HttpClient } from '@angular/common/http';
-  import { Observable, tap } from 'rxjs';
+import {
+  Injectable,
+  inject,
+  signal
+} from '@angular/core';
 
-  import { environment } from '../../../environments/environment';
+import {
+  HttpClient,
+  HttpHeaders
+} from '@angular/common/http';
 
-  import { LoginRequest } from '../interfaces/login-request.interface';
-  import { LoginResponse } from '../interfaces/login-response.interface';
+import {
+  Observable,
+  catchError,
+  finalize,
+  of,
+  tap
+} from 'rxjs';
 
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class AuthService {
+import {
+  environment
+} from '../../../environments/environment';
 
-    private http = inject(HttpClient);
+import {
+  LoginRequest
+} from '../interfaces/login-request.interface';
 
-    private apiUrl = environment.apiUrl;
+import {
+  LoginResponse
+} from '../interfaces/login-response.interface';
 
-    login(datos: LoginRequest): Observable<LoginResponse> {
+import {
+  RolUsuario,
+  Usuario
+} from '../interfaces/usuario.interface';
 
-      return this.http
-        .post<LoginResponse>(`${this.apiUrl}/login`, datos)
-        .pipe(
+interface LogoutResponse {
+  mensaje: string;
+}
 
-          tap(response => {
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
 
-            localStorage.setItem('token', response.token);
-            localStorage.setItem(
-              'usuario',
-              JSON.stringify(response.usuario)
-            );
+  private readonly http =
+    inject(HttpClient);
 
-          })
+  private readonly apiUrl =
+    environment.apiUrl;
 
+  private readonly usuarioSignal =
+    signal<Usuario | null>(
+      this.cargarUsuarioGuardado()
+    );
+
+  readonly usuarioActual =
+    this.usuarioSignal.asReadonly();
+
+  login(
+    datos: LoginRequest
+  ): Observable<LoginResponse> {
+
+    return this.http
+      .post<LoginResponse>(
+        `${this.apiUrl}/login`,
+        datos
+      )
+      .pipe(
+        tap(response => {
+
+          const usuarioNormalizado:
+            Usuario = {
+              ...response.usuario,
+              rol_usuario:
+                response.usuario
+                  .rol_usuario
+                  .toUpperCase() as
+                    RolUsuario
+            };
+
+          localStorage.setItem(
+            'token',
+            response.token
+          );
+
+          localStorage.setItem(
+            'usuario',
+            JSON.stringify(
+              usuarioNormalizado
+            )
+          );
+
+          this.usuarioSignal.set(
+            usuarioNormalizado
+          );
+
+        })
+      );
+
+  }
+
+  /**
+   * Cierra la sesion en Laravel y limpia los datos locales.
+   */
+  logout(): Observable<
+    LogoutResponse | null
+  > {
+
+    const token =
+      this.getToken();
+
+    if (!token) {
+
+      this.limpiarSesionLocal();
+
+      return of(null);
+
+    }
+
+    const headers =
+      new HttpHeaders({
+        Authorization:
+          `Bearer ${token}`
+      });
+
+    return this.http
+      .post<LogoutResponse>(
+        `${this.apiUrl}/logout`,
+        {},
+        {
+          headers
+        }
+      )
+      .pipe(
+        catchError(() => {
+
+          return of(null);
+
+        }),
+        finalize(() => {
+
+          this.limpiarSesionLocal();
+
+        })
+      );
+
+  }
+
+  /**
+   * Limpia la sesion sin llamar al backend.
+   *
+   * Se utiliza cuando el token no existe,
+   * es invalido o la sesion ya expiro.
+   */
+  limpiarSesionLocal(): void {
+
+    localStorage.removeItem('token');
+
+    localStorage.removeItem('usuario');
+
+    this.usuarioSignal.set(null);
+
+  }
+
+  getToken(): string | null {
+
+    return localStorage.getItem(
+      'token'
+    );
+
+  }
+
+  getUsuario(): Usuario | null {
+
+    return this.usuarioActual();
+
+  }
+
+  getRol(): RolUsuario | null {
+
+    return (
+      this.usuarioActual()
+        ?.rol_usuario ?? null
+    );
+
+  }
+
+  estaAutenticado(): boolean {
+
+    const token =
+      this.getToken();
+
+    const usuario =
+      this.getUsuario();
+
+    return Boolean(
+      token &&
+      usuario &&
+      usuario.estado_usuario
+    );
+
+  }
+
+  esAdministrador(): boolean {
+
+    return (
+      this.getRol() ===
+      'ADMINISTRADOR'
+    );
+
+  }
+
+  esEmpleado(): boolean {
+
+    return (
+      this.getRol() ===
+      'EMPLEADO'
+    );
+
+  }
+
+  private cargarUsuarioGuardado():
+    Usuario | null {
+
+    try {
+
+      const usuarioGuardado =
+        localStorage.getItem(
+          'usuario'
         );
 
-    }
+      if (!usuarioGuardado) {
 
-    logout(): void {
+        return null;
 
-      localStorage.removeItem('token');
-      localStorage.removeItem('usuario');
+      }
 
-    }
+      const usuario =
+        JSON.parse(
+          usuarioGuardado
+        ) as Usuario;
 
-    getToken(): string | null {
+      return {
+        ...usuario,
+        rol_usuario:
+          usuario
+            .rol_usuario
+            .toUpperCase() as
+              RolUsuario
+      };
 
-      return localStorage.getItem('token');
+    } catch {
 
-    }
+      this.limpiarSesionLocal();
 
-    getUsuario() {
-
-      const usuario = localStorage.getItem('usuario');
-
-      return usuario ? JSON.parse(usuario) : null;
-
-    }
-
-    estaAutenticado(): boolean {
-
-      return !!this.getToken();
+      return null;
 
     }
 
   }
+
+}

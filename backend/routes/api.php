@@ -10,103 +10,13 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Autenticacion
+| Autenticacion publica
 |--------------------------------------------------------------------------
 */
-
-Route::post('/login', [AuthController::class, 'login']);
-
-/*
-|--------------------------------------------------------------------------
-| Rutas publicas
-|--------------------------------------------------------------------------
-*/
-
-/*
-|--------------------------------------------------------------------------
-| Consultas DNI y RUC
-|--------------------------------------------------------------------------
-*/
-
-Route::get(
-    '/consultas/dni/{dni}',
-    [ConsultaDocumentoController::class, 'consultarDni']
-);
-
-Route::get(
-    '/consultas/ruc/{ruc}',
-    [ConsultaDocumentoController::class, 'consultarRuc']
-);
-
-/*
-|--------------------------------------------------------------------------
-| Categorias
-|--------------------------------------------------------------------------
-*/
-
-Route::get(
-    '/categorias',
-    [CategoriaController::class, 'index']
-);
-
-Route::get(
-    '/categorias/{id}',
-    [CategoriaController::class, 'show']
-);
 
 Route::post(
-    '/categorias',
-    [CategoriaController::class, 'store']
-);
-
-Route::put(
-    '/categorias/{id}',
-    [CategoriaController::class, 'update']
-);
-
-Route::delete(
-    '/categorias/{id}',
-    [CategoriaController::class, 'destroy']
-);
-
-/*
-|--------------------------------------------------------------------------
-| Productos
-|--------------------------------------------------------------------------
-*/
-
-Route::get(
-    '/productos',
-    [ProductoController::class, 'index']
-);
-
-/*
- * Esta ruta debe ir antes de /productos/{id},
- * porque "codigo" podria interpretarse como un ID.
- */
-Route::get(
-    '/productos/codigo/{codigo}',
-    [ProductoController::class, 'buscarPorCodigo']
-);
-
-Route::get(
-    '/productos/{id}',
-    [ProductoController::class, 'show']
-);
-
-Route::post(
-    '/productos',
-    [ProductoController::class, 'store']
-);
-
-Route::put(
-    '/productos/{id}',
-    [ProductoController::class, 'update']
-);
-
-Route::delete(
-    '/productos/{id}',
-    [ProductoController::class, 'destroy']
+    '/login',
+    [AuthController::class, 'login']
 );
 
 /*
@@ -115,38 +25,195 @@ Route::delete(
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth:sanctum')->group(function (): void {
+Route::middleware('auth:sanctum')
+    ->group(function (): void {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Ventas
-    |--------------------------------------------------------------------------
-    */
+        /*
+        |--------------------------------------------------------------------------
+        | Autenticacion
+        |--------------------------------------------------------------------------
+        */
 
-    Route::post(
-        '/ventas',
-        [VentaController::class, 'registrar']
-    );
+        Route::post(
+            '/logout',
+            [AuthController::class, 'logout']
+        );
 
-    /*
-    |--------------------------------------------------------------------------
-    | Reportes
-    |--------------------------------------------------------------------------
-    */
+        /*
+        |--------------------------------------------------------------------------
+        | Consultas DNI y RUC
+        |--------------------------------------------------------------------------
+        */
 
-    Route::get(
-        '/reportes/diario',
-        [ReporteController::class, 'diario']
-    );
+        Route::get(
+            '/consultas/dni/{dni}',
+            [
+                ConsultaDocumentoController::class,
+                'consultarDni',
+            ]
+        );
 
-    Route::get(
-        '/reportes/semanal',
-        [ReporteController::class, 'semanal']
-    );
+        Route::get(
+            '/consultas/ruc/{ruc}',
+            [
+                ConsultaDocumentoController::class,
+                'consultarRuc',
+            ]
+        );
 
-    Route::get(
-        '/reportes/mensual',
-        [ReporteController::class, 'mensual']
-    );
+        /*
+        |--------------------------------------------------------------------------
+        | Categorias: consulta
+        |--------------------------------------------------------------------------
+        */
 
-});
+        Route::get(
+            '/categorias',
+            [CategoriaController::class, 'index']
+        );
+
+        Route::get(
+            '/categorias/{id}',
+            [CategoriaController::class, 'show']
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Productos: consulta
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/productos',
+            [ProductoController::class, 'index']
+        );
+
+        /*
+         * Esta ruta debe permanecer antes de /productos/{id}.
+         */
+        Route::get(
+            '/productos/codigo/{codigo}',
+            [
+                ProductoController::class,
+                'buscarPorCodigo',
+            ]
+        );
+
+        Route::get(
+            '/productos/{id}',
+            [ProductoController::class, 'show']
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ventas
+        |--------------------------------------------------------------------------
+        */
+
+        Route::post(
+            '/ventas',
+            [VentaController::class, 'registrar']
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Rutas exclusivas del administrador
+        |--------------------------------------------------------------------------
+        */
+
+        Route::middleware('administrador')
+            ->group(function (): void {
+
+                /*
+                |--------------------------------------------------------------------------
+                | Gestion de categorias
+                |--------------------------------------------------------------------------
+                */
+
+                Route::post(
+                    '/categorias',
+                    [
+                        CategoriaController::class,
+                        'store',
+                    ]
+                );
+
+                Route::put(
+                    '/categorias/{id}',
+                    [
+                        CategoriaController::class,
+                        'update',
+                    ]
+                );
+
+                Route::delete(
+                    '/categorias/{id}',
+                    [
+                        CategoriaController::class,
+                        'destroy',
+                    ]
+                );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Gestion de productos
+                |--------------------------------------------------------------------------
+                */
+
+                Route::post(
+                    '/productos',
+                    [
+                        ProductoController::class,
+                        'store',
+                    ]
+                );
+
+                Route::put(
+                    '/productos/{id}',
+                    [
+                        ProductoController::class,
+                        'update',
+                    ]
+                );
+
+                Route::delete(
+                    '/productos/{id}',
+                    [
+                        ProductoController::class,
+                        'destroy',
+                    ]
+                );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Reportes
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/reportes/diario',
+                    [
+                        ReporteController::class,
+                        'diario',
+                    ]
+                );
+
+                Route::get(
+                    '/reportes/semanal',
+                    [
+                        ReporteController::class,
+                        'semanal',
+                    ]
+                );
+
+                Route::get(
+                    '/reportes/mensual',
+                    [
+                        ReporteController::class,
+                        'mensual',
+                    ]
+                );
+
+            });
+
+    });

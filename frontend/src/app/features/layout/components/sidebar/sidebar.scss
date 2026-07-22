@@ -1,58 +1,75 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100dvh;
+}
+
 .sidebar {
-  width: 270px;
-  height: 100vh;
-  background: #5b21b6;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 3px 0 12px rgba(0, 0, 0, .15);
+  width: 100%;
+  min-height: 100dvh;
+  height: 100%;
+  overflow-y: auto;
+  background: #1e1b4b;
+  color: #ffffff;
+  border-radius: 0;
+  box-shadow: 3px 0 14px rgba(15, 23, 42, 0.14);
 }
 
 .logo {
+  height: 108px;
   display: flex;
   align-items: center;
-  gap: 15px;
-  padding: 28px 22px;
-}
-
-.logo-icon {
-  width: 55px;
-  height: 55px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, .15);
-  display: flex;
   justify-content: center;
+  padding: 14px;
+  box-sizing: border-box;
+}
+
+.logo-enlace {
+  width: 100%;
+  height: 100%;
+  display: flex;
   align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  text-decoration: none;
+  transition: background-color 160ms ease;
 }
 
-.logo-icon mat-icon {
-  font-size: 30px;
-  width: 30px;
-  height: 30px;
+.logo-enlace:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.logo-texto h2 {
+.logo-enlace:focus-visible {
+  outline: 3px solid rgba(236, 72, 153, 0.4);
+  outline-offset: -3px;
+}
+
+.logo-imagen {
+  width: 270px;
+  max-width: 90%;
+  max-height: 150px;
+  display: block;
+  object-fit: contain;
+}
+
+mat-divider {
+  border-top-color: rgba(255, 255, 255, 0.16);
+}
+
+.navegacion {
+  padding-bottom: 24px;
+}
+
+.grupo-menu {
+  padding-top: 14px;
+}
+
+.grupo-menu h2 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.logo-texto span {
+  padding: 0 24px 8px;
   font-size: 13px;
-  opacity: .8;
-}
-
-.menu {
-  padding: 20px 12px 0;
-}
-
-.menu h4 {
-  margin: 0 0 10px;
-  padding-left: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(255,255,255,.7);
-  letter-spacing: 1px;
+  font-weight: 500;
+  color: #9693ad;
 }
 
 mat-nav-list {
@@ -60,80 +77,124 @@ mat-nav-list {
 }
 
 a[mat-list-item] {
-  border-radius: 12px;
-  margin-bottom: 6px;
-  color: white;
-  transition: .25s;
-}
-
-a[mat-list-item] mat-icon {
-  color: white;
+  position: relative;
+  height: 50px;
+  min-height: 50px;
+  margin: 0;
+  border-radius: 0;
+  color: #aaa8bf;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
 }
 
 a[mat-list-item]:hover {
-  background: rgba(255,255,255,.12);
+  background: rgba(255, 255, 255, 0.07);
+  color: #ffffff;
 }
 
-a.activo {
-  background: white;
-  color: #5b21b6;
+a[mat-list-item].activo {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+a[mat-list-item].activo::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: #ec4899;
+}
+
+a[mat-list-item] mat-icon {
+  color: inherit;
+}
+
+::ng-deep a[mat-list-item] .mdc-list-item__content {
+  color: inherit;
+}
+
+::ng-deep a[mat-list-item] .mdc-list-item__primary-text {
+  color: inherit !important;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+::ng-deep a[mat-list-item].activo .mdc-list-item__primary-text {
   font-weight: 600;
 }
 
-a.activo mat-icon {
-  color: #5b21b6;
+::ng-deep a[mat-list-item] .mat-mdc-list-item-icon {
+  margin-left: 16px;
+  margin-right: 13px;
+  color: inherit;
 }
 
-mat-divider {
-  border-top-color: rgba(255,255,255,.15);
-}
+/*
+|--------------------------------------------------------------------------
+| Tablet
+|--------------------------------------------------------------------------
+*/
 
-::ng-deep .mat-mdc-list-item-unscoped-content {
-  color: inherit !important;
-}
-
-::ng-deep .mdc-list-item__primary-text {
-  color: inherit !important;
-  font-weight: 500;
-}
-
-@media (max-width: 992px) {
-  .sidebar {
-    width: 230px;
-  }
-
-  .logo-texto h2 {
-    font-size: 18px;
-  }
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    width: 80px;
-  }
+@media (max-width: 1024px) and (min-width: 769px) {
 
   .logo {
-    justify-content: center;
-    padding: 24px 10px;
+    height: 88px;
+    padding: 10px 6px;
   }
 
-  .logo-texto {
+  .logo-imagen {
+    width: 68px;
+    max-width: 68px;
+    max-height: 62px;
+  }
+
+  .grupo-menu {
+    padding-top: 16px;
+  }
+
+  .grupo-menu h2 {
     display: none;
   }
 
-  .menu h4 {
+  ::ng-deep a[mat-list-item] .mdc-list-item__primary-text {
     display: none;
   }
 
-  ::ng-deep .mdc-list-item__primary-text {
-    display: none;
+  ::ng-deep a[mat-list-item] .mat-mdc-list-item-icon {
+    margin: 0 auto;
   }
 
-  a[mat-list-item] {
-    justify-content: center;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Celular
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 768px) {
+
+  .logo {
+    height: 105px;
   }
 
-  a[mat-list-item] mat-icon {
-    margin: auto;
+  .logo-imagen {
+    width: 180px;
+    max-height: 76px;
   }
+
+  .grupo-menu h2 {
+    display: block;
+  }
+
+  ::ng-deep a[mat-list-item] .mdc-list-item__primary-text {
+    display: block;
+  }
+
+  ::ng-deep a[mat-list-item] .mat-mdc-list-item-icon {
+    margin-left: 16px;
+    margin-right: 13px;
+  }
+
 }

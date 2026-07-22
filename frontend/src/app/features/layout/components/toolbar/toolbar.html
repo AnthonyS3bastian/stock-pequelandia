@@ -1,22 +1,147 @@
 <mat-toolbar class="toolbar">
 
-    <div class="titulo">
+    <div class="lado-izquierdo">
 
-        Dashboard
+        <button
+            mat-icon-button
+            type="button"
+            class="boton-menu"
+            aria-label="Abrir menu de navegacion"
+            (click)="solicitarMenu()">
+
+            <mat-icon>
+                menu
+            </mat-icon>
+
+        </button>
+
+        <h1 class="titulo">
+
+            {{ tituloPagina() }}
+
+        </h1>
 
     </div>
 
     <span class="espacio"></span>
 
-    <div class="usuario">
+    <div class="informacion-derecha">
 
-        <span>Administrador</span>
+        <div class="fecha-hora">
 
-        <button mat-icon-button>
+            <span class="fecha">
 
-            <mat-icon>account_circle</mat-icon>
+                {{ fechaActual() }}
 
-        </button>
+            </span>
+
+            <span class="separador">
+
+                ·
+
+            </span>
+
+            <time class="hora">
+
+                {{ horaActual() }}
+
+            </time>
+
+        </div>
+
+        <div class="usuario">
+
+            <div class="datos-usuario">
+
+                <span class="nombre-usuario">
+
+                    {{ nombreUsuario() }}
+
+                </span>
+
+                <span class="rol-usuario">
+
+                    {{ rolUsuario() }}
+
+                </span>
+
+            </div>
+
+            <button
+                type="button"
+                class="avatar"
+                aria-label="Abrir opciones de usuario"
+                [matMenuTriggerFor]="menuUsuario">
+
+                {{ iniciales() }}
+
+            </button>
+
+            <mat-menu
+                #menuUsuario="matMenu"
+                xPosition="before"
+                class="menu-usuario">
+
+                <div
+                    class="cabecera-menu-usuario"
+                    (click)="$event.stopPropagation()">
+
+                    <div class="avatar-menu">
+
+                        {{ iniciales() }}
+
+                    </div>
+
+                    <div class="informacion-menu">
+
+                        <strong>
+
+                            {{ nombreUsuario() }}
+
+                        </strong>
+
+                        <span>
+
+                            {{ rolUsuario() }}
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="separador-menu"></div>
+
+                <button
+                    mat-menu-item
+                    type="button"
+                    class="boton-cerrar-sesion"
+                    [disabled]="cerrandoSesion()"
+                    (click)="cerrarSesion()">
+
+                    <mat-icon>
+                        logout
+                    </mat-icon>
+
+                    <span>
+
+                        @if (cerrandoSesion()) {
+
+                            Cerrando sesion...
+
+                        } @else {
+
+                            Cerrar sesion
+
+                        }
+
+                    </span>
+
+                </button>
+
+            </mat-menu>
+
+        </div>
 
     </div>
 

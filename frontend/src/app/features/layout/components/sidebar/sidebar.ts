@@ -1,10 +1,32 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import {
+  Component,
+  computed,
+  inject
+} from '@angular/core';
 
-import { MatListModule } from '@angular/material/list';
-import { MatIconModule } from '@angular/material/icon';
-import { MatDividerModule } from '@angular/material/divider';
+import {
+  CommonModule
+} from '@angular/common';
+
+import {
+  RouterModule
+} from '@angular/router';
+
+import {
+  MatListModule
+} from '@angular/material/list';
+
+import {
+  MatIconModule
+} from '@angular/material/icon';
+
+import {
+  MatDividerModule
+} from '@angular/material/divider';
+
+import {
+  AuthService
+} from '../../../../core/services/auth.service';
 
 interface MenuItem {
   titulo: string;
@@ -27,40 +49,63 @@ interface MenuItem {
 })
 export class SidebarComponent {
 
-  principal: MenuItem[] = [
+  private readonly authService =
+    inject(AuthService);
+
+  readonly principal: MenuItem[] = [
     {
       titulo: 'Dashboard',
       icono: 'dashboard',
       ruta: '/dashboard'
-    },
-    {
-      titulo: 'Inventario',
-      icono: 'inventory_2',
-      ruta: '/inventario'
     }
   ];
 
-  gestion: MenuItem[] = [
-    {
-      titulo: 'Clientes',
-      icono: 'groups',
-      ruta: '/clientes'
-    },
-    {
-      titulo: 'Ventas',
-      icono: 'shopping_cart',
-      ruta: '/ventas'
-    },
-    {
-      titulo: 'Reportes',
-      icono: 'bar_chart',
-      ruta: '/reportes'
-    },
-    {
-      titulo: 'Usuarios',
-      icono: 'person',
-      ruta: '/usuarios'
+  private readonly gestionGeneral:
+    MenuItem[] = [
+      {
+        titulo: 'Inventario',
+        icono: 'inventory_2',
+        ruta: '/inventario'
+      },
+      {
+        titulo: 'Ventas',
+        icono: 'point_of_sale',
+        ruta: '/ventas'
+      }
+    ];
+
+  private readonly gestionAdministrador:
+    MenuItem[] = [
+      {
+        titulo: 'Reportes',
+        icono: 'bar_chart',
+        ruta: '/reportes'
+      }
+    ];
+
+  readonly gestion = computed<MenuItem[]>(
+    () => {
+
+      const usuario =
+        this.authService.usuarioActual();
+
+      if (
+        usuario?.rol_usuario ===
+        'ADMINISTRADOR'
+      ) {
+
+        return [
+          ...this.gestionGeneral,
+          ...this.gestionAdministrador
+        ];
+
+      }
+
+      return [
+        ...this.gestionGeneral
+      ];
+
     }
-  ];
+  );
 
 }
