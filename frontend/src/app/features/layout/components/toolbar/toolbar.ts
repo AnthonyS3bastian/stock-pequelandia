@@ -160,6 +160,14 @@ export class ToolbarComponent {
 
   }
 
+  irMiPerfil(): void {
+
+    this.router.navigate(
+      ['/perfil']
+    );
+
+  }
+
   cerrarSesion(): void {
 
     if (this.cerrandoSesion()) {

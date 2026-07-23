@@ -30,13 +30,18 @@ Route::middleware('auth:sanctum')
 
         /*
         |--------------------------------------------------------------------------
-        | Autenticacion
+        | Autenticacion y perfil
         |--------------------------------------------------------------------------
         */
 
         Route::post(
             '/logout',
             [AuthController::class, 'logout']
+        );
+
+        Route::get(
+            '/perfil',
+            [AuthController::class, 'perfil']
         );
 
         /*

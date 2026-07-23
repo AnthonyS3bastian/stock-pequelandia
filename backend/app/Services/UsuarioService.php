@@ -24,6 +24,17 @@ class UsuarioService
     }
 
     /**
+     * Obtener el perfil del usuario autenticado.
+     */
+    public function obtenerPerfil(
+        Usuario $usuario
+    ): Usuario {
+
+        return $usuario->load('personal');
+
+    }
+
+    /**
      * Iniciar sesion.
      */
     public function login(

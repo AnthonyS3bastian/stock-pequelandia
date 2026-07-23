@@ -53,6 +53,32 @@ class AuthController extends Controller
     }
 
     /**
+     * Obtener el perfil del usuario autenticado.
+     */
+    public function perfil(
+        Request $request
+    ): JsonResponse {
+
+        /** @var Usuario|null $usuario */
+        $usuario = $request->user();
+
+        if (!$usuario) {
+            return response()->json([
+                'mensaje' =>
+                    'Usuario no autenticado.',
+            ], 401);
+        }
+
+        $perfil =
+            $this->usuarioService
+                ->obtenerPerfil($usuario);
+
+        return response()->json([
+            'perfil' => $perfil,
+        ]);
+    }
+
+    /**
      * Cerrar la sesion actual.
      */
     public function logout(

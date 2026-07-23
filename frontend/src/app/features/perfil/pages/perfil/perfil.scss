@@ -1,0 +1,279 @@
+:host {
+  display: block;
+}
+
+.pagina-perfil {
+  min-height: 100%;
+  padding: 28px;
+  box-sizing: border-box;
+  background: #f5f3ff;
+}
+
+.cabecera-pagina {
+  margin-bottom: 24px;
+}
+
+.cabecera-pagina h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #17152f;
+}
+
+.cabecera-pagina p {
+  margin: 7px 0 0;
+  font-size: 14px;
+  color: #74718a;
+}
+
+.contenido-perfil {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.tarjeta-identidad,
+.tarjeta-informacion,
+.tarjeta-error {
+  border: 1px solid #ebe8f4;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow:
+    0 8px 24px rgba(30, 27, 75, 0.06);
+}
+
+.tarjeta-identidad {
+  display: flex;
+  align-items: center;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.avatar-grande {
+  width: 92px;
+  height: 92px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background:
+    linear-gradient(
+      135deg,
+      #7c3aed,
+      #ec4899
+    );
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 700;
+  box-shadow:
+    0 10px 24px rgba(124, 58, 237, 0.24);
+}
+
+.tarjeta-identidad h2 {
+  margin: 20px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #211e3a;
+}
+
+.nombre-cuenta {
+  margin-top: 5px;
+  font-size: 13px;
+  color: #858198;
+}
+
+.etiqueta-rol {
+  margin-top: 18px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: #f1edff;
+  color: #6d28d9;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.estado-cuenta {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #15803d;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.estado-cuenta mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+}
+
+.estado-cuenta.inactivo {
+  color: #dc2626;
+}
+
+.tarjeta-informacion {
+  padding: 26px;
+}
+
+.titulo-tarjeta {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eeeaf5;
+}
+
+.icono-titulo {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #f0ecff;
+  color: #6d28d9;
+}
+
+.titulo-tarjeta h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #211e3a;
+}
+
+.titulo-tarjeta p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #858198;
+}
+
+.cuadricula-datos {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 0 28px;
+  margin-top: 6px;
+}
+
+.campo-dato {
+  min-width: 0;
+  padding: 20px 0;
+  border-bottom: 1px solid #f0edf6;
+}
+
+.campo-dato .etiqueta {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #8a879c;
+}
+
+.campo-dato strong {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  font-weight: 600;
+  color: #302d45;
+}
+
+.estado-carga {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  color: #74718a;
+}
+
+.tarjeta-error {
+  min-height: 130px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  padding: 22px;
+}
+
+.tarjeta-error mat-icon {
+  color: #dc2626;
+}
+
+.tarjeta-error div {
+  flex: 1;
+}
+
+.tarjeta-error strong {
+  color: #332f49;
+}
+
+.tarjeta-error p {
+  margin: 5px 0 0;
+  color: #77738b;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Tablet
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 1024px) {
+
+  .pagina-perfil {
+    padding: 22px;
+  }
+
+  .contenido-perfil {
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| Celular
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 768px) {
+
+  .pagina-perfil {
+    padding: 16px;
+  }
+
+  .cabecera-pagina h1 {
+    font-size: 22px;
+  }
+
+  .contenido-perfil {
+    grid-template-columns: 1fr;
+  }
+
+  .tarjeta-identidad {
+    padding: 26px 20px;
+  }
+
+  .avatar-grande {
+    width: 80px;
+    height: 80px;
+    font-size: 24px;
+  }
+
+  .tarjeta-informacion {
+    padding: 20px;
+  }
+
+  .cuadricula-datos {
+    grid-template-columns: 1fr;
+  }
+
+  .tarjeta-error {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+}

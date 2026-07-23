@@ -106,6 +106,18 @@ export const routes: Routes = [
       },
 
       {
+        path: 'perfil',
+        loadComponent: () =>
+          import(
+            './features/perfil/pages/perfil/perfil'
+          )
+            .then(
+              modulo =>
+                modulo.PerfilComponent
+            )
+      },
+
+      {
         path: '**',
         redirectTo: 'dashboard'
       }
