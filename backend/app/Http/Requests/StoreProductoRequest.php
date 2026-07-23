@@ -20,23 +20,63 @@ class StoreProductoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'codigo_producto' => 'required|string|max:50|unique:producto,codigo_producto',
+            'codigo_producto' => [
+                'required',
+                'string',
+                'max:50',
+                'unique:producto,codigo_producto',
+            ],
 
-            'nombre_producto' => 'required|string|max:150',
+            'nombre_producto' => [
+                'required',
+                'string',
+                'max:150',
+            ],
 
-            'descripcion_producto' => 'nullable|string',
+            'descripcion_producto' => [
+                'nullable',
+                'string',
+            ],
 
-            'id_categoria' => 'required|exists:categoria,id_categoria',
+            'id_categoria' => [
+                'required',
+                'integer',
+                'exists:categoria,id_categoria',
+            ],
 
-            'precio_producto' => 'required|numeric|min:0',
+            'precio_producto' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
 
-            'costo_producto' => 'required|numeric|min:0',
+            'costo_producto' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
 
-            'fecha_caducidad' => 'nullable|date',
+            'fecha_caducidad' => [
+                'nullable',
+                'date',
+            ],
 
-            'stock_producto' => 'required|integer|min:0',
+            'stock_producto' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
 
-            'estado' => 'required|boolean',
+            'stock_minimo_producto' => [
+                'sometimes',
+                'integer',
+                'min:0',
+            ],
+
+            'estado' => [
+                'required',
+                'boolean',
+            ],
         ];
     }
 
@@ -46,32 +86,80 @@ class StoreProductoRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'codigo_producto.required' => 'El código del producto es obligatorio.',
-            'codigo_producto.unique' => 'Ya existe un producto con ese código.',
-            'codigo_producto.max' => 'El código no puede superar los 50 caracteres.',
+            'codigo_producto.required' =>
+                'El código del producto es obligatorio.',
 
-            'nombre_producto.required' => 'El nombre del producto es obligatorio.',
-            'nombre_producto.max' => 'El nombre no puede superar los 150 caracteres.',
+            'codigo_producto.string' =>
+                'El código del producto debe ser un texto válido.',
 
-            'id_categoria.required' => 'La categoría es obligatoria.',
-            'id_categoria.exists' => 'La categoría seleccionada no existe.',
+            'codigo_producto.unique' =>
+                'Ya existe un producto con ese código.',
 
-            'precio_producto.required' => 'El precio es obligatorio.',
-            'precio_producto.numeric' => 'El precio debe ser numérico.',
-            'precio_producto.min' => 'El precio no puede ser negativo.',
+            'codigo_producto.max' =>
+                'El código no puede superar los 50 caracteres.',
 
-            'costo_producto.required' => 'El costo es obligatorio.',
-            'costo_producto.numeric' => 'El costo debe ser numérico.',
-            'costo_producto.min' => 'El costo no puede ser negativo.',
+            'nombre_producto.required' =>
+                'El nombre del producto es obligatorio.',
 
-            'fecha_caducidad.date' => 'La fecha de caducidad no es válida.',
+            'nombre_producto.string' =>
+                'El nombre del producto debe ser un texto válido.',
 
-            'stock_producto.required' => 'El stock es obligatorio.',
-            'stock_producto.integer' => 'El stock debe ser un número entero.',
-            'stock_producto.min' => 'El stock no puede ser negativo.',
+            'nombre_producto.max' =>
+                'El nombre no puede superar los 150 caracteres.',
 
-            'estado.required' => 'El estado es obligatorio.',
-            'estado.boolean' => 'El estado debe ser verdadero o falso.',
+            'descripcion_producto.string' =>
+                'La descripción debe ser un texto válido.',
+
+            'id_categoria.required' =>
+                'La categoría es obligatoria.',
+
+            'id_categoria.integer' =>
+                'La categoría seleccionada no es válida.',
+
+            'id_categoria.exists' =>
+                'La categoría seleccionada no existe.',
+
+            'precio_producto.required' =>
+                'El precio de venta es obligatorio.',
+
+            'precio_producto.numeric' =>
+                'El precio de venta debe ser numérico.',
+
+            'precio_producto.min' =>
+                'El precio de venta no puede ser negativo.',
+
+            'costo_producto.required' =>
+                'El precio de compra es obligatorio.',
+
+            'costo_producto.numeric' =>
+                'El precio de compra debe ser numérico.',
+
+            'costo_producto.min' =>
+                'El precio de compra no puede ser negativo.',
+
+            'fecha_caducidad.date' =>
+                'La fecha de caducidad no es válida.',
+
+            'stock_producto.required' =>
+                'El stock inicial es obligatorio.',
+
+            'stock_producto.integer' =>
+                'El stock inicial debe ser un número entero.',
+
+            'stock_producto.min' =>
+                'El stock inicial no puede ser negativo.',
+
+            'stock_minimo_producto.integer' =>
+                'El stock mínimo debe ser un número entero.',
+
+            'stock_minimo_producto.min' =>
+                'El stock mínimo no puede ser negativo.',
+
+            'estado.required' =>
+                'El estado es obligatorio.',
+
+            'estado.boolean' =>
+                'El estado debe ser verdadero o falso.',
         ];
     }
 }

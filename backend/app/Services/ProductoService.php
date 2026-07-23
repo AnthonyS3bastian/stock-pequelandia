@@ -41,7 +41,7 @@ class ProductoService
      */
     public function crear(array $datos): Producto
     {
-        return Producto::create([
+        $producto = Producto::create([
             'codigo_producto' => $datos['codigo_producto'],
             'nombre_producto' => $datos['nombre_producto'],
             'descripcion_producto' => $datos['descripcion_producto'] ?? null,
@@ -50,8 +50,11 @@ class ProductoService
             'costo_producto' => $datos['costo_producto'],
             'fecha_caducidad' => $datos['fecha_caducidad'] ?? null,
             'stock_producto' => $datos['stock_producto'],
+            'stock_minimo_producto' => $datos['stock_minimo_producto'] ?? 0,
             'estado' => $datos['estado'],
-        ])->load('categoria');
+        ]);
+
+        return $producto->load('categoria');
     }
 
     /**
@@ -70,14 +73,21 @@ class ProductoService
             'costo_producto' => $datos['costo_producto'],
             'fecha_caducidad' => $datos['fecha_caducidad'] ?? null,
             'stock_producto' => $datos['stock_producto'],
+            'stock_minimo_producto' => $datos['stock_minimo_producto']
+                ?? $producto->stock_minimo_producto,
             'estado' => $datos['estado'],
         ]);
 
-        return $producto->fresh()->load('categoria');
+        return $producto
+            ->fresh()
+            ->load('categoria');
     }
 
     /**
      * Eliminar un producto.
+     *
+     * Esta funcionalidad será reemplazada posteriormente
+     * por activación y desactivación lógica.
      */
     public function eliminar(int $id): void
     {
