@@ -1,0 +1,390 @@
+<div class="actualizar-stock">
+
+  <header class="stock-header">
+
+    <div class="titulo-header">
+
+      <span class="icono-header">
+
+        <mat-icon>inventory</mat-icon>
+
+      </span>
+
+      <div>
+
+        <h2>
+          Actualizar stock
+        </h2>
+
+        <p>
+          Modifica las existencias del producto.
+        </p>
+
+      </div>
+
+    </div>
+
+    <button
+      mat-icon-button
+      type="button"
+      aria-label="Cerrar actualización de stock"
+      [disabled]="guardando"
+      (click)="cerrarComponente()">
+
+      <mat-icon>close</mat-icon>
+
+    </button>
+
+  </header>
+
+  <form
+    class="stock-contenido"
+    [formGroup]="formulario"
+    (ngSubmit)="guardar()">
+
+    <section class="producto-resumen">
+
+      <span class="producto-icono">
+
+        <mat-icon>inventory_2</mat-icon>
+
+      </span>
+
+      <div>
+
+        <small>
+          Producto
+        </small>
+
+        <h3>
+          {{ producto.nombre_producto }}
+        </h3>
+
+        <p>
+          Código:
+          {{ producto.codigo_producto }}
+        </p>
+
+      </div>
+
+    </section>
+
+    <section class="stock-actual">
+
+      <span>
+        Stock actual
+      </span>
+
+      <strong>
+        {{ stockActual }}
+      </strong>
+
+      <small>
+        unidades disponibles
+      </small>
+
+    </section>
+
+    <section class="seccion">
+
+      <div class="seccion-titulo">
+
+        <mat-icon>swap_vert</mat-icon>
+
+        <div>
+
+          <h3>
+            Tipo de actualización
+          </h3>
+
+          <p>
+            Selecciona cómo modificar el stock.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="operaciones">
+
+        <button
+          type="button"
+          class="operacion agregar"
+          [class.seleccionada]="
+            operacionSeleccionada === 'agregar'
+          "
+          [disabled]="guardando"
+          (click)="seleccionarOperacion('agregar')">
+
+          <span class="operacion-icono">
+
+            <mat-icon>add</mat-icon>
+
+          </span>
+
+          <span>
+
+            <strong>
+              Agregar
+            </strong>
+
+            <small>
+              Sumar unidades
+            </small>
+
+          </span>
+
+        </button>
+
+        <button
+          type="button"
+          class="operacion retirar"
+          [class.seleccionada]="
+            operacionSeleccionada === 'retirar'
+          "
+          [disabled]="guardando"
+          (click)="seleccionarOperacion('retirar')">
+
+          <span class="operacion-icono">
+
+            <mat-icon>remove</mat-icon>
+
+          </span>
+
+          <span>
+
+            <strong>
+              Retirar
+            </strong>
+
+            <small>
+              Restar unidades
+            </small>
+
+          </span>
+
+        </button>
+
+        <button
+          type="button"
+          class="operacion establecer"
+          [class.seleccionada]="
+            operacionSeleccionada === 'establecer'
+          "
+          [disabled]="guardando"
+          (click)="seleccionarOperacion('establecer')">
+
+          <span class="operacion-icono">
+
+            <mat-icon>edit_note</mat-icon>
+
+          </span>
+
+          <span>
+
+            <strong>
+              Establecer
+            </strong>
+
+            <small>
+              Cantidad exacta
+            </small>
+
+          </span>
+
+        </button>
+
+      </div>
+
+    </section>
+
+    <section class="seccion">
+
+      <div class="seccion-titulo">
+
+        <mat-icon>pin</mat-icon>
+
+        <div>
+
+          <h3>
+            Cantidad
+          </h3>
+
+          <p>
+            Ingresa el número de unidades.
+          </p>
+
+        </div>
+
+      </div>
+
+      <mat-form-field appearance="outline">
+
+        <mat-label>
+          Cantidad
+        </mat-label>
+
+        <input
+          matInput
+          type="number"
+          min="0"
+          step="1"
+          formControlName="cantidad">
+
+        <mat-icon matSuffix>
+          inventory
+        </mat-icon>
+
+        @if (
+          formulario
+            .controls
+            .cantidad
+            .touched
+          && formulario
+            .controls
+            .cantidad
+            .invalid
+        ) {
+
+          <mat-error>
+            Ingrese una cantidad entera válida.
+          </mat-error>
+
+        }
+
+      </mat-form-field>
+
+      @if (cantidadDebeSerMayorCero) {
+
+        <div class="mensaje-validacion advertencia">
+
+          <mat-icon>warning</mat-icon>
+
+          <span>
+            Para agregar o retirar, la cantidad debe ser mayor que cero.
+          </span>
+
+        </div>
+
+      }
+
+      @if (retiroInvalido) {
+
+        <div class="mensaje-validacion error">
+
+          <mat-icon>error</mat-icon>
+
+          <span>
+            No puedes retirar más de
+            {{ stockActual }}
+            unidades.
+          </span>
+
+        </div>
+
+      }
+
+    </section>
+
+    <section
+      class="resultado"
+      [class.resultado-error]="
+        stockResultante < 0
+      ">
+
+      <div>
+
+        <span>
+          {{ obtenerTextoOperacion() }}
+        </span>
+
+        <small>
+          Resultado estimado
+        </small>
+
+      </div>
+
+      <div class="calculo-stock">
+
+        <span>
+          {{ stockActual }}
+        </span>
+
+        <mat-icon>
+
+          @switch (operacionSeleccionada) {
+
+            @case ('agregar') {
+              add
+            }
+
+            @case ('retirar') {
+              remove
+            }
+
+            @default {
+              arrow_forward
+            }
+
+          }
+
+        </mat-icon>
+
+        <span>
+          {{ cantidadIngresada }}
+        </span>
+
+        <mat-icon>
+          arrow_forward
+        </mat-icon>
+
+        <strong>
+          {{ stockResultante }}
+        </strong>
+
+      </div>
+
+    </section>
+
+    <footer class="acciones">
+
+      <button
+        mat-stroked-button
+        type="button"
+        class="btn-cancelar"
+        [disabled]="guardando"
+        (click)="cerrarComponente()">
+
+        Cancelar
+
+      </button>
+
+      <button
+        mat-flat-button
+        type="submit"
+        class="btn-confirmar"
+        [disabled]="!formularioValido">
+
+        <mat-icon>
+
+          {{
+            guardando
+              ? 'hourglass_top'
+              : 'check'
+          }}
+
+        </mat-icon>
+
+        {{
+          guardando
+            ? 'Actualizando...'
+            : 'Confirmar actualización'
+        }}
+
+      </button>
+
+    </footer>
+
+  </form>
+
+</div>

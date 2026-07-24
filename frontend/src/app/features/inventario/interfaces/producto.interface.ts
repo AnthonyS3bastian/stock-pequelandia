@@ -18,7 +18,13 @@ export interface Producto {
 
   stock_producto: number;
 
+  stock_minimo_producto: number;
+
   estado: boolean;
+
+  created_at?: string;
+
+  updated_at?: string;
 
   categoria?: {
 

@@ -1,0 +1,455 @@
+<div class="detalle-producto">
+
+  <header class="detalle-header">
+
+    <div class="titulo-header">
+
+      <span class="icono-header">
+
+        <mat-icon>inventory_2</mat-icon>
+
+      </span>
+
+      <div>
+
+        <h2>
+          Información del producto
+        </h2>
+
+        <p>
+          Consulta todos los datos registrados.
+        </p>
+
+      </div>
+
+    </div>
+
+    <button
+      mat-icon-button
+      type="button"
+      aria-label="Cerrar detalle"
+      (click)="cerrarDetalle()">
+
+      <mat-icon>close</mat-icon>
+
+    </button>
+
+  </header>
+
+  <div class="detalle-contenido">
+
+    <section class="producto-principal">
+
+      <span class="producto-icono-grande">
+
+        <mat-icon>inventory_2</mat-icon>
+
+      </span>
+
+      <div class="producto-titulo">
+
+        <span
+          class="estado-stock"
+          [ngClass]="obtenerClaseEstadoStock()">
+
+          {{ obtenerTextoEstadoStock() }}
+
+        </span>
+
+        <h3>
+
+          {{ producto.nombre_producto }}
+
+        </h3>
+
+        <p>
+
+          Código:
+          {{ producto.codigo_producto }}
+
+        </p>
+
+      </div>
+
+    </section>
+
+    <section class="seccion-detalle">
+
+      <div class="seccion-titulo">
+
+        <mat-icon>description</mat-icon>
+
+        <div>
+
+          <h4>
+            Información general
+          </h4>
+
+          <p>
+            Datos de identificación del producto.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="datos-grid">
+
+        <div class="dato ancho-completo">
+
+          <span>
+            Descripción
+          </span>
+
+          <strong>
+
+            {{
+              producto.descripcion_producto
+              || 'Sin descripción'
+            }}
+
+          </strong>
+
+        </div>
+
+        <div class="dato">
+
+          <span>
+            Categoría
+          </span>
+
+          <strong>
+
+            {{
+              producto.categoria
+                ?.nombre_categoria
+              ?? 'Sin categoría'
+            }}
+
+          </strong>
+
+        </div>
+
+        <div class="dato">
+
+          <span>
+            Estado
+          </span>
+
+          @if (producto.estado) {
+
+            <strong class="texto-activo">
+              Activo
+            </strong>
+
+          } @else {
+
+            <strong class="texto-inactivo">
+              Inactivo
+            </strong>
+
+          }
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <section class="seccion-detalle">
+
+      <div class="seccion-titulo">
+
+        <mat-icon>payments</mat-icon>
+
+        <div>
+
+          <h4>
+            Información comercial
+          </h4>
+
+          <p>
+            Costos y precios registrados.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="datos-grid tres-columnas">
+
+        <div class="dato destacado compra">
+
+          <span>
+            Precio de compra
+          </span>
+
+          <strong>
+
+            {{
+              formatearPrecio(
+                producto.costo_producto
+              )
+            }}
+
+          </strong>
+
+        </div>
+
+        <div class="dato destacado venta">
+
+          <span>
+            Precio de venta
+          </span>
+
+          <strong>
+
+            {{
+              formatearPrecio(
+                producto.precio_producto
+              )
+            }}
+
+          </strong>
+
+        </div>
+
+        <div class="dato destacado ganancia">
+
+          <span>
+            Ganancia por unidad
+          </span>
+
+          <strong>
+
+            {{
+              formatearPrecio(
+                obtenerGananciaUnidad()
+              )
+            }}
+
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <section class="seccion-detalle">
+
+      <div class="seccion-titulo">
+
+        <mat-icon>warehouse</mat-icon>
+
+        <div>
+
+          <h4>
+            Inventario
+          </h4>
+
+          <p>
+            Existencias y nivel mínimo configurado.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="datos-grid tres-columnas">
+
+        <div class="dato destacado stock">
+
+          <span>
+            Stock actual
+          </span>
+
+          <strong>
+
+            {{ producto.stock_producto }}
+
+          </strong>
+
+        </div>
+
+        <div class="dato destacado minimo">
+
+          <span>
+            Stock mínimo
+          </span>
+
+          <strong>
+
+            {{
+              producto
+                .stock_minimo_producto
+            }}
+
+          </strong>
+
+        </div>
+
+        <div class="dato destacado estado-inventario">
+
+          <span>
+            Disponibilidad
+          </span>
+
+          <strong
+            [ngClass]="obtenerClaseEstadoStock()">
+
+            {{ obtenerTextoEstadoStock() }}
+
+          </strong>
+
+        </div>
+
+      </div>
+
+      <div class="datos-grid fecha-grid">
+
+        <div class="dato">
+
+          <span>
+            Fecha de caducidad
+          </span>
+
+          <strong>
+
+            {{
+              formatearFecha(
+                producto.fecha_caducidad
+              )
+            }}
+
+          </strong>
+
+        </div>
+
+        <div class="dato">
+
+          <span>
+            Fecha de registro
+          </span>
+
+          <strong>
+
+            {{
+              formatearFecha(
+                producto.created_at
+              )
+            }}
+
+          </strong>
+
+        </div>
+
+        <div class="dato">
+
+          <span>
+            Última actualización
+          </span>
+
+          <strong>
+
+            {{
+              formatearFecha(
+                producto.updated_at
+              )
+            }}
+
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </div>
+
+  <footer class="acciones">
+
+    <button
+      mat-stroked-button
+      type="button"
+      class="btn-cerrar"
+      (click)="cerrarDetalle()">
+
+      Cerrar
+
+    </button>
+
+    <button
+      mat-stroked-button
+      type="button"
+      class="btn-acciones"
+      [matMenuTriggerFor]="menuAcciones">
+
+      <mat-icon>more_vert</mat-icon>
+
+      Acciones
+
+    </button>
+
+    <button
+      mat-flat-button
+      type="button"
+      class="btn-editar"
+      (click)="solicitarEdicion()">
+
+      <mat-icon>edit</mat-icon>
+
+      Editar producto
+
+    </button>
+
+  </footer>
+
+  <mat-menu
+    #menuAcciones="matMenu"
+    xPosition="before">
+
+    <button
+      mat-menu-item
+      type="button"
+      (click)="solicitarActualizacionStock()">
+
+      <mat-icon>inventory</mat-icon>
+
+      <span>
+        Actualizar stock
+      </span>
+
+    </button>
+
+    <button
+      mat-menu-item
+      type="button"
+      (click)="solicitarCambioEstado()">
+
+      <mat-icon>
+
+        {{
+          producto.estado
+            ? 'block'
+            : 'check_circle'
+        }}
+
+      </mat-icon>
+
+      <span>
+
+        {{
+          producto.estado
+            ? 'Desactivar producto'
+            : 'Activar producto'
+        }}
+
+      </span>
+
+    </button>
+
+  </mat-menu>
+
+</div>

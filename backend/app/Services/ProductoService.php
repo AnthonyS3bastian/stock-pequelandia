@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Producto;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ProductoService
 {
@@ -13,70 +15,219 @@ class ProductoService
     public function listar(): Collection
     {
         return Producto::with('categoria')
-            ->orderBy('id_producto', 'desc')
+            ->orderBy(
+                'id_producto',
+                'desc'
+            )
             ->get();
     }
 
     /**
      * Obtener un producto por ID.
      */
-    public function obtenerPorId(int $id): Producto
-    {
+    public function obtenerPorId(
+        int $id
+    ): Producto {
         return Producto::with('categoria')
             ->findOrFail($id);
     }
 
     /**
-     * Buscar un producto por código de barras.
+     * Buscar un producto por codigo de barras.
      */
-    public function buscarPorCodigo(string $codigo): Producto
-    {
+    public function buscarPorCodigo(
+        string $codigo
+    ): Producto {
         return Producto::with('categoria')
-            ->where('codigo_producto', $codigo)
+            ->where(
+                'codigo_producto',
+                $codigo
+            )
             ->firstOrFail();
     }
 
     /**
      * Crear un nuevo producto.
      */
-    public function crear(array $datos): Producto
-    {
+    public function crear(
+        array $datos
+    ): Producto {
         $producto = Producto::create([
-            'codigo_producto' => $datos['codigo_producto'],
-            'nombre_producto' => $datos['nombre_producto'],
-            'descripcion_producto' => $datos['descripcion_producto'] ?? null,
-            'id_categoria' => $datos['id_categoria'],
-            'precio_producto' => $datos['precio_producto'],
-            'costo_producto' => $datos['costo_producto'],
-            'fecha_caducidad' => $datos['fecha_caducidad'] ?? null,
-            'stock_producto' => $datos['stock_producto'],
-            'stock_minimo_producto' => $datos['stock_minimo_producto'] ?? 0,
-            'estado' => $datos['estado'],
+            'codigo_producto' =>
+                $datos['codigo_producto'],
+
+            'nombre_producto' =>
+                $datos['nombre_producto'],
+
+            'descripcion_producto' =>
+                $datos['descripcion_producto']
+                ?? null,
+
+            'id_categoria' =>
+                $datos['id_categoria'],
+
+            'precio_producto' =>
+                $datos['precio_producto'],
+
+            'costo_producto' =>
+                $datos['costo_producto'],
+
+            'fecha_caducidad' =>
+                $datos['fecha_caducidad']
+                ?? null,
+
+            'stock_producto' =>
+                $datos['stock_producto'],
+
+            'stock_minimo_producto' =>
+                $datos['stock_minimo_producto']
+                ?? 0,
+
+            'estado' =>
+                $datos['estado'],
         ]);
 
-        return $producto->load('categoria');
+        return $producto
+            ->load('categoria');
     }
 
     /**
-     * Actualizar un producto existente.
+     * Actualizar la informacion general
+     * de un producto.
+     *
+     * El stock actual se conserva.
      */
-    public function actualizar(int $id, array $datos): Producto
-    {
-        $producto = Producto::findOrFail($id);
+    public function actualizar(
+        int $id,
+        array $datos
+    ): Producto {
+        $producto =
+            Producto::findOrFail($id);
 
         $producto->update([
-            'codigo_producto' => $datos['codigo_producto'],
-            'nombre_producto' => $datos['nombre_producto'],
-            'descripcion_producto' => $datos['descripcion_producto'] ?? null,
-            'id_categoria' => $datos['id_categoria'],
-            'precio_producto' => $datos['precio_producto'],
-            'costo_producto' => $datos['costo_producto'],
-            'fecha_caducidad' => $datos['fecha_caducidad'] ?? null,
-            'stock_producto' => $datos['stock_producto'],
-            'stock_minimo_producto' => $datos['stock_minimo_producto']
-                ?? $producto->stock_minimo_producto,
-            'estado' => $datos['estado'],
+            'codigo_producto' =>
+                $datos['codigo_producto'],
+
+            'nombre_producto' =>
+                $datos['nombre_producto'],
+
+            'descripcion_producto' =>
+                $datos['descripcion_producto']
+                ?? null,
+
+            'id_categoria' =>
+                $datos['id_categoria'],
+
+            'precio_producto' =>
+                $datos['precio_producto'],
+
+            'costo_producto' =>
+                $datos['costo_producto'],
+
+            'fecha_caducidad' =>
+                $datos['fecha_caducidad']
+                ?? null,
+
+            'stock_minimo_producto' =>
+                $datos[
+                    'stock_minimo_producto'
+                ],
+
+            'estado' =>
+                $datos['estado'],
         ]);
+
+        return $producto
+            ->fresh()
+            ->load('categoria');
+    }
+
+    /**
+     * Actualizar exclusivamente el stock
+     * de un producto.
+     */
+    public function actualizarStock(
+        int $id,
+        string $operacion,
+        int $cantidad
+    ): Producto {
+        return DB::transaction(
+            function () use (
+                $id,
+                $operacion,
+                $cantidad
+            ): Producto {
+
+                $producto =
+                    Producto::query()
+                        ->where(
+                            'id_producto',
+                            $id
+                        )
+                        ->lockForUpdate()
+                        ->firstOrFail();
+
+                $stockActual =
+                    (int) $producto
+                        ->stock_producto;
+
+                $nuevoStock =
+                    match ($operacion) {
+
+                        'agregar' =>
+                            $stockActual
+                            + $cantidad,
+
+                        'retirar' =>
+                            $stockActual
+                            - $cantidad,
+
+                        'establecer' =>
+                            $cantidad,
+
+                        default =>
+                            $stockActual,
+                    };
+
+                if ($nuevoStock < 0) {
+
+                    throw ValidationException::withMessages([
+                        'cantidad' =>
+                            'No se puede retirar una cantidad mayor al stock actual.',
+                    ]);
+
+                }
+
+                $producto
+                    ->stock_producto =
+                        $nuevoStock;
+
+                $producto->save();
+
+                return $producto
+                    ->fresh()
+                    ->load('categoria');
+
+            }
+        );
+    }
+
+    /**
+     * Cambiar el estado de un producto.
+     *
+     * Activo pasa a inactivo.
+     * Inactivo pasa a activo.
+     */
+    public function cambiarEstado(
+        int $id
+    ): Producto {
+        $producto =
+            Producto::findOrFail($id);
+
+        $producto->estado =
+            !$producto->estado;
+
+        $producto->save();
 
         return $producto
             ->fresh()
@@ -86,12 +237,15 @@ class ProductoService
     /**
      * Eliminar un producto.
      *
-     * Esta funcionalidad será reemplazada posteriormente
-     * por activación y desactivación lógica.
+     * Esta funcionalidad se mantiene
+     * temporalmente, pero la interfaz
+     * utilizara activacion y desactivacion.
      */
-    public function eliminar(int $id): void
-    {
-        $producto = Producto::findOrFail($id);
+    public function eliminar(
+        int $id
+    ): void {
+        $producto =
+            Producto::findOrFail($id);
 
         $producto->delete();
     }

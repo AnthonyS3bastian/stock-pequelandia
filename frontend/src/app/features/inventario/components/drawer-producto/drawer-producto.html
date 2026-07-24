@@ -1,199 +1,564 @@
-<div class="drawer">
+<div class="drawer-producto">
 
-    <div class="header">
+  <header class="drawer-header">
 
-        <h2>Nuevo Producto</h2>
+    <div class="titulo-header">
 
-        <button
-            mat-icon-button
-            type="button"
-            (click)="cerrarDrawer()">
+      <div class="icono-header">
 
-            <mat-icon>close</mat-icon>
+        <mat-icon>
 
-        </button>
+          {{
+            esEdicion
+              ? 'edit'
+              : 'inventory_2'
+          }}
+
+        </mat-icon>
+
+      </div>
+
+      <div>
+
+        <h2>
+
+          {{
+            esEdicion
+              ? 'Editar producto'
+              : 'Nuevo producto'
+          }}
+
+        </h2>
+
+        <p>
+
+          {{
+            esEdicion
+              ? 'Modifica la información registrada.'
+              : 'Registra la información del producto.'
+          }}
+
+        </p>
+
+      </div>
 
     </div>
 
-    <form
-        class="formulario"
-        [formGroup]="formulario"
-        (ngSubmit)="guardar()">
+    <button
+      mat-icon-button
+      type="button"
+      aria-label="Cerrar formulario"
+      [disabled]="guardando"
+      (click)="cerrarDrawer()">
 
-        <label>Código de Barras</label>
+      <mat-icon>close</mat-icon>
 
-        <div class="codigo">
+    </button>
 
-            <mat-form-field appearance="outline">
+  </header>
 
-                <input
-                    matInput
-                    formControlName="codigo_producto">
+  <form
+    class="formulario"
+    [formGroup]="formulario"
+    (ngSubmit)="guardar()">
 
-            </mat-form-field>
+    <section class="seccion">
 
-            <button
-                mat-mini-fab
-                color="primary"
-                type="button"
-                (click)="generarCodigo()">
+      <div class="seccion-titulo">
 
-                <mat-icon>qr_code</mat-icon>
+        <mat-icon>description</mat-icon>
 
-            </button>
+        <div>
 
-        </div>
+          <h3>
+            Información principal
+          </h3>
 
-        <label>Nombre del Producto</label>
-
-        <mat-form-field appearance="outline">
-
-            <input
-                matInput
-                formControlName="nombre_producto">
-
-        </mat-form-field>
-
-        <label>Descripción</label>
-
-        <mat-form-field appearance="outline">
-
-            <textarea
-                matInput
-                rows="2"
-                formControlName="descripcion_producto">
-            </textarea>
-
-        </mat-form-field>
-
-        <label>Categoría</label>
-
-        <mat-form-field appearance="outline">
-
-            <mat-select formControlName="id_categoria">
-
-                @for (categoria of categorias; track categoria.id_categoria) {
-
-                    <mat-option
-                        [value]="categoria.id_categoria">
-
-                        {{ categoria.nombre_categoria }}
-
-                    </mat-option>
-
-                }
-
-            </mat-select>
-
-        </mat-form-field>
-
-        <div class="dos-columnas">
-
-            <div>
-
-                <label>P. Compra</label>
-
-                <mat-form-field appearance="outline">
-
-                    <input
-                        matInput
-                        type="number"
-                        formControlName="costo_producto">
-
-                </mat-form-field>
-
-            </div>
-
-            <div>
-
-                <label>P. Venta</label>
-
-                <mat-form-field appearance="outline">
-
-                    <input
-                        matInput
-                        type="number"
-                        formControlName="precio_producto">
-
-                </mat-form-field>
-
-            </div>
+          <p>
+            Datos generales para identificar el producto.
+          </p>
 
         </div>
 
-        <div class="dos-columnas">
+      </div>
 
-            <div>
-
-                <label>Stock Inicial</label>
-
-                <mat-form-field appearance="outline">
-
-                    <input
-                        matInput
-                        type="number"
-                        formControlName="stock_producto">
-
-                </mat-form-field>
-
-            </div>
-
-            <div>
-
-                <label>Estado</label>
-
-                <mat-form-field appearance="outline">
-
-                    <mat-select formControlName="estado">
-
-                        <mat-option [value]="true">
-
-                            Activo
-
-                        </mat-option>
-
-                        <mat-option [value]="false">
-
-                            Inactivo
-
-                        </mat-option>
-
-                    </mat-select>
-
-                </mat-form-field>
-
-            </div>
-
-        </div>
-
-        <label>Fecha de Caducidad</label>
+      <div class="grupo-codigo">
 
         <mat-form-field appearance="outline">
 
-            <input
-                matInput
-                [matDatepicker]="picker"
-                formControlName="fecha_caducidad_producto">
+          <mat-label>
+            Código de barras
+          </mat-label>
 
-            <mat-datepicker-toggle
-                matSuffix
-                [for]="picker">
-            </mat-datepicker-toggle>
+          <input
+            matInput
+            type="text"
+            placeholder="Ingrese o genere un código"
+            formControlName="codigo_producto">
 
-            <mat-datepicker #picker></mat-datepicker>
+          <mat-icon matSuffix>
+            qr_code_2
+          </mat-icon>
+
+          @if (
+            formulario
+              .get('codigo_producto')
+              ?.touched
+            && formulario
+              .get('codigo_producto')
+              ?.hasError('required')
+          ) {
+
+            <mat-error>
+              El código es obligatorio.
+            </mat-error>
+
+          }
+
+          @if (
+            formulario
+              .get('codigo_producto')
+              ?.touched
+            && formulario
+              .get('codigo_producto')
+              ?.hasError('maxlength')
+          ) {
+
+            <mat-error>
+              El código es demasiado largo.
+            </mat-error>
+
+          }
 
         </mat-form-field>
 
         <button
-            mat-flat-button
-            color="primary"
-            class="guardar"
-            type="submit">
+          mat-stroked-button
+          class="btn-generar"
+          type="button"
+          [disabled]="guardando"
+          (click)="generarCodigo()">
 
-            Guardar Producto
+          <mat-icon>autorenew</mat-icon>
+
+          Generar
 
         </button>
 
-    </form>
+      </div>
+
+      <mat-form-field appearance="outline">
+
+        <mat-label>
+          Nombre del producto
+        </mat-label>
+
+        <input
+          matInput
+          type="text"
+          placeholder="Ejemplo: Oso de peluche grande"
+          formControlName="nombre_producto">
+
+        <mat-icon matSuffix>
+          shopping_bag
+        </mat-icon>
+
+        @if (
+          formulario
+            .get('nombre_producto')
+            ?.touched
+          && formulario
+            .get('nombre_producto')
+            ?.hasError('required')
+        ) {
+
+          <mat-error>
+            El nombre es obligatorio.
+          </mat-error>
+
+        }
+
+        @if (
+          formulario
+            .get('nombre_producto')
+            ?.touched
+          && formulario
+            .get('nombre_producto')
+            ?.hasError('maxlength')
+        ) {
+
+          <mat-error>
+            El nombre es demasiado largo.
+          </mat-error>
+
+        }
+
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+
+        <mat-label>
+          Descripción
+        </mat-label>
+
+        <textarea
+          matInput
+          rows="3"
+          placeholder="Descripción opcional del producto"
+          formControlName="descripcion_producto">
+        </textarea>
+
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+
+        <mat-label>
+          Categoría
+        </mat-label>
+
+        <mat-select
+          formControlName="id_categoria">
+
+          @for (
+            categoria of categorias;
+            track categoria.id_categoria
+          ) {
+
+            <mat-option
+              [value]="categoria.id_categoria">
+
+              {{
+                categoria.nombre_categoria
+              }}
+
+            </mat-option>
+
+          }
+
+        </mat-select>
+
+        <mat-icon matSuffix>
+          category
+        </mat-icon>
+
+        @if (
+          formulario
+            .get('id_categoria')
+            ?.touched
+          && formulario
+            .get('id_categoria')
+            ?.hasError('required')
+        ) {
+
+          <mat-error>
+            Seleccione una categoría.
+          </mat-error>
+
+        }
+
+      </mat-form-field>
+
+    </section>
+
+    <section class="seccion">
+
+      <div class="seccion-titulo">
+
+        <mat-icon>payments</mat-icon>
+
+        <div>
+
+          <h3>
+            Información comercial
+          </h3>
+
+          <p>
+            Precios utilizados para compra y venta.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="dos-columnas">
+
+        <mat-form-field appearance="outline">
+
+          <mat-label>
+            Precio de compra
+          </mat-label>
+
+          <span matTextPrefix>
+            S/&nbsp;
+          </span>
+
+          <input
+            matInput
+            type="number"
+            min="0"
+            step="0.01"
+            formControlName="costo_producto">
+
+          @if (
+            formulario
+              .get('costo_producto')
+              ?.touched
+            && formulario
+              .get('costo_producto')
+              ?.invalid
+          ) {
+
+            <mat-error>
+              Ingrese un precio válido.
+            </mat-error>
+
+          }
+
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+
+          <mat-label>
+            Precio de venta
+          </mat-label>
+
+          <span matTextPrefix>
+            S/&nbsp;
+          </span>
+
+          <input
+            matInput
+            type="number"
+            min="0"
+            step="0.01"
+            formControlName="precio_producto">
+
+          @if (
+            formulario
+              .get('precio_producto')
+              ?.touched
+            && formulario
+              .get('precio_producto')
+              ?.invalid
+          ) {
+
+            <mat-error>
+              Ingrese un precio válido.
+            </mat-error>
+
+          }
+
+        </mat-form-field>
+
+      </div>
+
+    </section>
+
+    <section class="seccion">
+
+      <div class="seccion-titulo">
+
+        <mat-icon>inventory</mat-icon>
+
+        <div>
+
+          <h3>
+            Configuración de inventario
+          </h3>
+
+          <p>
+            Configura alertas, caducidad y estado.
+          </p>
+
+        </div>
+
+      </div>
+
+      @if (!esEdicion) {
+
+        <mat-form-field appearance="outline">
+
+          <mat-label>
+            Stock inicial
+          </mat-label>
+
+          <input
+            matInput
+            type="number"
+            min="0"
+            step="1"
+            formControlName="stock_producto">
+
+          <mat-icon matSuffix>
+            inventory_2
+          </mat-icon>
+
+          @if (
+            formulario
+              .get('stock_producto')
+              ?.touched
+            && formulario
+              .get('stock_producto')
+              ?.invalid
+          ) {
+
+            <mat-error>
+              Ingrese un stock válido.
+            </mat-error>
+
+          }
+
+        </mat-form-field>
+
+      } @else {
+
+        <div class="aviso-stock">
+
+          <mat-icon>info</mat-icon>
+
+          <p>
+            El stock actual se administra desde la opción
+            <strong>Actualizar stock</strong>.
+          </p>
+
+        </div>
+
+      }
+
+      <mat-form-field appearance="outline">
+
+        <mat-label>
+          Stock mínimo
+        </mat-label>
+
+        <input
+          matInput
+          type="number"
+          min="0"
+          step="1"
+          formControlName="stock_minimo_producto">
+
+        <mat-icon matSuffix>
+          notification_important
+        </mat-icon>
+
+        @if (
+          formulario
+            .get('stock_minimo_producto')
+            ?.touched
+          && formulario
+            .get('stock_minimo_producto')
+            ?.invalid
+        ) {
+
+          <mat-error>
+            Ingrese un stock mínimo válido.
+          </mat-error>
+
+        }
+
+      </mat-form-field>
+
+      <div class="dos-columnas">
+
+        <mat-form-field appearance="outline">
+
+          <mat-label>
+            Fecha de caducidad
+          </mat-label>
+
+          <input
+            matInput
+            [matDatepicker]="picker"
+            formControlName="fecha_caducidad_producto">
+
+          <mat-datepicker-toggle
+            matIconSuffix
+            [for]="picker">
+          </mat-datepicker-toggle>
+
+          <mat-datepicker
+            #picker>
+          </mat-datepicker>
+
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+
+          <mat-label>
+            Estado
+          </mat-label>
+
+          <mat-select
+            formControlName="estado">
+
+            <mat-option [value]="true">
+              Activo
+            </mat-option>
+
+            <mat-option [value]="false">
+              Inactivo
+            </mat-option>
+
+          </mat-select>
+
+          <mat-icon matSuffix>
+            toggle_on
+          </mat-icon>
+
+        </mat-form-field>
+
+      </div>
+
+    </section>
+
+    <footer class="acciones">
+
+      <button
+        mat-stroked-button
+        class="btn-cancelar"
+        type="button"
+        [disabled]="guardando"
+        (click)="cerrarDrawer()">
+
+        Cancelar
+
+      </button>
+
+      <button
+        mat-flat-button
+        class="btn-guardar"
+        type="submit"
+        [disabled]="guardando">
+
+        <mat-icon>
+
+          {{
+            guardando
+              ? 'hourglass_top'
+              : 'save'
+          }}
+
+        </mat-icon>
+
+        @if (guardando) {
+
+          Guardando...
+
+        } @else if (esEdicion) {
+
+          Guardar cambios
+
+        } @else {
+
+          Guardar producto
+
+        }
+
+      </button>
+
+    </footer>
+
+  </form>
 
 </div>

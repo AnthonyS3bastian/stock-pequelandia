@@ -94,7 +94,8 @@ Route::middleware('auth:sanctum')
         );
 
         /*
-         * Esta ruta debe permanecer antes de /productos/{id}.
+         * Esta ruta debe permanecer antes
+         * de /productos/{id}.
          */
         Route::get(
             '/productos/codigo/{codigo}',
@@ -170,6 +171,22 @@ Route::middleware('auth:sanctum')
                     [
                         ProductoController::class,
                         'store',
+                    ]
+                );
+
+                Route::patch(
+                    '/productos/{id}/stock',
+                    [
+                        ProductoController::class,
+                        'actualizarStock',
+                    ]
+                );
+
+                Route::patch(
+                    '/productos/{id}/estado',
+                    [
+                        ProductoController::class,
+                        'cambiarEstado',
                     ]
                 );
 

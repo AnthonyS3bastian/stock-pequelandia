@@ -16,19 +16,25 @@ class UpdateProductoRequest extends FormRequest
     }
 
     /**
-     * Reglas de validación.
+     * Reglas de validacion.
      */
     public function rules(): array
     {
-        $idProducto = $this->route('id');
+        $idProducto =
+            $this->route('id');
 
         return [
             'codigo_producto' => [
                 'required',
                 'string',
                 'max:50',
-                Rule::unique('producto', 'codigo_producto')
-                    ->ignore($idProducto, 'id_producto'),
+                Rule::unique(
+                    'producto',
+                    'codigo_producto'
+                )->ignore(
+                    $idProducto,
+                    'id_producto'
+                ),
             ],
 
             'nombre_producto' => [
@@ -65,14 +71,12 @@ class UpdateProductoRequest extends FormRequest
                 'date',
             ],
 
-            'stock_producto' => [
-                'required',
-                'integer',
-                'min:0',
-            ],
-
+            /*
+             * El stock actual ya no se actualiza
+             * mediante la edicion general.
+             */
             'stock_minimo_producto' => [
-                'sometimes',
+                'required',
                 'integer',
                 'min:0',
             ],
@@ -91,43 +95,43 @@ class UpdateProductoRequest extends FormRequest
     {
         return [
             'codigo_producto.required' =>
-                'El código del producto es obligatorio.',
+                'El codigo del producto es obligatorio.',
 
             'codigo_producto.string' =>
-                'El código del producto debe ser un texto válido.',
+                'El codigo del producto debe ser un texto valido.',
 
             'codigo_producto.unique' =>
-                'Ya existe un producto con ese código.',
+                'Ya existe un producto con ese codigo.',
 
             'codigo_producto.max' =>
-                'El código no puede superar los 50 caracteres.',
+                'El codigo no puede superar los 50 caracteres.',
 
             'nombre_producto.required' =>
                 'El nombre del producto es obligatorio.',
 
             'nombre_producto.string' =>
-                'El nombre del producto debe ser un texto válido.',
+                'El nombre del producto debe ser un texto valido.',
 
             'nombre_producto.max' =>
                 'El nombre no puede superar los 150 caracteres.',
 
             'descripcion_producto.string' =>
-                'La descripción debe ser un texto válido.',
+                'La descripcion debe ser un texto valido.',
 
             'id_categoria.required' =>
-                'La categoría es obligatoria.',
+                'La categoria es obligatoria.',
 
             'id_categoria.integer' =>
-                'La categoría seleccionada no es válida.',
+                'La categoria seleccionada no es valida.',
 
             'id_categoria.exists' =>
-                'La categoría seleccionada no existe.',
+                'La categoria seleccionada no existe.',
 
             'precio_producto.required' =>
                 'El precio de venta es obligatorio.',
 
             'precio_producto.numeric' =>
-                'El precio de venta debe ser numérico.',
+                'El precio de venta debe ser numerico.',
 
             'precio_producto.min' =>
                 'El precio de venta no puede ser negativo.',
@@ -136,28 +140,22 @@ class UpdateProductoRequest extends FormRequest
                 'El precio de compra es obligatorio.',
 
             'costo_producto.numeric' =>
-                'El precio de compra debe ser numérico.',
+                'El precio de compra debe ser numerico.',
 
             'costo_producto.min' =>
                 'El precio de compra no puede ser negativo.',
 
             'fecha_caducidad.date' =>
-                'La fecha de caducidad no es válida.',
+                'La fecha de caducidad no es valida.',
 
-            'stock_producto.required' =>
-                'El stock es obligatorio.',
-
-            'stock_producto.integer' =>
-                'El stock debe ser un número entero.',
-
-            'stock_producto.min' =>
-                'El stock no puede ser negativo.',
+            'stock_minimo_producto.required' =>
+                'El stock minimo es obligatorio.',
 
             'stock_minimo_producto.integer' =>
-                'El stock mínimo debe ser un número entero.',
+                'El stock minimo debe ser un numero entero.',
 
             'stock_minimo_producto.min' =>
-                'El stock mínimo no puede ser negativo.',
+                'El stock minimo no puede ser negativo.',
 
             'estado.required' =>
                 'El estado es obligatorio.',
