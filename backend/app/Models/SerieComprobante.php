@@ -8,9 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class SerieComprobante extends Model
 {
-    protected $table = 'serie_comprobante';
+    protected $table =
+        'serie_comprobante';
 
-    protected $primaryKey = 'id_serie_comprobante';
+    protected $primaryKey =
+        'id_serie_comprobante';
 
     protected $fillable = [
         'tipo_documento_serie',
@@ -18,13 +20,29 @@ class SerieComprobante extends Model
         'numero_correlativo',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'id_serie_comprobante' => 'integer',
+            'numero_correlativo' => 'integer',
+        ];
+    }
+
     public function comprobante(): HasOne
     {
-        return $this->hasOne(Comprobante::class, 'id_serie_comprobante', 'id_serie_comprobante');
+        return $this->hasOne(
+            Comprobante::class,
+            'id_serie_comprobante',
+            'id_serie_comprobante'
+        );
     }
 
     public function ventas(): HasMany
     {
-        return $this->hasMany(Venta::class, 'id_serie_comprobante', 'id_serie_comprobante');
+        return $this->hasMany(
+            Venta::class,
+            'id_serie_comprobante',
+            'id_serie_comprobante'
+        );
     }
 }

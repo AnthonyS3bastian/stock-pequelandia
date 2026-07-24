@@ -23,8 +23,20 @@ class Cliente extends Model
         'estado',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'id_cliente' => 'integer',
+            'estado' => 'boolean',
+        ];
+    }
+
     public function ventas(): HasMany
     {
-        return $this->hasMany(Venta::class, 'id_cliente', 'id_cliente');
+        return $this->hasMany(
+            Venta::class,
+            'id_cliente',
+            'id_cliente'
+        );
     }
 }

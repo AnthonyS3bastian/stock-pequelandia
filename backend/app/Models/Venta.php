@@ -21,23 +21,51 @@ class Venta extends Model
         'id_cliente',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'id_venta' => 'integer',
+            'fecha_venta' => 'datetime',
+            'total_venta' => 'decimal:2',
+            'id_usuario' => 'integer',
+            'id_serie_comprobante' => 'integer',
+            'id_cliente' => 'integer',
+        ];
+    }
+
     public function usuario(): BelongsTo
     {
-        return $this->belongsTo(Usuario::class, 'id_usuario', 'id_usuario');
+        return $this->belongsTo(
+            Usuario::class,
+            'id_usuario',
+            'id_usuario'
+        );
     }
 
     public function cliente(): BelongsTo
     {
-        return $this->belongsTo(Cliente::class, 'id_cliente', 'id_cliente');
+        return $this->belongsTo(
+            Cliente::class,
+            'id_cliente',
+            'id_cliente'
+        );
     }
 
     public function serieComprobante(): BelongsTo
     {
-        return $this->belongsTo(SerieComprobante::class, 'id_serie_comprobante', 'id_serie_comprobante');
+        return $this->belongsTo(
+            SerieComprobante::class,
+            'id_serie_comprobante',
+            'id_serie_comprobante'
+        );
     }
 
     public function detalleVentas(): HasMany
     {
-        return $this->hasMany(DetalleVenta::class, 'id_venta', 'id_venta');
+        return $this->hasMany(
+            DetalleVenta::class,
+            'id_venta',
+            'id_venta'
+        );
     }
 }

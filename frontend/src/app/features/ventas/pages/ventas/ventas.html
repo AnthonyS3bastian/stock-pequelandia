@@ -1,24 +1,90 @@
 <div class="ventas-container">
 
-    <h1 class="titulo">
-        Registro de Ventas
-    </h1>
+    <header class="cabecera-ventas">
+
+        <div>
+
+            <h1>
+                Ventas
+            </h1>
+
+            <p>
+                Registra los productos y completa la venta.
+            </p>
+
+        </div>
+
+        <div class="resumen-cabecera">
+
+            <mat-icon>
+                shopping_cart
+            </mat-icon>
+
+            <span>
+                {{ cantidadUnidades }}
+                {{
+                    cantidadUnidades === 1
+                        ? 'unidad'
+                        : 'unidades'
+                }}
+            </span>
+
+            <strong>
+                S/ {{ total | number:'1.2-2' }}
+            </strong>
+
+        </div>
+
+    </header>
 
     <div class="contenido-ventas">
 
-        <!-- ====================================== -->
-        <!-- PANEL PRODUCTOS -->
-        <!-- ====================================== -->
+        <!-- ===================================== -->
+        <!-- VENTA ACTUAL -->
+        <!-- ===================================== -->
 
-        <mat-card class="panel-productos">
+        <mat-card class="panel panel-productos">
 
-            <h2>
-                Registro de Productos
-            </h2>
+            <div class="cabecera-panel">
 
-            <!-- ====================================== -->
-            <!-- CÓDIGO DE BARRAS -->
-            <!-- ====================================== -->
+                <div>
+
+                    <h2>
+                        Venta actual
+                    </h2>
+
+                    <span>
+                        {{ cantidadProductos }}
+                        {{
+                            cantidadProductos === 1
+                                ? 'producto agregado'
+                                : 'productos agregados'
+                        }}
+                    </span>
+
+                </div>
+
+                <button
+                    type="button"
+                    mat-stroked-button
+                    class="boton-limpiar-superior"
+                    [disabled]="
+                        ventas.length === 0 ||
+                        registrando
+                    "
+                    (click)="limpiarVenta()">
+
+                    <mat-icon>
+                        delete_sweep
+                    </mat-icon>
+
+                    Limpiar
+
+                </button>
+
+            </div>
+
+            <!-- ESCÁNER -->
 
             <div class="barra-codigo">
 
@@ -27,492 +93,450 @@
                     class="campo-codigo">
 
                     <mat-label>
-                        Código de barras
+                        Código del producto
                     </mat-label>
 
+                    <mat-icon matPrefix>
+                        qr_code_scanner
+                    </mat-icon>
+
                     <input
+                        #campoCodigo
                         matInput
+                        autofocus
+                        autocomplete="off"
                         placeholder="Escanee o escriba el código"
                         [(ngModel)]="codigoBarras"
-                        [disabled]="registrando"
+                        [disabled]="
+                            registrando ||
+                            buscandoProducto
+                        "
                         (keyup.enter)="agregarProducto()">
 
                 </mat-form-field>
 
                 <button
-                    mat-raised-button
-                    color="primary"
-                    [disabled]="registrando"
+                    type="button"
+                    mat-flat-button
+                    class="boton-agregar"
+                    [disabled]="
+                        registrando ||
+                        buscandoProducto ||
+                        !codigoBarras.trim()
+                    "
                     (click)="agregarProducto()">
 
                     <mat-icon>
-                        add_shopping_cart
+                        {{
+                            buscandoProducto
+                                ? 'hourglass_top'
+                                : 'add'
+                        }}
                     </mat-icon>
 
-                    Agregar
+                    {{
+                        buscandoProducto
+                            ? 'Buscando'
+                            : 'Agregar'
+                    }}
 
                 </button>
 
             </div>
 
-            <!-- ====================================== -->
-            <!-- TABLA DE PRODUCTOS -->
-            <!-- ====================================== -->
-
-            <table
-                mat-table
-                [dataSource]="ventas"
-                class="tabla">
-
-                <!-- Producto -->
-
-                <ng-container matColumnDef="producto">
-
-                    <th
-                        mat-header-cell
-                        *matHeaderCellDef>
-
-                        Producto
-
-                    </th>
-
-                    <td
-                        mat-cell
-                        *matCellDef="let elemento">
-
-                        {{ elemento.producto }}
-
-                    </td>
-
-                </ng-container>
-
-                <!-- Cantidad -->
-
-                <ng-container matColumnDef="cantidad">
-
-                    <th
-                        mat-header-cell
-                        *matHeaderCellDef>
-
-                        Cant.
-
-                    </th>
-
-                    <td
-                        mat-cell
-                        *matCellDef="let elemento">
-
-                        <div class="control-cantidad">
-
-                            <button
-                                mat-icon-button
-                                [disabled]="registrando"
-                                (click)="disminuirCantidad(elemento)">
-
-                                <mat-icon>
-                                    remove
-                                </mat-icon>
-
-                            </button>
-
-                            <span>
-                                {{ elemento.cantidad }}
-                            </span>
-
-                            <button
-                                mat-icon-button
-                                [disabled]="registrando"
-                                (click)="aumentarCantidad(elemento)">
-
-                                <mat-icon>
-                                    add
-                                </mat-icon>
-
-                            </button>
-
-                        </div>
-
-                    </td>
-
-                </ng-container>
-
-                <!-- Precio -->
-
-                <ng-container matColumnDef="precio">
-
-                    <th
-                        mat-header-cell
-                        *matHeaderCellDef>
-
-                        P. Unit.
-
-                    </th>
-
-                    <td
-                        mat-cell
-                        *matCellDef="let elemento">
-
-                        S/
-                        {{ elemento.precio | number:'1.2-2' }}
-
-                    </td>
-
-                </ng-container>
-
-                <!-- Subtotal -->
-
-                <ng-container matColumnDef="subtotal">
-
-                    <th
-                        mat-header-cell
-                        *matHeaderCellDef>
-
-                        Subtotal
-
-                    </th>
-
-                    <td
-                        mat-cell
-                        *matCellDef="let elemento">
-
-                        S/
-                        {{ elemento.subtotal | number:'1.2-2' }}
-
-                    </td>
-
-                </ng-container>
-
-                <!-- Acciones -->
-
-                <ng-container matColumnDef="acciones">
-
-                    <th
-                        mat-header-cell
-                        *matHeaderCellDef>
-
-                        Acción
-
-                    </th>
-
-                    <td
-                        mat-cell
-                        *matCellDef="let elemento">
-
-                        <button
-                            mat-icon-button
-                            color="warn"
-                            [disabled]="registrando"
-                            (click)="eliminarProducto(elemento)">
-
-                            <mat-icon>
-                                delete
-                            </mat-icon>
-
-                        </button>
-
-                    </td>
-
-                </ng-container>
-
-                <tr
-                    mat-header-row
-                    *matHeaderRowDef="displayedColumns">
-                </tr>
-
-                <tr
-                    mat-row
-                    *matRowDef="
-                        let row;
-                        columns: displayedColumns;
-                    ">
-                </tr>
-
-            </table>
+            <!-- TABLA -->
 
             <div
-                class="sin-datos"
-                *ngIf="ventas.length === 0">
+                class="tabla-contenedor"
+                *ngIf="
+                    ventas.length > 0;
+                    else ventaVacia
+                ">
 
-                <mat-icon>
-                    shopping_cart
-                </mat-icon>
+                <table
+                    mat-table
+                    [dataSource]="ventas"
+                    class="tabla">
 
-                <span>
-                    No hay productos agregados.
-                </span>
+                    <ng-container matColumnDef="producto">
+
+                        <th
+                            mat-header-cell
+                            *matHeaderCellDef>
+
+                            Producto
+
+                        </th>
+
+                        <td
+                            mat-cell
+                            *matCellDef="let elemento">
+
+                            <div class="producto-tabla">
+
+                                <div class="icono-producto">
+
+                                    <mat-icon>
+                                        inventory_2
+                                    </mat-icon>
+
+                                </div>
+
+                                <div class="datos-producto">
+
+                                    <strong>
+                                        {{ elemento.producto }}
+                                    </strong>
+
+                                    <span>
+                                        {{ elemento.codigo }}
+                                    </span>
+
+                                    <small
+                                        [class.stock-bajo]="
+                                            elemento.stockDisponible <= 5
+                                        ">
+
+                                        Stock:
+                                        {{ elemento.stockDisponible }}
+
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                    </ng-container>
+
+                    <ng-container matColumnDef="cantidad">
+
+                        <th
+                            mat-header-cell
+                            *matHeaderCellDef>
+
+                            Cantidad
+
+                        </th>
+
+                        <td
+                            mat-cell
+                            *matCellDef="let elemento">
+
+                            <div class="control-cantidad">
+
+                                <button
+                                    type="button"
+                                    mat-icon-button
+                                    [disabled]="registrando"
+                                    (click)="
+                                        disminuirCantidad(
+                                            elemento
+                                        )
+                                    ">
+
+                                    <mat-icon>
+                                        remove
+                                    </mat-icon>
+
+                                </button>
+
+                                <span>
+                                    {{ elemento.cantidad }}
+                                </span>
+
+                                <button
+                                    type="button"
+                                    mat-icon-button
+                                    [disabled]="
+                                        registrando ||
+                                        elemento.cantidad >=
+                                        elemento.stockDisponible
+                                    "
+                                    (click)="
+                                        aumentarCantidad(
+                                            elemento
+                                        )
+                                    ">
+
+                                    <mat-icon>
+                                        add
+                                    </mat-icon>
+
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </ng-container>
+
+                    <ng-container matColumnDef="precio">
+
+                        <th
+                            mat-header-cell
+                            *matHeaderCellDef>
+
+                            Precio
+
+                        </th>
+
+                        <td
+                            mat-cell
+                            *matCellDef="let elemento">
+
+                            S/
+                            {{
+                                elemento.precio
+                                    | number:'1.2-2'
+                            }}
+
+                        </td>
+
+                    </ng-container>
+
+                    <ng-container matColumnDef="subtotal">
+
+                        <th
+                            mat-header-cell
+                            *matHeaderCellDef>
+
+                            Subtotal
+
+                        </th>
+
+                        <td
+                            mat-cell
+                            *matCellDef="let elemento">
+
+                            <strong class="subtotal-producto">
+
+                                S/
+                                {{
+                                    elemento.subtotal
+                                        | number:'1.2-2'
+                                }}
+
+                            </strong>
+
+                        </td>
+
+                    </ng-container>
+
+                    <ng-container matColumnDef="acciones">
+
+                        <th
+                            mat-header-cell
+                            *matHeaderCellDef>
+
+                            Acción
+
+                        </th>
+
+                        <td
+                            mat-cell
+                            *matCellDef="let elemento">
+
+                            <button
+                                type="button"
+                                mat-icon-button
+                                class="boton-eliminar"
+                                [disabled]="registrando"
+                                (click)="
+                                    eliminarProducto(
+                                        elemento
+                                    )
+                                ">
+
+                                <mat-icon>
+                                    delete_outline
+                                </mat-icon>
+
+                            </button>
+
+                        </td>
+
+                    </ng-container>
+
+                    <tr
+                        mat-header-row
+                        *matHeaderRowDef="
+                            displayedColumns
+                        ">
+                    </tr>
+
+                    <tr
+                        mat-row
+                        *matRowDef="
+                            let fila;
+                            columns: displayedColumns;
+                        ">
+                    </tr>
+
+                </table>
 
             </div>
 
-            <!-- ====================================== -->
-            <!-- TOTALES Y BOTONES -->
-            <!-- ====================================== -->
+            <ng-template #ventaVacia>
 
-            <div class="pie-productos">
+                <div class="venta-vacia">
 
-                <div class="totales">
-
-                    <div class="linea">
-
-                        <span>
-                            Subtotal
-                        </span>
-
-                        <strong>
-                            S/
-                            {{ subtotal | number:'1.2-2' }}
-                        </strong>
-
-                    </div>
-
-                    <div class="linea">
-
-                        <span>
-                            IGV
-                        </span>
-
-                        <strong>
-                            S/
-                            {{ igv | number:'1.2-2' }}
-                        </strong>
-
-                    </div>
-
-                    <div class="linea total">
-
-                        <span>
-                            TOTAL
-                        </span>
-
-                        <strong>
-                            S/
-                            {{ total | number:'1.2-2' }}
-                        </strong>
-
-                    </div>
-
-                </div>
-
-                <div class="botones">
-
-                    <button
-                        mat-stroked-button
-                        color="warn"
-                        [disabled]="
-                            ventas.length === 0 ||
-                            registrando
-                        "
-                        (click)="limpiarVenta()">
+                    <div class="icono-vacio">
 
                         <mat-icon>
-                            delete_sweep
+                            shopping_cart
                         </mat-icon>
 
-                        Limpiar
+                    </div>
 
-                    </button>
+                    <h3>
+                        Venta vacía
+                    </h3>
 
-                    <button
-                        mat-raised-button
-                        color="primary"
-                        [disabled]="
-                            ventas.length === 0 ||
-                            registrando ||
-                            consultandoDocumento
-                        "
-                        (click)="registrarVenta()">
-
-                        <mat-icon *ngIf="!registrando">
-                            point_of_sale
-                        </mat-icon>
-
-                        {{
-                            registrando
-                                ? 'Registrando...'
-                                : 'Registrar Venta'
-                        }}
-
-                    </button>
+                    <p>
+                        Escanea un producto para comenzar.
+                    </p>
 
                 </div>
 
-            </div>
+            </ng-template>
 
         </mat-card>
 
-        <!-- ====================================== -->
-        <!-- PANEL COMPROBANTE -->
-        <!-- ====================================== -->
+        <!-- ===================================== -->
+        <!-- COBRO -->
+        <!-- ===================================== -->
 
-        <mat-card class="panel-comprobante">
+        <mat-card class="panel panel-cobro">
 
-            <h2>
-                Comprobante
-            </h2>
+            <div class="total-cobro">
 
-            <!-- ====================================== -->
-            <!-- TIPO DE COMPROBANTE -->
-            <!-- ====================================== -->
+                <div>
 
-            <p class="subtitulo-panel">
-                Tipo de comprobante
-            </p>
+                    <span>
+                        Total a cobrar
+                    </span>
 
-            <div class="tipos-comprobante">
-
-                <button
-                    type="button"
-                    class="opcion-comprobante"
-                    [class.seleccionado]="
-                        tipoComprobante === 'VENTA RAPIDA'
-                    "
-                    [disabled]="
-                        registrando ||
-                        consultandoDocumento
-                    "
-                    (click)="
-                        seleccionarTipoComprobante(
-                            'VENTA RAPIDA'
-                        )
-                    ">
-
-                    <mat-icon>
+                    <small>
+                        {{ cantidadUnidades }}
                         {{
+                            cantidadUnidades === 1
+                                ? 'unidad'
+                                : 'unidades'
+                        }}
+                    </small>
+
+                </div>
+
+                <strong>
+                    S/ {{ total | number:'1.2-2' }}
+                </strong>
+
+            </div>
+
+            <!-- COMPROBANTE -->
+
+            <section class="seccion-cobro">
+
+                <label>
+                    Comprobante
+                </label>
+
+                <div class="tipos-comprobante">
+
+                    <button
+                        type="button"
+                        class="opcion-comprobante"
+                        [class.seleccionado]="
                             tipoComprobante ===
                             'VENTA RAPIDA'
-                                ? 'radio_button_checked'
-                                : 'radio_button_unchecked'
-                        }}
-                    </mat-icon>
+                        "
+                        [disabled]="
+                            registrando ||
+                            consultandoDocumento
+                        "
+                        (click)="
+                            seleccionarTipoComprobante(
+                                'VENTA RAPIDA'
+                            )
+                        ">
 
-                    <div>
-
-                        <strong>
-                            Venta rápida
-                        </strong>
+                        <mat-icon>
+                            bolt
+                        </mat-icon>
 
                         <span>
-                            Público General
+                            Rápida
                         </span>
 
-                    </div>
+                    </button>
 
-                </button>
-
-                <button
-                    type="button"
-                    class="opcion-comprobante"
-                    [class.seleccionado]="
-                        tipoComprobante === 'BOLETA'
-                    "
-                    [disabled]="
-                        registrando ||
-                        consultandoDocumento
-                    "
-                    (click)="
-                        seleccionarTipoComprobante(
-                            'BOLETA'
-                        )
-                    ">
-
-                    <mat-icon>
-                        {{
+                    <button
+                        type="button"
+                        class="opcion-comprobante"
+                        [class.seleccionado]="
                             tipoComprobante ===
                             'BOLETA'
-                                ? 'radio_button_checked'
-                                : 'radio_button_unchecked'
-                        }}
-                    </mat-icon>
+                        "
+                        [disabled]="
+                            registrando ||
+                            consultandoDocumento
+                        "
+                        (click)="
+                            seleccionarTipoComprobante(
+                                'BOLETA'
+                            )
+                        ">
 
-                    <div>
+                        <mat-icon>
+                            person
+                        </mat-icon>
 
-                        <strong>
+                        <span>
                             Boleta
-                        </strong>
-
-                        <span>
-                            Cliente con DNI
                         </span>
 
-                    </div>
+                    </button>
 
-                </button>
-
-                <button
-                    type="button"
-                    class="opcion-comprobante"
-                    [class.seleccionado]="
-                        tipoComprobante === 'FACTURA'
-                    "
-                    [disabled]="
-                        registrando ||
-                        consultandoDocumento
-                    "
-                    (click)="
-                        seleccionarTipoComprobante(
-                            'FACTURA'
-                        )
-                    ">
-
-                    <mat-icon>
-                        {{
+                    <button
+                        type="button"
+                        class="opcion-comprobante"
+                        [class.seleccionado]="
                             tipoComprobante ===
                             'FACTURA'
-                                ? 'radio_button_checked'
-                                : 'radio_button_unchecked'
-                        }}
-                    </mat-icon>
+                        "
+                        [disabled]="
+                            registrando ||
+                            consultandoDocumento
+                        "
+                        (click)="
+                            seleccionarTipoComprobante(
+                                'FACTURA'
+                            )
+                        ">
 
-                    <div>
-
-                        <strong>
-                            Factura
-                        </strong>
+                        <mat-icon>
+                            business
+                        </mat-icon>
 
                         <span>
-                            Empresa con RUC
+                            Factura
                         </span>
 
-                    </div>
+                    </button>
 
-                </button>
+                </div>
 
-            </div>
+            </section>
 
-            <hr>
-
-            <!-- ====================================== -->
-            <!-- DATOS DEL CLIENTE -->
-            <!-- ====================================== -->
-
-            <div class="encabezado-cliente">
-
-                <p class="subtitulo-panel">
-                    Cliente
-                </p>
-
-                <span
-                    class="estado-consulta correcto"
-                    *ngIf="
-                        documentoConsultado &&
-                        tipoComprobante !== 'VENTA RAPIDA'
-                    ">
-
-                    <mat-icon>
-                        check_circle
-                    </mat-icon>
-
-                    Consultado
-
-                </span>
-
-            </div>
-
-            <!-- VENTA RÁPIDA -->
+            <!-- PÚBLICO GENERAL -->
 
             <div
                 class="cliente-publico"
                 *ngIf="
-                    tipoComprobante === 'VENTA RAPIDA'
+                    tipoComprobante ===
+                    'VENTA RAPIDA'
                 ">
 
                 <mat-icon>
@@ -521,233 +545,244 @@
 
                 <div>
 
-                    <strong>
-                        PUBLICO GENERAL
-                    </strong>
-
-                    <span>
-                        Venta sin documento
-                    </span>
-
-                </div>
-
-            </div>
-
-            <!-- DNI O RUC -->
-
-            <div
-                class="consulta-documento"
-                *ngIf="
-                    tipoComprobante !== 'VENTA RAPIDA'
-                ">
-
-                <mat-form-field appearance="outline">
-
-                    <mat-label>
-                        {{
-                            tipoComprobante === 'BOLETA'
-                                ? 'DNI'
-                                : 'RUC'
-                        }}
-                    </mat-label>
-
-                    <input
-                        matInput
-                        inputmode="numeric"
-                        autocomplete="off"
-                        [placeholder]="
-                            tipoComprobante === 'BOLETA'
-                                ? 'Ingrese 8 dígitos'
-                                : 'Ingrese 11 dígitos'
-                        "
-                        [maxlength]="
-                            tipoComprobante === 'BOLETA'
-                                ? 8
-                                : 11
-                        "
-                        [(ngModel)]="numeroDocumento"
-                        [disabled]="
-                            registrando ||
-                            consultandoDocumento
-                        "
-                        (ngModelChange)="
-                            limpiarNumeroDocumento()
-                        "
-                        (keyup.enter)="
-                            consultarDocumento()
-                        ">
-
-                </mat-form-field>
-
-                <button
-                    mat-raised-button
-                    color="primary"
-                    class="boton-consultar"
-                    [disabled]="
-                        registrando ||
-                        consultandoDocumento ||
-                        !numeroDocumento
-                    "
-                    (click)="consultarDocumento()">
-
-                    <mat-icon>
-                        search
-                    </mat-icon>
-
-                    {{
-                        consultandoDocumento
-                            ? 'Consultando...'
-                            : 'Consultar'
-                    }}
-
-                </button>
-
-            </div>
-
-            <!-- NOMBRE O RAZÓN SOCIAL -->
-
-            <div
-                *ngIf="
-                    tipoComprobante !== 'VENTA RAPIDA'
-                ">
-
-                <mat-form-field appearance="outline">
-
-                    <mat-label>
-                        {{
-                            tipoComprobante === 'BOLETA'
-                                ? 'Nombre completo'
-                                : 'Razón social'
-                        }}
-                    </mat-label>
-
-                    <input
-                        matInput
-                        [value]="nombreCliente"
-                        disabled>
-
-                </mat-form-field>
-
-            </div>
-
-            <!-- DIRECCIÓN -->
-
-            <div
-                *ngIf="
-                    tipoComprobante === 'FACTURA'
-                ">
-
-                <mat-form-field appearance="outline">
-
-                    <mat-label>
-                        Dirección fiscal
-                    </mat-label>
-
-                    <textarea
-                        matInput
-                        rows="3"
-                        [value]="direccionCliente"
-                        disabled>
-                    </textarea>
-
-                </mat-form-field>
-
-            </div>
-
-            <!-- ESTADO SIN CONSULTA -->
-
-            <div
-                class="aviso-documento"
-                *ngIf="
-                    tipoComprobante !== 'VENTA RAPIDA' &&
-                    !documentoConsultado &&
-                    !consultandoDocumento
-                ">
-
-                <mat-icon>
-                    info
-                </mat-icon>
-
-                <span>
-                    {{
-                        tipoComprobante === 'BOLETA'
-                            ? 'Ingrese y consulte el DNI del cliente.'
-                            : 'Ingrese y consulte el RUC de la empresa.'
-                    }}
-                </span>
-
-            </div>
-
-            <!-- ESTADO CONSULTANDO -->
-
-            <div
-                class="aviso-documento consultando"
-                *ngIf="consultandoDocumento">
-
-                <mat-icon>
-                    hourglass_top
-                </mat-icon>
-
-                <span>
-                    Consultando información...
-                </span>
-
-            </div>
-
-            <hr>
-
-            <!-- ====================================== -->
-            <!-- RESUMEN -->
-            <!-- ====================================== -->
-
-            <div class="resumen-comprobante">
-
-                <div>
-
-                    <span>
-                        Comprobante
-                    </span>
-
-                    <strong>
-                        {{ tipoComprobante }}
-                    </strong>
-
-                </div>
-
-                <div>
-
                     <span>
                         Cliente
                     </span>
 
                     <strong>
-                        {{
-                            nombreCliente ||
-                            'Sin consultar'
-                        }}
-                    </strong>
-
-                </div>
-
-                <div
-                    *ngIf="
-                        tipoComprobante !== 'VENTA RAPIDA'
-                    ">
-
-                    <span>
-                        Documento
-                    </span>
-
-                    <strong>
-                        {{
-                            numeroDocumento ||
-                            'Sin ingresar'
-                        }}
+                        Público general
                     </strong>
 
                 </div>
 
             </div>
+
+            <!-- DNI / RUC -->
+
+            <div
+                class="datos-documento"
+                *ngIf="
+                    tipoComprobante !==
+                    'VENTA RAPIDA'
+                ">
+
+                <div class="consulta-documento">
+
+                    <mat-form-field appearance="outline">
+
+                        <mat-label>
+
+                            {{
+                                tipoComprobante ===
+                                'BOLETA'
+                                    ? 'DNI'
+                                    : 'RUC'
+                            }}
+
+                        </mat-label>
+
+                        <input
+                            matInput
+                            inputmode="numeric"
+                            autocomplete="off"
+                            [placeholder]="
+                                tipoComprobante ===
+                                'BOLETA'
+                                    ? '8 dígitos'
+                                    : '11 dígitos'
+                            "
+                            [maxlength]="
+                                tipoComprobante ===
+                                'BOLETA'
+                                    ? 8
+                                    : 11
+                            "
+                            [(ngModel)]="numeroDocumento"
+                            [disabled]="
+                                registrando ||
+                                consultandoDocumento
+                            "
+                            (ngModelChange)="
+                                limpiarNumeroDocumento()
+                            "
+                            (keyup.enter)="
+                                consultarDocumento()
+                            ">
+
+                    </mat-form-field>
+
+                    <button
+                        type="button"
+                        mat-flat-button
+                        class="boton-consultar"
+                        [disabled]="
+                            registrando ||
+                            consultandoDocumento ||
+                            !numeroDocumento
+                        "
+                        (click)="consultarDocumento()">
+
+                        <mat-icon>
+                            {{
+                                consultandoDocumento
+                                    ? 'hourglass_top'
+                                    : 'search'
+                            }}
+                        </mat-icon>
+
+                    </button>
+
+                </div>
+
+                <!-- RESULTADO ENCONTRADO -->
+
+                <div
+                    class="resultado-documento encontrado"
+                    *ngIf="
+                        estadoConsultaDocumento ===
+                        'encontrado'
+                    ">
+
+                    <mat-icon>
+                        check_circle
+                    </mat-icon>
+
+                    <div class="resultado-contenido">
+
+                        <span>
+
+                            {{
+                                tipoComprobante ===
+                                'BOLETA'
+                                    ? 'Cliente encontrado'
+                                    : 'Empresa encontrada'
+                            }}
+
+                        </span>
+
+                        <strong>
+                            {{ nombreCliente }}
+                        </strong>
+
+                        <p
+                            *ngIf="
+                                tipoComprobante ===
+                                'FACTURA' &&
+                                direccionCliente
+                            ">
+
+                            {{ direccionCliente }}
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <!-- ESTADOS DE CONSULTA -->
+
+                <div
+                    class="estado-documento"
+                    [class.consultando]="
+                        estadoConsultaDocumento ===
+                        'consultando'
+                    "
+                    [class.no-encontrado]="
+                        estadoConsultaDocumento ===
+                        'no_encontrado'
+                    "
+                    [class.advertencia]="
+                        estadoConsultaDocumento ===
+                        'advertencia'
+                    "
+                    [class.error]="
+                        estadoConsultaDocumento ===
+                        'error'
+                    "
+                    *ngIf="
+                        estadoConsultaDocumento !==
+                        'inicial' &&
+                        estadoConsultaDocumento !==
+                        'encontrado'
+                    ">
+
+                    <mat-icon>
+
+                        {{
+                            estadoConsultaDocumento ===
+                            'consultando'
+                                ? 'hourglass_top'
+                                : estadoConsultaDocumento ===
+                                  'error'
+                                    ? 'error'
+                                    : estadoConsultaDocumento ===
+                                      'no_encontrado'
+                                        ? 'search_off'
+                                        : 'warning'
+                        }}
+
+                    </mat-icon>
+
+                    <span>
+                        {{ mensajeConsultaDocumento }}
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- IMPORTES -->
+
+            <div class="resumen-importes">
+
+                <div>
+
+                    <span>
+                        Subtotal
+                    </span>
+
+                    <strong>
+                        S/ {{ subtotal | number:'1.2-2' }}
+                    </strong>
+
+                </div>
+
+                <div class="fila-total">
+
+                    <span>
+                        Total
+                    </span>
+
+                    <strong>
+                        S/ {{ total | number:'1.2-2' }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                mat-flat-button
+                class="boton-registrar"
+                [disabled]="!puedeRegistrar"
+                (click)="registrarVenta()">
+
+                <mat-icon>
+                    {{
+                        registrando
+                            ? 'hourglass_top'
+                            : 'check_circle'
+                    }}
+                </mat-icon>
+
+                {{
+                    registrando
+                        ? 'Registrando...'
+                        : 'Registrar venta'
+                }}
+
+            </button>
 
         </mat-card>
 
