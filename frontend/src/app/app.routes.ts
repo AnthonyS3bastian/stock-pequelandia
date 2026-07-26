@@ -106,6 +106,26 @@ export const routes: Routes = [
       },
 
       {
+        path: 'usuarios',
+        canActivate: [
+          rolGuard
+        ],
+        data: {
+          roles: [
+            'ADMINISTRADOR'
+          ]
+        },
+        loadComponent: () =>
+          import(
+            './features/usuarios/pages/usuarios/usuarios'
+          )
+            .then(
+              modulo =>
+                modulo.UsuariosComponent
+            )
+      },
+
+      {
         path: 'perfil',
         loadComponent: () =>
           import(

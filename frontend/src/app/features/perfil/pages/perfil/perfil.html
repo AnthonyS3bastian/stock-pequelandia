@@ -1,264 +1,227 @@
-<section class="pagina-perfil">
+<section class="perfil-pagina">
 
-    <div class="cabecera-pagina">
+  <header class="cabecera-pagina">
+    <span class="etiqueta-seccion">
+      CUENTA
+    </span>
 
-        <div>
+    <h2>Mi perfil</h2>
 
-            <h1>
-                Mi perfil
-            </h1>
+    <p>
+      Revisa tus datos personales y actualiza tu contraseña.
+    </p>
+  </header>
 
-            <p>
-                Consulta la informacion asociada a tu cuenta.
-            </p>
+  @if (cargando()) {
+
+    <div class="estado-carga">
+      <mat-icon>hourglass_top</mat-icon>
+      <span>Cargando perfil...</span>
+    </div>
+
+  } @else if (perfil()) {
+
+    <div class="perfil-grid">
+
+      <article class="tarjeta datos-perfil">
+
+        <div class="identidad">
+
+          <div class="avatar-grande">
+            {{ iniciales() }}
+          </div>
+
+          <div>
+            <h3>{{ nombreCompleto() }}</h3>
+            <span>{{ rolFormateado() }}</span>
+          </div>
 
         </div>
+
+        <div class="lista-datos">
+
+          <div class="dato">
+            <mat-icon>badge</mat-icon>
+            <div>
+              <span>DNI</span>
+              <strong>
+                {{ perfil()?.personal?.dni_personal ?? 'No registrado' }}
+              </strong>
+            </div>
+          </div>
+
+          <div class="dato">
+            <mat-icon>person</mat-icon>
+            <div>
+              <span>Nombre de usuario</span>
+              <strong>
+                {{ perfil()?.nombre_usuario }}
+              </strong>
+            </div>
+          </div>
+
+          <div class="dato">
+            <mat-icon>phone</mat-icon>
+            <div>
+              <span>Telefono</span>
+              <strong>
+                {{ perfil()?.personal?.tel_personal || 'No registrado' }}
+              </strong>
+            </div>
+          </div>
+
+          <div class="dato">
+            <mat-icon>verified_user</mat-icon>
+            <div>
+              <span>Estado de la cuenta</span>
+              <strong class="estado-activo">
+                {{ perfil()?.estado_usuario ? 'Activo' : 'Inactivo' }}
+              </strong>
+            </div>
+          </div>
+
+        </div>
+
+      </article>
+
+      <article class="tarjeta cambio-password">
+
+        <div class="cabecera-tarjeta">
+          <mat-icon>lock</mat-icon>
+
+          <div>
+            <h3>Cambiar contraseña</h3>
+            <p>
+              Usa una contraseña nueva de al menos 8 caracteres.
+            </p>
+          </div>
+        </div>
+
+        <form
+          [formGroup]="formulario"
+          (ngSubmit)="cambiarPassword()">
+
+          <div class="campo">
+            <label for="password_actual">
+              Contraseña actual
+            </label>
+
+            <div class="entrada-password">
+              <input
+                id="password_actual"
+                [type]="mostrarActual() ? 'text' : 'password'"
+                formControlName="password_actual"
+                autocomplete="current-password">
+
+              <button
+                type="button"
+                aria-label="Mostrar u ocultar contraseña actual"
+                (click)="alternarPasswordActual()">
+                <mat-icon>
+                  {{ mostrarActual() ? 'visibility_off' : 'visibility' }}
+                </mat-icon>
+              </button>
+            </div>
+
+            @if (
+              formulario.controls.password_actual.invalid &&
+              formulario.controls.password_actual.touched
+            ) {
+              <small>La contraseña actual es obligatoria.</small>
+            }
+          </div>
+
+          <div class="campo">
+            <label for="password">
+              Nueva contraseña
+            </label>
+
+            <div class="entrada-password">
+              <input
+                id="password"
+                [type]="mostrarNueva() ? 'text' : 'password'"
+                formControlName="password"
+                autocomplete="new-password">
+
+              <button
+                type="button"
+                aria-label="Mostrar u ocultar nueva contraseña"
+                (click)="alternarPasswordNueva()">
+                <mat-icon>
+                  {{ mostrarNueva() ? 'visibility_off' : 'visibility' }}
+                </mat-icon>
+              </button>
+            </div>
+
+            @if (
+              formulario.controls.password.invalid &&
+              formulario.controls.password.touched
+            ) {
+              <small>
+                Debe tener entre 8 y 100 caracteres.
+              </small>
+            }
+          </div>
+
+          <div class="campo">
+            <label for="password_confirmation">
+              Confirmar nueva contraseña
+            </label>
+
+            <div class="entrada-password">
+              <input
+                id="password_confirmation"
+                [type]="mostrarConfirmacion() ? 'text' : 'password'"
+                formControlName="password_confirmation"
+                autocomplete="new-password">
+
+              <button
+                type="button"
+                aria-label="Mostrar u ocultar confirmación"
+                (click)="alternarConfirmacion()">
+                <mat-icon>
+                  {{ mostrarConfirmacion() ? 'visibility_off' : 'visibility' }}
+                </mat-icon>
+              </button>
+            </div>
+
+            @if (
+              formulario.controls.password_confirmation.touched &&
+              formulario.controls.password_confirmation.hasError('required')
+            ) {
+              <small>Confirma la nueva contraseña.</small>
+            }
+
+            @if (
+              formulario.controls.password_confirmation.touched &&
+              formulario.controls.password_confirmation.hasError('noCoincide')
+            ) {
+              <small>Las contraseñas no coinciden.</small>
+            }
+          </div>
+
+          <button
+            mat-flat-button
+            type="submit"
+            class="boton-principal"
+            [disabled]="guardando()">
+
+            <mat-icon>save</mat-icon>
+
+            @if (guardando()) {
+              Guardando...
+            } @else {
+              Actualizar contraseña
+            }
+
+          </button>
+
+        </form>
+
+      </article>
 
     </div>
 
-    @if (cargando()) {
-
-        <div class="estado-carga">
-
-            <mat-spinner
-                diameter="42">
-            </mat-spinner>
-
-            <span>
-                Cargando perfil...
-            </span>
-
-        </div>
-
-    } @else if (error()) {
-
-        <mat-card class="tarjeta-error">
-
-            <mat-icon>
-                error_outline
-            </mat-icon>
-
-            <div>
-
-                <strong>
-                    No se pudo cargar el perfil
-                </strong>
-
-                <p>
-                    {{ error() }}
-                </p>
-
-            </div>
-
-            <button
-                mat-stroked-button
-                type="button"
-                (click)="cargarPerfil()">
-
-                Reintentar
-
-            </button>
-
-        </mat-card>
-
-    } @else if (perfil(); as perfilActual) {
-
-        <div class="contenido-perfil">
-
-            <mat-card class="tarjeta-identidad">
-
-                <div class="avatar-grande">
-
-                    {{ obtenerIniciales() }}
-
-                </div>
-
-                <h2>
-
-                    {{ obtenerNombreCompleto() }}
-
-                </h2>
-
-                <span class="nombre-cuenta">
-
-                    @{{ perfilActual.nombre_usuario }}
-
-                </span>
-
-                <span
-                    class="etiqueta-rol">
-
-                    {{ formatearRol(
-                        perfilActual.rol_usuario
-                    ) }}
-
-                </span>
-
-                <span
-                    class="estado-cuenta"
-                    [class.inactivo]="
-                        !perfilActual.estado_usuario
-                    ">
-
-                    <mat-icon>
-
-                        {{
-                            perfilActual.estado_usuario
-                                ? 'check_circle'
-                                : 'cancel'
-                        }}
-
-                    </mat-icon>
-
-                    {{
-                        perfilActual.estado_usuario
-                            ? 'Cuenta activa'
-                            : 'Cuenta inactiva'
-                    }}
-
-                </span>
-
-            </mat-card>
-
-            <mat-card class="tarjeta-informacion">
-
-                <div class="titulo-tarjeta">
-
-                    <div class="icono-titulo">
-
-                        <mat-icon>
-                            person
-                        </mat-icon>
-
-                    </div>
-
-                    <div>
-
-                        <h2>
-                            Informacion personal
-                        </h2>
-
-                        <p>
-                            Datos registrados en el sistema.
-                        </p>
-
-                    </div>
-
-                </div>
-
-                <div class="cuadricula-datos">
-
-                    <div class="campo-dato">
-
-                        <span class="etiqueta">
-                            Nombres
-                        </span>
-
-                        <strong>
-
-                            {{
-                                perfilActual.personal
-                                    .nombre_personal
-                            }}
-
-                        </strong>
-
-                    </div>
-
-                    <div class="campo-dato">
-
-                        <span class="etiqueta">
-                            Apellidos
-                        </span>
-
-                        <strong>
-
-                            {{
-                                perfilActual.personal
-                                    .apellido_personal
-                            }}
-
-                        </strong>
-
-                    </div>
-
-                    <div class="campo-dato">
-
-                        <span class="etiqueta">
-                            DNI
-                        </span>
-
-                        <strong>
-
-                            {{
-                                perfilActual.personal
-                                    .dni_personal
-                            }}
-
-                        </strong>
-
-                    </div>
-
-                    <div class="campo-dato">
-
-                        <span class="etiqueta">
-                            Telefono
-                        </span>
-
-                        <strong>
-
-                            {{
-                                perfilActual.personal
-                                    .tel_personal ||
-                                'No registrado'
-                            }}
-
-                        </strong>
-
-                    </div>
-
-                    <div class="campo-dato">
-
-                        <span class="etiqueta">
-                            Nombre de usuario
-                        </span>
-
-                        <strong>
-
-                            {{
-                                perfilActual
-                                    .nombre_usuario
-                            }}
-
-                        </strong>
-
-                    </div>
-
-                    <div class="campo-dato">
-
-                        <span class="etiqueta">
-                            Rol
-                        </span>
-
-                        <strong>
-
-                            {{
-                                formatearRol(
-                                    perfilActual
-                                        .rol_usuario
-                                )
-                            }}
-
-                        </strong>
-
-                    </div>
-
-                </div>
-
-            </mat-card>
-
-        </div>
-
-    }
+  }
 
 </section>

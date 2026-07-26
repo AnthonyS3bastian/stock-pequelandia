@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CambiarPasswordRequest;
 use App\Models\Usuario;
 use App\Services\UsuarioService;
 use Illuminate\Http\JsonResponse;
@@ -9,13 +10,9 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    protected UsuarioService $usuarioService;
-
     public function __construct(
-        UsuarioService $usuarioService
+        private readonly UsuarioService $usuarioService
     ) {
-        $this->usuarioService =
-            $usuarioService;
     }
 
     /**
@@ -75,6 +72,31 @@ class AuthController extends Controller
 
         return response()->json([
             'perfil' => $perfil,
+        ]);
+    }
+
+    /**
+     * Cambiar la contrasena propia.
+     */
+    public function cambiarPassword(
+        CambiarPasswordRequest $request
+    ): JsonResponse {
+
+        /** @var Usuario $usuario */
+        $usuario = $request->user();
+
+        $datos = $request->validated();
+
+        $this->usuarioService
+            ->cambiarPassword(
+                $usuario,
+                $datos['password_actual'],
+                $datos['password']
+            );
+
+        return response()->json([
+            'mensaje' =>
+                'Contrasena actualizada correctamente.',
         ]);
     }
 

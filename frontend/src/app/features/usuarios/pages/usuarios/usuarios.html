@@ -1,0 +1,329 @@
+<section class="usuarios-pagina">
+
+  <header class="cabecera-pagina">
+
+    <div>
+      <span class="etiqueta-seccion">
+        ADMINISTRACION
+      </span>
+
+      <h2>Gestion de usuarios</h2>
+
+      <p>
+        Crea cuentas para empleadas y controla su acceso al sistema.
+      </p>
+    </div>
+
+    <button
+      mat-flat-button
+      type="button"
+      class="boton-principal"
+      (click)="abrirFormulario()">
+
+      <mat-icon>person_add</mat-icon>
+      Nuevo empleado
+
+    </button>
+
+  </header>
+
+  @if (mostrarFormulario()) {
+
+    <article class="panel-formulario">
+
+      <div class="cabecera-formulario">
+
+        <div>
+          <h3>Nueva cuenta de empleado</h3>
+          <p>
+            La contraseña inicial sera automaticamente el DNI.
+          </p>
+        </div>
+
+        <button
+          mat-icon-button
+          type="button"
+          aria-label="Cerrar formulario"
+          [disabled]="guardando()"
+          (click)="cerrarFormulario()">
+
+          <mat-icon>close</mat-icon>
+
+        </button>
+
+      </div>
+
+      <form
+        class="formulario"
+        [formGroup]="formulario"
+        (ngSubmit)="crearEmpleado()">
+
+        <div class="campo">
+          <label for="dni_personal">DNI</label>
+          <input
+            id="dni_personal"
+            type="text"
+            inputmode="numeric"
+            maxlength="8"
+            formControlName="dni_personal"
+            placeholder="73651248">
+
+          @if (
+            formulario.controls.dni_personal.invalid &&
+            formulario.controls.dni_personal.touched
+          ) {
+            <small>Ingresa un DNI valido de 8 digitos.</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="nombre_personal">Nombres</label>
+          <input
+            id="nombre_personal"
+            type="text"
+            maxlength="50"
+            formControlName="nombre_personal"
+            placeholder="Maria Elena">
+
+          @if (
+            formulario.controls.nombre_personal.invalid &&
+            formulario.controls.nombre_personal.touched
+          ) {
+            <small>Los nombres son obligatorios.</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="apellido_personal">Apellidos</label>
+          <input
+            id="apellido_personal"
+            type="text"
+            maxlength="50"
+            formControlName="apellido_personal"
+            placeholder="Perez Quispe">
+
+          @if (
+            formulario.controls.apellido_personal.invalid &&
+            formulario.controls.apellido_personal.touched
+          ) {
+            <small>Los apellidos son obligatorios.</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="tel_personal">Telefono opcional</label>
+          <input
+            id="tel_personal"
+            type="text"
+            inputmode="numeric"
+            maxlength="12"
+            formControlName="tel_personal"
+            placeholder="987654321">
+
+          @if (
+            formulario.controls.tel_personal.invalid &&
+            formulario.controls.tel_personal.touched
+          ) {
+            <small>Ingresa entre 6 y 12 numeros.</small>
+          }
+        </div>
+
+        <div class="campo campo-usuario">
+          <label for="nombre_usuario">Nombre de usuario</label>
+          <input
+            id="nombre_usuario"
+            type="text"
+            maxlength="50"
+            formControlName="nombre_usuario"
+            placeholder="mariaperez">
+
+          @if (
+            formulario.controls.nombre_usuario.invalid &&
+            formulario.controls.nombre_usuario.touched
+          ) {
+            <small>
+              Usa al menos 3 caracteres, sin espacios ni tildes.
+            </small>
+          }
+        </div>
+
+        <div class="acciones-formulario">
+
+          <button
+            mat-button
+            type="button"
+            [disabled]="guardando()"
+            (click)="cerrarFormulario()">
+            Cancelar
+          </button>
+
+          <button
+            mat-flat-button
+            type="submit"
+            class="boton-principal"
+            [disabled]="guardando()">
+
+            <mat-icon>save</mat-icon>
+
+            @if (guardando()) {
+              Guardando...
+            } @else {
+              Crear empleado
+            }
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </article>
+
+  }
+
+  <article class="panel-listado">
+
+    <div class="cabecera-listado">
+      <div>
+        <h3>Cuentas registradas</h3>
+        <p>
+          {{ usuarios().length }} usuario(s) en el sistema
+        </p>
+      </div>
+    </div>
+
+    @if (cargando()) {
+
+      <div class="estado-vacio">
+        <mat-icon>hourglass_top</mat-icon>
+        <p>Cargando usuarios...</p>
+      </div>
+
+    } @else if (usuarios().length === 0) {
+
+      <div class="estado-vacio">
+        <mat-icon>group_off</mat-icon>
+        <p>No hay usuarios registrados.</p>
+      </div>
+
+    } @else {
+
+      <div class="tabla-contenedor">
+
+        <table>
+          <thead>
+            <tr>
+              <th>Persona</th>
+              <th>Usuario</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th class="columna-acciones">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            @for (
+              usuario of usuarios();
+              track usuario.id_usuario
+            ) {
+
+              <tr>
+                <td data-label="Persona">
+                  <div class="persona">
+                    <span class="avatar-lista">
+                      {{ nombreCompleto(usuario).charAt(0).toUpperCase() }}
+                    </span>
+
+                    <div>
+                      <strong>
+                        {{ nombreCompleto(usuario) }}
+                      </strong>
+
+                      <span>
+                        DNI {{ usuario.personal?.dni_personal ?? 'No registrado' }}
+                      </span>
+                    </div>
+                  </div>
+                </td>
+
+                <td data-label="Usuario">
+                  <span class="nombre-cuenta">
+                    {{ usuario.nombre_usuario }}
+                  </span>
+                </td>
+
+                <td data-label="Rol">
+                  <span
+                    class="insignia rol"
+                    [class.administrador]="usuario.rol_usuario === 'ADMINISTRADOR'">
+                    {{ usuario.rol_usuario === 'ADMINISTRADOR' ? 'Administrador' : 'Empleado' }}
+                  </span>
+                </td>
+
+                <td data-label="Estado">
+                  <span
+                    class="insignia estado"
+                    [class.inactivo]="!usuario.estado_usuario">
+                    {{ usuario.estado_usuario ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+
+                <td
+                  data-label="Acciones"
+                  class="columna-acciones">
+
+                  @if (usuario.rol_usuario === 'EMPLEADO') {
+
+                    <button
+                      mat-icon-button
+                      type="button"
+                      class="accion"
+                      [class.activar]="!usuario.estado_usuario"
+                      [disabled]="procesandoId() === usuario.id_usuario"
+                      [attr.aria-label]="usuario.estado_usuario ? 'Desactivar cuenta' : 'Activar cuenta'"
+                      [title]="usuario.estado_usuario ? 'Desactivar cuenta' : 'Activar cuenta'"
+                      (click)="cambiarEstado(usuario)">
+
+                      <mat-icon>
+                        {{ usuario.estado_usuario ? 'person_off' : 'person_check' }}
+                      </mat-icon>
+
+                    </button>
+
+                    <button
+                      mat-icon-button
+                      type="button"
+                      class="accion"
+                      [disabled]="procesandoId() === usuario.id_usuario"
+                      aria-label="Restablecer contraseña"
+                      title="Restablecer contraseña al DNI"
+                      (click)="restablecerPassword(usuario)">
+
+                      <mat-icon>lock_reset</mat-icon>
+
+                    </button>
+
+                  } @else {
+
+                    <span class="texto-protegido">
+                      Cuenta protegida
+                    </span>
+
+                  }
+
+                </td>
+              </tr>
+
+            }
+
+          </tbody>
+        </table>
+
+      </div>
+
+    }
+
+  </article>
+
+</section>

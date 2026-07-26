@@ -30,6 +30,9 @@ import {
 } from '../interfaces/login-response.interface';
 
 import {
+  CambiarPasswordRequest,
+  MensajeResponse,
+  PerfilResponse,
   RolUsuario,
   Usuario
 } from '../interfaces/usuario.interface';
@@ -99,6 +102,53 @@ export class AuthService {
 
         })
       );
+
+  }
+
+  obtenerPerfil():
+    Observable<PerfilResponse> {
+
+    return this.http
+      .get<PerfilResponse>(
+        `${this.apiUrl}/perfil`
+      )
+      .pipe(
+        tap(response => {
+
+          const usuarioNormalizado:
+            Usuario = {
+              ...response.perfil,
+              rol_usuario:
+                response.perfil
+                  .rol_usuario
+                  .toUpperCase() as
+                    RolUsuario
+            };
+
+          localStorage.setItem(
+            'usuario',
+            JSON.stringify(
+              usuarioNormalizado
+            )
+          );
+
+          this.usuarioSignal.set(
+            usuarioNormalizado
+          );
+
+        })
+      );
+
+  }
+
+  cambiarPassword(
+    datos: CambiarPasswordRequest
+  ): Observable<MensajeResponse> {
+
+    return this.http.put<MensajeResponse>(
+      `${this.apiUrl}/perfil/password`,
+      datos
+    );
 
   }
 
@@ -302,7 +352,17 @@ export class AuthService {
 
     } catch {
 
-      this.limpiarSesionLocal();
+      localStorage.removeItem(
+        'token'
+      );
+
+      localStorage.removeItem(
+        'usuario'
+      );
+
+      localStorage.removeItem(
+        'ultima_actividad'
+      );
 
       return null;
 

@@ -80,6 +80,11 @@ export class SidebarComponent {
         titulo: 'Reportes',
         icono: 'bar_chart',
         ruta: '/reportes'
+      },
+      {
+        titulo: 'Usuarios',
+        icono: 'manage_accounts',
+        ruta: '/usuarios'
       }
     ];
 

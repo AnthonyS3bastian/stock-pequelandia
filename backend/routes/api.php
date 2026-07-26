@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ConsultaDocumentoController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Support\Facades\Route;
 
@@ -42,6 +43,11 @@ Route::middleware('auth:sanctum')
         Route::get(
             '/perfil',
             [AuthController::class, 'perfil']
+        );
+
+        Route::put(
+            '/perfil/password',
+            [AuthController::class, 'cambiarPassword']
         );
 
         /*
@@ -129,6 +135,32 @@ Route::middleware('auth:sanctum')
 
         Route::middleware('administrador')
             ->group(function (): void {
+
+                /*
+                |--------------------------------------------------------------------------
+                | Gestion de usuarios
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/usuarios',
+                    [UsuarioController::class, 'index']
+                );
+
+                Route::post(
+                    '/usuarios',
+                    [UsuarioController::class, 'store']
+                );
+
+                Route::patch(
+                    '/usuarios/{id}/estado',
+                    [UsuarioController::class, 'cambiarEstado']
+                );
+
+                Route::patch(
+                    '/usuarios/{id}/restablecer-password',
+                    [UsuarioController::class, 'restablecerPassword']
+                );
 
                 /*
                 |--------------------------------------------------------------------------

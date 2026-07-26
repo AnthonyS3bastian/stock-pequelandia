@@ -1,79 +1,253 @@
 import {
+  CommonModule
+} from '@angular/common';
+
+import {
   Component,
-  OnInit,
   inject,
   signal
 } from '@angular/core';
 
 import {
-  CommonModule
-} from '@angular/common';
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
 
 import {
-  MatCardModule
-} from '@angular/material/card';
-
-import {
-  MatIconModule
-} from '@angular/material/icon';
+  HttpErrorResponse
+} from '@angular/common/http';
 
 import {
   MatButtonModule
 } from '@angular/material/button';
 
 import {
-  MatProgressSpinnerModule
-} from '@angular/material/progress-spinner';
+  MatIconModule
+} from '@angular/material/icon';
 
 import {
-  Perfil
-} from '../../interfaces/perfil.interface';
+  MatSnackBar,
+  MatSnackBarModule
+} from '@angular/material/snack-bar';
 
 import {
-  PerfilService
-} from '../../services/perfil.service';
+  AuthService
+} from '../../../../core/services/auth.service';
+
+import {
+  CambiarPasswordRequest,
+  Usuario
+} from '../../../../core/interfaces/usuario.interface';
 
 @Component({
   selector: 'app-perfil',
   standalone: true,
   imports: [
     CommonModule,
-    MatCardModule,
-    MatIconModule,
+    ReactiveFormsModule,
     MatButtonModule,
-    MatProgressSpinnerModule
+    MatIconModule,
+    MatSnackBarModule
   ],
   templateUrl: './perfil.html',
   styleUrl: './perfil.scss'
 })
-export class PerfilComponent
-  implements OnInit {
+export class PerfilComponent {
 
-  private readonly perfilService =
-    inject(PerfilService);
+  private readonly fb =
+    inject(FormBuilder);
+
+  private readonly authService =
+    inject(AuthService);
+
+  private readonly snackBar =
+    inject(MatSnackBar);
 
   readonly perfil =
-    signal<Perfil | null>(null);
+    signal<Usuario | null>(
+      this.authService.getUsuario()
+    );
 
   readonly cargando =
     signal(true);
 
-  readonly error =
-    signal('');
+  readonly guardando =
+    signal(false);
 
-  ngOnInit(): void {
+  readonly mostrarActual =
+    signal(false);
 
+  readonly mostrarNueva =
+    signal(false);
+
+  readonly mostrarConfirmacion =
+    signal(false);
+
+  readonly formulario =
+    this.fb.nonNullable.group({
+      password_actual: [
+        '',
+        [
+          Validators.required
+        ]
+      ],
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(8),
+          Validators.maxLength(100)
+        ]
+      ],
+      password_confirmation: [
+        '',
+        [
+          Validators.required
+        ]
+      ]
+    });
+
+  constructor() {
     this.cargarPerfil();
+  }
+
+
+  alternarPasswordActual(): void {
+
+    this.mostrarActual.update(
+      valor => !valor
+    );
 
   }
 
-  cargarPerfil(): void {
+  alternarPasswordNueva(): void {
+
+    this.mostrarNueva.update(
+      valor => !valor
+    );
+
+  }
+
+  alternarConfirmacion(): void {
+
+    this.mostrarConfirmacion.update(
+      valor => !valor
+    );
+
+  }
+
+  cambiarPassword(): void {
+
+    if (this.formulario.invalid) {
+
+      this.formulario.markAllAsTouched();
+
+      return;
+
+    }
+
+    const valores =
+      this.formulario.getRawValue();
+
+    if (
+      valores.password !==
+      valores.password_confirmation
+    ) {
+
+      this.formulario.controls
+        .password_confirmation
+        .setErrors({
+          noCoincide: true
+        });
+
+      this.formulario.controls
+        .password_confirmation
+        .markAsTouched();
+
+      return;
+
+    }
+
+    const datos:
+      CambiarPasswordRequest = valores;
+
+    this.guardando.set(true);
+
+    this.authService
+      .cambiarPassword(datos)
+      .subscribe({
+        next: response => {
+
+          this.guardando.set(false);
+
+          this.formulario.reset();
+
+          this.mostrarMensaje(
+            response.mensaje
+          );
+
+        },
+        error: error => {
+
+          this.guardando.set(false);
+
+          this.mostrarMensaje(
+            this.obtenerMensajeError(error),
+            true
+          );
+
+        }
+      });
+
+  }
+
+  nombreCompleto(): string {
+
+    const usuario =
+      this.perfil();
+
+    if (!usuario?.personal) {
+      return usuario?.nombre_usuario ?? 'Usuario';
+    }
+
+    return `${usuario.personal.nombre_personal} ${usuario.personal.apellido_personal}`;
+
+  }
+
+  rolFormateado(): string {
+
+    return this.perfil()?.rol_usuario ===
+      'ADMINISTRADOR'
+        ? 'Administrador'
+        : 'Empleado';
+
+  }
+
+  iniciales(): string {
+
+    const partes =
+      this.nombreCompleto()
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+
+    if (partes.length >= 2) {
+      return `${partes[0][0]}${partes[1][0]}`
+        .toUpperCase();
+    }
+
+    return this.nombreCompleto()
+      .substring(0, 2)
+      .toUpperCase();
+
+  }
+
+  private cargarPerfil(): void {
 
     this.cargando.set(true);
 
-    this.error.set('');
-
-    this.perfilService
+    this.authService
       .obtenerPerfil()
       .subscribe({
         next: response => {
@@ -85,80 +259,65 @@ export class PerfilComponent
           this.cargando.set(false);
 
         },
-        error: () => {
-
-          this.error.set(
-            'No se pudo cargar la informacion del perfil.'
-          );
+        error: error => {
 
           this.cargando.set(false);
+
+          this.mostrarMensaje(
+            this.obtenerMensajeError(error),
+            true
+          );
 
         }
       });
 
   }
 
-  obtenerNombreCompleto(): string {
+  private mostrarMensaje(
+    mensaje: string,
+    esError = false
+  ): void {
 
-    const perfilActual =
-      this.perfil();
-
-    if (!perfilActual?.personal) {
-      return perfilActual
-        ?.nombre_usuario ?? '';
-    }
-
-    return [
-      perfilActual
-        .personal
-        .nombre_personal,
-      perfilActual
-        .personal
-        .apellido_personal
-    ]
-      .filter(Boolean)
-      .join(' ');
+    this.snackBar.open(
+      mensaje,
+      'Cerrar',
+      {
+        duration: 5000,
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        panelClass: esError
+          ? ['snackbar-error']
+          : ['snackbar-exito']
+      }
+    );
 
   }
 
-  obtenerIniciales(): string {
-
-    const nombreCompleto =
-      this.obtenerNombreCompleto()
-        .trim();
-
-    if (!nombreCompleto) {
-      return 'US';
-    }
-
-    const partes =
-      nombreCompleto
-        .split(/\s+/)
-        .filter(Boolean);
-
-    if (partes.length >= 2) {
-      return (
-        partes[0][0] +
-        partes[1][0]
-      ).toUpperCase();
-    }
-
-    return nombreCompleto
-      .substring(0, 2)
-      .toUpperCase();
-
-  }
-
-  formatearRol(
-    rol: string
+  private obtenerMensajeError(
+    error: HttpErrorResponse
   ): string {
 
-    return rol
-      .toLowerCase()
-      .replace(
-        /(^\w|\s\w)/g,
-        letra => letra.toUpperCase()
-      );
+    const errores =
+      error.error?.errors as
+        Record<string, string[]> |
+        undefined;
+
+    if (errores) {
+
+      const primerError =
+        Object.values(errores)[0]?.[0];
+
+      if (primerError) {
+        return primerError;
+      }
+
+    }
+
+    return (
+      error.error?.mensaje ??
+      error.error?.message ??
+      'No se pudo completar la operacion.'
+    );
 
   }
 
