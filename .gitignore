@@ -1,20 +1,95 @@
+# ==================================================
 # Laravel
+# ==================================================
+
 backend/vendor/
 backend/node_modules/
-backend/.env
-backend/storage/*.key
-backend/bootstrap/cache/*.php
 
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+backend/storage/*.key
+backend/storage/logs/*
+!backend/storage/logs/.gitignore
+
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/testing/*
+backend/storage/framework/views/*
+
+backend/bootstrap/cache/*
+!backend/bootstrap/cache/.gitignore
+
+backend/public/storage
+backend/.phpunit.result.cache
+backend/.phpunit.cache/
+backend/coverage/
+
+# Base de datos local
+backend/database/*.sqlite
+backend/database/*.sqlite-journal
+
+# ==================================================
 # Angular
+# ==================================================
+
 frontend/node_modules/
 frontend/dist/
+frontend/.angular/cache/
+frontend/coverage/
+frontend/.cache/
 
-# Visual Studio Code
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# Registros de gestores de paquetes
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# ==================================================
+# Documentos privados
+# Colocar aquí actas firmadas, DNI, teléfonos y datos reales
+# ==================================================
+
+docs/privado/
+docs/actas_firmadas/
+docs/evidencias_privadas/
+backups/
+
+# ==================================================
+# Editores
+# ==================================================
+
 .vscode/
+.idea/
+*.code-workspace
 
-# Logs
+# ==================================================
+# Archivos temporales y registros
+# ==================================================
+
 *.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+~$*
 
-# Sistema
+# Claves y certificados privados
+*.pem
+*.key
+*.p12
+*.pfx
+
+# ==================================================
+# Sistema operativo
+# ==================================================
+
 .DS_Store
 Thumbs.db
+desktop.ini
