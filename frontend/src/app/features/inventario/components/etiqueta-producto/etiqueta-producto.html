@@ -1,12 +1,14 @@
 <div class="etiqueta-producto">
 
-  <header class="etiqueta-header">
+  <header class="encabezado">
 
-    <div class="titulo-header">
+    <div class="encabezado-identidad">
 
-      <span class="icono-header">
+      <span class="encabezado-icono">
 
-        <mat-icon>qr_code_2</mat-icon>
+        <mat-icon>
+          qr_code_2
+        </mat-icon>
 
       </span>
 
@@ -17,7 +19,7 @@
         </h2>
 
         <p>
-          Genera el sticker e imprime las copias necesarias.
+          Vista previa e impresión directa.
         </p>
 
       </div>
@@ -27,20 +29,23 @@
     <button
       mat-icon-button
       type="button"
-      aria-label="Cerrar etiqueta"
+      aria-label="Cerrar"
+      [disabled]="operacionEnCurso"
       (click)="cerrarVista()">
 
-      <mat-icon>close</mat-icon>
+      <mat-icon>
+        close
+      </mat-icon>
 
     </button>
 
   </header>
 
-  <div class="etiqueta-contenido">
+  <main class="contenido">
 
-    <section class="panel-vista-previa">
+    <section class="tarjeta tarjeta-preview">
 
-      <div class="panel-titulo">
+      <div class="titulo-seccion">
 
         <div>
 
@@ -49,7 +54,7 @@
           </h3>
 
           <p>
-            La impresión conservará el tamaño seleccionado.
+            Una etiqueta por cada copia.
           </p>
 
         </div>
@@ -66,8 +71,8 @@
 
         <article
           class="etiqueta-preview"
-          [style.aspect-ratio]="
-            anchoEtiquetaMm + ' / ' + altoEtiquetaMm
+          [class.etiqueta-grande]="
+            tamanoEtiqueta === '60x40'
           ">
 
           <div class="preview-negocio">
@@ -89,7 +94,7 @@
               [attr.viewBox]="
                 '0 0 '
                 + codigoBarras.anchoTotal
-                + ' 58'
+                + ' 52'
               "
               preserveAspectRatio="none"
               role="img"
@@ -107,7 +112,7 @@
                   [attr.x]="barra.x"
                   y="0"
                   [attr.width]="barra.ancho"
-                  height="58">
+                  height="52">
                 </rect>
 
               }
@@ -124,12 +129,12 @@
 
             <div class="codigo-invalido">
 
-              <mat-icon>error_outline</mat-icon>
+              <mat-icon>
+                error_outline
+              </mat-icon>
 
               <span>
-
                 {{ codigoBarras.mensaje }}
-
               </span>
 
             </div>
@@ -146,35 +151,20 @@
 
       </div>
 
-      @if (codigoMuyLargo) {
-
-        <div class="aviso-codigo">
-
-          <mat-icon>warning_amber</mat-icon>
-
-          <span>
-            El código es largo. Para facilitar la lectura del escáner,
-            usa la etiqueta de 60 × 40 mm.
-          </span>
-
-        </div>
-
-      }
-
     </section>
 
-    <section class="panel-configuracion">
+    <section class="tarjeta tarjeta-configuracion">
 
-      <div class="panel-titulo">
+      <div class="titulo-seccion">
 
         <div>
 
           <h3>
-            Configuración de impresión
+            Configuración
           </h3>
 
           <p>
-            Selecciona el papel y la cantidad de etiquetas.
+            Define el tamaño y la cantidad.
           </p>
 
         </div>
@@ -183,52 +173,18 @@
 
       <div class="configuracion-grid">
 
-        <label class="campo-configuracion">
-
-          <span>
-            Tipo de impresión
-          </span>
-
-          <select
-            [(ngModel)]="modoImpresion">
-
-            <option value="termica">
-              Impresora térmica
-            </option>
-
-            <option value="a4">
-              Hoja A4
-            </option>
-
-          </select>
-
-          <small>
-
-            @if (modoImpresion === 'termica') {
-
-              Una etiqueta por página.
-
-            } @else {
-
-              Varias etiquetas organizadas en una hoja.
-
-            }
-
-          </small>
-
-        </label>
-
-        <label class="campo-configuracion">
+        <label class="campo">
 
           <span>
             Tamaño de etiqueta
           </span>
 
           <select
-            [(ngModel)]="tamanoEtiqueta">
+            [(ngModel)]="tamanoEtiqueta"
+            [disabled]="operacionEnCurso">
 
             <option value="50x30">
-              50 × 30 mm
+              50 × 30 mm · compacta
             </option>
 
             <option value="60x40">
@@ -237,61 +193,195 @@
 
           </select>
 
-          <small>
-            Elige el tamaño configurado en la impresora.
-          </small>
-
         </label>
 
-        <label class="campo-configuracion">
+        <label class="campo">
 
           <span>
             Número de copias
           </span>
 
-          <input
-            type="number"
-            min="1"
-            max="100"
-            step="1"
-            [(ngModel)]="numeroCopias"
-            (blur)="limitarCopias()">
+          <div class="campo-copias">
 
-          <small>
-            Puedes imprimir entre 1 y 100 etiquetas.
-          </small>
+            <button
+              type="button"
+              aria-label="Disminuir copias"
+              [disabled]="
+                operacionEnCurso
+                || numeroCopias <= 1
+              "
+              (click)="
+                numeroCopias = numeroCopias - 1
+              ">
+
+              <mat-icon>
+                remove
+              </mat-icon>
+
+            </button>
+
+            <input
+              type="number"
+              min="1"
+              max="100"
+              step="1"
+              [(ngModel)]="numeroCopias"
+              [disabled]="operacionEnCurso"
+              (blur)="limitarCopias()">
+
+            <button
+              type="button"
+              aria-label="Aumentar copias"
+              [disabled]="
+                operacionEnCurso
+                || numeroCopias >= 100
+              "
+              (click)="
+                numeroCopias = numeroCopias + 1
+              ">
+
+              <mat-icon>
+                add
+              </mat-icon>
+
+            </button>
+
+          </div>
 
         </label>
 
       </div>
 
-      <div class="recomendaciones">
+      <div class="conexion">
 
-        <mat-icon>info</mat-icon>
+        <div class="conexion-identidad">
 
-        <div>
+          <span
+            class="conexion-icono"
+            [class.conectado]="bluetoothConectado">
 
-          <strong>
-            Antes de imprimir
-          </strong>
+            <mat-icon>
 
-          <p>
-            Selecciona escala 100 %, desactiva encabezados y pies de página,
-            y confirma que el tamaño del papel coincida con la etiqueta.
-          </p>
+              {{
+                bluetoothConectado
+                  ? 'print'
+                  : 'bluetooth'
+              }}
+
+            </mat-icon>
+
+          </span>
+
+          <div>
+
+            <strong>
+              Impresora térmica
+            </strong>
+
+            <span
+              [class.estado-conectado]="
+                bluetoothConectado
+              ">
+
+              @if (bluetoothConectado) {
+
+                {{ nombreImpresoraBluetooth }} conectada
+
+              } @else {
+
+                Sin conexión
+
+              }
+
+            </span>
+
+          </div>
 
         </div>
 
+        @if (bluetoothConectado) {
+
+          <button
+            type="button"
+            class="btn-conexion secundario"
+            [disabled]="operacionEnCurso"
+            (click)="desconectarBluetooth()">
+
+            Desconectar
+
+          </button>
+
+        } @else {
+
+          <button
+            type="button"
+            class="btn-conexion"
+            [disabled]="
+              operacionEnCurso
+              || !bluetoothCompatible
+            "
+            (click)="conectarBluetooth()">
+
+            @if (conectandoBluetooth) {
+
+              Conectando...
+
+            } @else {
+
+              Conectar
+
+            }
+
+          </button>
+
+        }
+
       </div>
 
-      @if (mensajeImpresion) {
+      @if (!bluetoothCompatible) {
 
-        <div class="mensaje-error">
+        <div class="mensaje error">
 
-          <mat-icon>error_outline</mat-icon>
+          <mat-icon>
+            browser_not_supported
+          </mat-icon>
 
           <span>
-            {{ mensajeImpresion }}
+            Abre el sistema en Google Chrome desde localhost o HTTPS.
+          </span>
+
+        </div>
+
+      }
+
+      @if (mensajeEstado) {
+
+        <div
+          class="mensaje"
+          [class.exito]="tipoMensaje === 'exito'"
+          [class.error]="tipoMensaje === 'error'"
+          [class.informacion]="tipoMensaje === 'informacion'">
+
+          <mat-icon>
+
+            @if (tipoMensaje === 'error') {
+
+              error_outline
+
+            } @else if (tipoMensaje === 'exito') {
+
+              check_circle
+
+            } @else {
+
+              info
+
+            }
+
+          </mat-icon>
+
+          <span>
+            {{ mensajeEstado }}
           </span>
 
         </div>
@@ -300,7 +390,7 @@
 
     </section>
 
-  </div>
+  </main>
 
   <footer class="acciones">
 
@@ -308,6 +398,7 @@
       mat-stroked-button
       type="button"
       class="btn-cancelar"
+      [disabled]="operacionEnCurso"
       (click)="cerrarVista()">
 
       Cancelar
@@ -318,12 +409,25 @@
       mat-flat-button
       type="button"
       class="btn-imprimir"
-      [disabled]="!codigoBarras.valido"
-      (click)="imprimir()">
+      [disabled]="
+        operacionEnCurso
+        || !codigoBarras.valido
+        || !bluetoothCompatible
+      "
+      (click)="imprimirBluetoothDirecto()">
 
-      <mat-icon>print</mat-icon>
+      <mat-icon
+        [class.girando]="operacionEnCurso">
 
-      Imprimir etiquetas
+        {{
+          operacionEnCurso
+            ? 'sync'
+            : 'print'
+        }}
+
+      </mat-icon>
+
+      {{ textoBotonImprimir }}
 
     </button>
 

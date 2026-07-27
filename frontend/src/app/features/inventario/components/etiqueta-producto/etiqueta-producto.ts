@@ -1,4 +1,5 @@
 import {
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
@@ -17,12 +18,12 @@ import {
 } from '@angular/forms';
 
 import {
-  MatIconModule
-} from '@angular/material/icon';
-
-import {
   MatButtonModule
 } from '@angular/material/button';
+
+import {
+  MatIconModule
+} from '@angular/material/icon';
 
 import {
   Producto
@@ -33,13 +34,19 @@ import {
   CodigoBarrasService
 } from '../../services/codigo-barras';
 
-type ModoImpresion =
-  | 'termica'
-  | 'a4';
+import {
+  ImpresoraBluetoothService
+} from '../../services/impresora-bluetooth';
 
 type TamanoEtiqueta =
   | '50x30'
   | '60x40';
+
+type TipoMensaje =
+  | 'exito'
+  | 'error'
+  | 'informacion'
+  | null;
 
 @Component({
   selector: 'app-etiqueta-producto',
@@ -47,8 +54,8 @@ type TamanoEtiqueta =
   imports: [
     CommonModule,
     FormsModule,
-    MatIconModule,
-    MatButtonModule
+    MatButtonModule,
+    MatIconModule
   ],
   templateUrl: './etiqueta-producto.html',
   styleUrl: './etiqueta-producto.scss'
@@ -59,19 +66,23 @@ implements OnChanges {
   private readonly codigoBarrasService =
     inject(CodigoBarrasService);
 
+  private readonly impresoraBluetooth =
+    inject(ImpresoraBluetoothService);
+
+  private readonly cdr =
+    inject(ChangeDetectorRef);
+
   @Input({
     required: true
   })
   producto!: Producto;
 
   @Output()
-  cerrar = new EventEmitter<void>();
+  cerrar =
+    new EventEmitter<void>();
 
   readonly nombreNegocio =
     'Pequelandia A & A';
-
-  modoImpresion:
-    ModoImpresion = 'termica';
 
   tamanoEtiqueta:
     TamanoEtiqueta = '50x30';
@@ -87,7 +98,14 @@ implements OnChanges {
       mensaje: null
     };
 
-  mensajeImpresion = '';
+  conectandoBluetooth = false;
+
+  imprimiendoBluetooth = false;
+
+  mensajeEstado = '';
+
+  tipoMensaje:
+    TipoMensaje = null;
 
   ngOnChanges(
     cambios: SimpleChanges
@@ -104,6 +122,8 @@ implements OnChanges {
             this.producto
               .codigo_producto
           );
+
+      this.limpiarMensaje();
 
     }
 
@@ -127,18 +147,70 @@ implements OnChanges {
 
   }
 
-  get codigoMuyLargo(): boolean {
+  get bluetoothCompatible(): boolean {
+
+    return this.impresoraBluetooth
+      .esCompatible();
+
+  }
+
+  get bluetoothConectado(): boolean {
+
+    return this.impresoraBluetooth
+      .estaConectada();
+
+  }
+
+  get nombreImpresoraBluetooth():
+    string {
+
+    return this.impresoraBluetooth
+      .obtenerNombre();
+
+  }
+
+  get textoBotonImprimir(): string {
+
+    if (
+      this.conectandoBluetooth
+    ) {
+
+      return 'Conectando...';
+
+    }
+
+    if (
+      this.imprimiendoBluetooth
+    ) {
+
+      return 'Imprimiendo...';
+
+    }
+
+    return this.bluetoothConectado
+      ? 'Imprimir etiqueta'
+      : 'Conectar e imprimir';
+
+  }
+
+  get operacionEnCurso(): boolean {
 
     return (
-      this.producto
-        .codigo_producto
-        .trim()
-        .length > 24
+      this.conectandoBluetooth
+      || this.imprimiendoBluetooth
     );
 
   }
 
   cerrarVista(): void {
+
+    if (
+      this.operacionEnCurso
+    ) {
+
+      return;
+
+    }
 
     this.cerrar.emit();
 
@@ -148,11 +220,15 @@ implements OnChanges {
 
     const cantidad =
       Math.trunc(
-        Number(this.numeroCopias)
+        Number(
+          this.numeroCopias
+        )
       );
 
     if (
-      Number.isNaN(cantidad)
+      Number.isNaN(
+        cantidad
+      )
     ) {
 
       this.numeroCopias = 1;
@@ -163,60 +239,182 @@ implements OnChanges {
 
     this.numeroCopias =
       Math.min(
-        Math.max(cantidad, 1),
+        Math.max(
+          cantidad,
+          1
+        ),
         100
       );
 
   }
 
-  imprimir(): void {
+  async conectarBluetooth():
+    Promise<void> {
 
-    this.mensajeImpresion = '';
+    if (
+      this.operacionEnCurso
+      || this.bluetoothConectado
+    ) {
+
+      return;
+
+    }
+
+    this.limpiarMensaje();
+
+    this.conectandoBluetooth =
+      true;
+
+    this.forzarActualizacion();
+
+    try {
+
+      const nombre =
+        await this
+          .impresoraBluetooth
+          .conectar();
+
+      this.mostrarMensaje(
+        `${nombre} conectada correctamente.`,
+        'exito'
+      );
+
+    } catch (error) {
+
+      this.mostrarMensaje(
+        this.obtenerMensajeError(
+          error,
+          'No se pudo conectar la impresora.'
+        ),
+        'error'
+      );
+
+    } finally {
+
+      this.conectandoBluetooth =
+        false;
+
+      this.forzarActualizacion();
+
+    }
+
+  }
+
+  desconectarBluetooth(): void {
+
+    if (
+      this.operacionEnCurso
+    ) {
+
+      return;
+
+    }
+
+    this.impresoraBluetooth
+      .desconectar();
+
+    this.mostrarMensaje(
+      'Impresora desconectada.',
+      'informacion'
+    );
+
+    this.forzarActualizacion();
+
+  }
+
+  async imprimirBluetoothDirecto():
+    Promise<void> {
+
+    if (
+      this.operacionEnCurso
+      || !this.codigoBarras.valido
+      || !this.bluetoothCompatible
+    ) {
+
+      return;
+
+    }
 
     this.limitarCopias();
 
-    if (!this.codigoBarras.valido) {
+    this.limpiarMensaje();
 
-      this.mensajeImpresion =
-        this.codigoBarras.mensaje
-        ?? 'No se pudo generar el codigo de barras.';
+    try {
 
-      return;
+      if (
+        !this.bluetoothConectado
+      ) {
 
-    }
+        this.conectandoBluetooth =
+          true;
 
-    const ventana =
-      window.open(
-        '',
-        '_blank',
-        'width=960,height=760'
+        this.forzarActualizacion();
+
+        await this
+          .impresoraBluetooth
+          .conectar();
+
+        this.conectandoBluetooth =
+          false;
+
+        this.forzarActualizacion();
+
+      }
+
+      this.imprimiendoBluetooth =
+        true;
+
+      this.mostrarMensaje(
+        this.numeroCopias === 1
+          ? 'Preparando la etiqueta...'
+          : `Preparando ${this.numeroCopias} etiquetas...`,
+        'informacion'
       );
 
-    if (!ventana) {
+      this.forzarActualizacion();
 
-      this.mensajeImpresion =
-        'El navegador bloqueo la ventana de impresion. Habilita las ventanas emergentes e intenta nuevamente.';
+      await this
+        .esperarRenderizado();
 
-      return;
+      const canvas =
+        this
+          .crearCanvasEtiquetaCompacta();
+
+      await this
+        .impresoraBluetooth
+        .imprimirCanvas(
+          canvas,
+          this.numeroCopias
+        );
+
+      this.mostrarMensaje(
+        this.numeroCopias === 1
+          ? 'Etiqueta impresa correctamente.'
+          : `${this.numeroCopias} etiquetas impresas correctamente.`,
+        'exito'
+      );
+
+    } catch (error) {
+
+      this.mostrarMensaje(
+        this.obtenerMensajeError(
+          error,
+          'No se pudo imprimir la etiqueta.'
+        ),
+        'error'
+      );
+
+    } finally {
+
+      this.conectandoBluetooth =
+        false;
+
+      this.imprimiendoBluetooth =
+        false;
+
+      this.forzarActualizacion();
 
     }
-
-    const contenido =
-      this.crearDocumentoImpresion();
-
-    ventana.document.open();
-    ventana.document.write(contenido);
-    ventana.document.close();
-    ventana.focus();
-
-    window.setTimeout(
-      () => {
-
-        ventana.print();
-
-      },
-      350
-    );
 
   }
 
@@ -232,227 +430,443 @@ implements OnChanges {
         minimumFractionDigits: 2
       }
     ).format(
-      Number(valor ?? 0)
+      Number(
+        valor ?? 0
+      )
     );
 
   }
 
-  private crearDocumentoImpresion():
-    string {
+  private crearCanvasEtiquetaCompacta():
+    HTMLCanvasElement {
 
-    const ancho =
-      this.anchoEtiquetaMm;
+    const anchoPapel = 384;
 
-    const alto =
-      this.altoEtiquetaMm;
+    const esEtiquetaGrande =
+      this.tamanoEtiqueta
+      === '60x40';
 
-    const svg =
-      this.codigoBarrasService
-        .crearSvg(
-          this.producto
-            .codigo_producto,
-          58
-        );
+    /*
+     * Altura enviada a la
+     * impresora térmica.
+     */
+    const altoPapel =
+      esEtiquetaGrande
+        ? 238
+        : 178;
 
-    const nombreNegocio =
-      this.codigoBarrasService
-        .escaparHtml(
-          this.nombreNegocio
-        );
+    /*
+     * Ancho del contenido interno.
+     * Se mantiene más pequeño que
+     * el ancho completo del papel.
+     */
+    const anchoContenido =
+      esEtiquetaGrande
+        ? 326
+        : 292;
 
-    const nombreProducto =
-      this.codigoBarrasService
-        .escaparHtml(
-          this.producto
-            .nombre_producto
-        );
+    const margenHorizontal =
+      Math.floor(
+        (
+          anchoPapel
+          - anchoContenido
+        ) / 2
+      );
 
-    const codigoProducto =
-      this.codigoBarrasService
-        .escaparHtml(
-          this.producto
-            .codigo_producto
-        );
+    const canvas =
+      document.createElement(
+        'canvas'
+      );
 
-    const precio =
-      this.codigoBarrasService
-        .escaparHtml(
-          this.formatearPrecio(
-            this.producto
-              .precio_producto
-          )
-        );
+    canvas.width =
+      anchoPapel;
 
-    const etiqueta =
-      `<article class="etiqueta">`
-      + `<div class="negocio">${nombreNegocio}</div>`
-      + `<div class="producto">${nombreProducto}</div>`
-      + `<div class="codigo-barras">${svg}</div>`
-      + `<div class="codigo-texto">${codigoProducto}</div>`
-      + `<div class="precio">${precio}</div>`
-      + '</article>';
+    canvas.height =
+      altoPapel;
 
-    const etiquetas =
-      Array.from(
-        {
-          length: this.numeroCopias
-        },
-        () => etiqueta
-      ).join('');
+    const contexto =
+      canvas.getContext(
+        '2d'
+      );
 
-    const esTermica =
-      this.modoImpresion
-      === 'termica';
+    if (
+      !contexto
+    ) {
 
-    const reglaPagina =
-      esTermica
-        ? `@page { size: ${ancho}mm ${alto}mm; margin: 0; }`
-        : '@page { size: A4 portrait; margin: 10mm; }';
+      throw new Error(
+        'No se pudo preparar la etiqueta.'
+      );
 
-    const claseHoja =
-      esTermica
-        ? 'hoja termica'
-        : 'hoja a4';
-
-    return `<!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<title>Etiquetas - ${nombreProducto}</title>
-<style>
-  ${reglaPagina}
-
-  * {
-    box-sizing: border-box;
-  }
-
-  html,
-  body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    color: #000000;
-    background: #ffffff;
-  }
-
-  .hoja.termica {
-    width: ${ancho}mm;
-  }
-
-  .hoja.a4 {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, ${ancho}mm);
-    grid-auto-rows: ${alto}mm;
-    justify-content: start;
-    align-content: start;
-    gap: 4mm;
-  }
-
-  .etiqueta {
-    position: relative;
-    width: ${ancho}mm;
-    height: ${alto}mm;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    overflow: hidden;
-    padding: 2.2mm 2.5mm 2mm;
-    border: 0.2mm solid #111111;
-    background: #ffffff;
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  .termica .etiqueta {
-    page-break-after: always;
-  }
-
-  .termica .etiqueta:last-child {
-    page-break-after: auto;
-  }
-
-  .negocio {
-    overflow: hidden;
-    font-size: ${ancho === 60 ? 8.5 : 7.6}pt;
-    font-weight: 800;
-    line-height: 1;
-    text-align: center;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-  .producto {
-    margin-top: 1mm;
-    overflow: hidden;
-    font-size: ${ancho === 60 ? 9.5 : 8.5}pt;
-    font-weight: 700;
-    line-height: 1.05;
-    text-align: center;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .codigo-barras {
-    flex: 1;
-    min-height: 10mm;
-    margin: 1.2mm 0 0.5mm;
-  }
-
-  .codigo-barras svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-
-  .codigo-texto {
-    overflow: hidden;
-    font-family: Consolas, monospace;
-    font-size: ${ancho === 60 ? 7.5 : 6.8}pt;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: 0.2mm;
-    text-align: center;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .precio {
-    margin-top: 0.8mm;
-    font-size: ${ancho === 60 ? 13 : 11.5}pt;
-    font-weight: 900;
-    line-height: 1;
-    text-align: center;
-  }
-
-  @media screen {
-    body {
-      padding: 12mm;
-      background: #eef2f7;
     }
 
-    .hoja {
-      margin: 0 auto;
+    contexto.imageSmoothingEnabled =
+      false;
+
+    /*
+     * Fondo blanco.
+     */
+    contexto.fillStyle =
+      '#ffffff';
+
+    contexto.fillRect(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+    contexto.fillStyle =
+      '#000000';
+
+    contexto.textAlign =
+      'center';
+
+    contexto.textBaseline =
+      'middle';
+
+    const centroX =
+      anchoPapel / 2;
+
+    /*
+     * Medidas del recuadro impreso.
+     * El espacio exterior permite
+     * que la dueña pueda recortarlo.
+     */
+    const anchoMarco =
+      esEtiquetaGrande
+        ? 346
+        : 318;
+
+    const altoMarco =
+      esEtiquetaGrande
+        ? 220
+        : 164;
+
+    const marcoX =
+      Math.floor(
+        (
+          anchoPapel
+          - anchoMarco
+        ) / 2
+      );
+
+    const marcoY =
+      Math.floor(
+        (
+          altoPapel
+          - altoMarco
+        ) / 2
+      );
+
+    /*
+     * Posiciones verticales
+     * del contenido.
+     */
+    const yNegocio =
+      esEtiquetaGrande
+        ? 21
+        : 16;
+
+    const yProducto =
+      esEtiquetaGrande
+        ? 45
+        : 34;
+
+    const inicioBarras =
+      esEtiquetaGrande
+        ? 64
+        : 49;
+
+    const altoBarras =
+      esEtiquetaGrande
+        ? 82
+        : 57;
+
+    const yCodigo =
+      inicioBarras
+      + altoBarras
+      + (
+        esEtiquetaGrande
+          ? 14
+          : 11
+      );
+
+    const yPrecio =
+      altoPapel
+      - (
+        esEtiquetaGrande
+          ? 28
+          : 22
+      );
+
+    /*
+     * Nombre del negocio.
+     */
+    this.dibujarTextoAjustado(
+      contexto,
+      this.nombreNegocio
+        .toUpperCase(),
+      centroX,
+      yNegocio,
+      anchoContenido,
+      esEtiquetaGrande
+        ? 17
+        : 13,
+      10,
+      800
+    );
+
+    /*
+     * Nombre del producto.
+     */
+    this.dibujarTextoAjustado(
+      contexto,
+      this.producto
+        .nombre_producto,
+      centroX,
+      yProducto,
+      anchoContenido,
+      esEtiquetaGrande
+        ? 20
+        : 16,
+      11,
+      800
+    );
+
+    /*
+     * Código de barras.
+     */
+    const escala =
+      anchoContenido
+      / this.codigoBarras
+        .anchoTotal;
+
+    for (
+      const barra
+      of this.codigoBarras.barras
+    ) {
+
+      contexto.fillRect(
+        margenHorizontal
+        + barra.x * escala,
+        inicioBarras,
+        Math.max(
+          1,
+          barra.ancho * escala
+        ),
+        altoBarras
+      );
+
     }
 
-    .etiqueta {
-      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
-    }
+    /*
+     * Número debajo del
+     * código de barras.
+     */
+    this.dibujarTextoAjustado(
+      contexto,
+      this.producto
+        .codigo_producto,
+      centroX,
+      yCodigo,
+      anchoContenido,
+      esEtiquetaGrande
+        ? 15
+        : 12,
+      9,
+      700,
+      'monospace'
+    );
+
+    /*
+     * Precio del producto.
+     */
+    this.dibujarTextoAjustado(
+      contexto,
+      this.formatearPrecio(
+        this.producto
+          .precio_producto
+      ),
+      centroX,
+      yPrecio,
+      anchoContenido,
+      esEtiquetaGrande
+        ? 28
+        : 22,
+      17,
+      900
+    );
+
+    /*
+     * Recuadro exterior impreso.
+     * Se dibuja al final para que
+     * quede encima del contenido
+     * y completamente visible.
+     */
+    contexto.strokeStyle =
+      '#000000';
+
+    contexto.lineWidth = 2;
+
+    contexto.strokeRect(
+      marcoX,
+      marcoY,
+      anchoMarco,
+      altoMarco
+    );
+
+    return canvas;
+
   }
 
-  @media print {
-    body {
-      background: #ffffff;
+  private dibujarTextoAjustado(
+    contexto:
+      CanvasRenderingContext2D,
+    texto: string,
+    x: number,
+    y: number,
+    anchoMaximo: number,
+    tamanoInicial: number,
+    tamanoMinimo: number,
+    peso: number,
+    familia = 'Arial'
+  ): void {
+
+    let tamano =
+      tamanoInicial;
+
+    contexto.font =
+      `${peso} ${tamano}px ${familia}`;
+
+    while (
+      tamano > tamanoMinimo
+      && contexto
+        .measureText(
+          texto
+        )
+        .width > anchoMaximo
+    ) {
+
+      tamano -= 1;
+
+      contexto.font =
+        `${peso} ${tamano}px ${familia}`;
+
     }
+
+    let textoFinal =
+      texto;
+
+    while (
+      textoFinal.length > 1
+      && contexto
+        .measureText(
+          textoFinal
+        )
+        .width > anchoMaximo
+    ) {
+
+      textoFinal =
+        `${textoFinal.slice(
+          0,
+          -2
+        )}…`;
+
+    }
+
+    contexto.fillText(
+      textoFinal,
+      x,
+      y
+    );
+
   }
-</style>
-</head>
-<body>
-  <main class="${claseHoja}">
-    ${etiquetas}
-  </main>
-</body>
-</html>`;
+
+  private mostrarMensaje(
+    mensaje: string,
+    tipo:
+      Exclude<
+        TipoMensaje,
+        null
+      >
+  ): void {
+
+    this.mensajeEstado =
+      mensaje;
+
+    this.tipoMensaje =
+      tipo;
+
+    this.forzarActualizacion();
+
+  }
+
+  private limpiarMensaje(): void {
+
+    this.mensajeEstado = '';
+
+    this.tipoMensaje = null;
+
+  }
+
+  private obtenerMensajeError(
+    error: unknown,
+    mensajeDefecto: string
+  ): string {
+
+    if (
+      error instanceof Error
+      && error.message
+    ) {
+
+      if (
+        error.name
+        === 'NotFoundError'
+      ) {
+
+        return (
+          'No se selecciono una impresora.'
+        );
+
+      }
+
+      return error.message;
+
+    }
+
+    return mensajeDefecto;
+
+  }
+
+  private forzarActualizacion(): void {
+
+    try {
+
+      this.cdr.detectChanges();
+
+    } catch {
+
+      /*
+       * El componente pudo cerrarse
+       * mientras terminaba una operación.
+       */
+
+    }
+
+  }
+
+  private esperarRenderizado():
+    Promise<void> {
+
+    return new Promise(
+      resolver => {
+
+        window.requestAnimationFrame(
+          () => resolver()
+        );
+
+      }
+    );
 
   }
 
