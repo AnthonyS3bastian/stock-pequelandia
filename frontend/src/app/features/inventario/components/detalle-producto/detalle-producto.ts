@@ -5,11 +5,21 @@ import {
   Output
 } from '@angular/core';
 
-import { CommonModule } from '@angular/common';
+import {
+  CommonModule
+} from '@angular/common';
 
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatMenuModule } from '@angular/material/menu';
+import {
+  MatIconModule
+} from '@angular/material/icon';
+
+import {
+  MatButtonModule
+} from '@angular/material/button';
+
+import {
+  MatMenuModule
+} from '@angular/material/menu';
 
 import {
   Producto
@@ -34,6 +44,9 @@ export class DetalleProductoComponent {
   })
   producto!: Producto;
 
+  @Input()
+  esAdministrador = false;
+
   @Output()
   cerrar = new EventEmitter<void>();
 
@@ -46,6 +59,10 @@ export class DetalleProductoComponent {
 
   @Output()
   cambiarEstado =
+    new EventEmitter<Producto>();
+
+  @Output()
+  generarEtiqueta =
     new EventEmitter<Producto>();
 
   cerrarDetalle(): void {
@@ -73,6 +90,14 @@ export class DetalleProductoComponent {
   solicitarCambioEstado(): void {
 
     this.cambiarEstado.emit(
+      this.producto
+    );
+
+  }
+
+  solicitarEtiqueta(): void {
+
+    this.generarEtiqueta.emit(
       this.producto
     );
 

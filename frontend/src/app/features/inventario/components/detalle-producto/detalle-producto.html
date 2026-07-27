@@ -169,32 +169,38 @@
           </h4>
 
           <p>
-            Costos y precios registrados.
+            Precio de venta del producto.
           </p>
 
         </div>
 
       </div>
 
-      <div class="datos-grid tres-columnas">
+      <div
+        class="datos-grid tres-columnas"
+        [class.una-columna]="!esAdministrador">
 
-        <div class="dato destacado compra">
+        @if (esAdministrador) {
 
-          <span>
-            Precio de compra
-          </span>
+          <div class="dato destacado compra">
 
-          <strong>
+            <span>
+              Precio de compra
+            </span>
 
-            {{
-              formatearPrecio(
-                producto.costo_producto
-              )
-            }}
+            <strong>
 
-          </strong>
+              {{
+                formatearPrecio(
+                  producto.costo_producto
+                )
+              }}
 
-        </div>
+            </strong>
+
+          </div>
+
+        }
 
         <div class="dato destacado venta">
 
@@ -214,23 +220,27 @@
 
         </div>
 
-        <div class="dato destacado ganancia">
+        @if (esAdministrador) {
 
-          <span>
-            Ganancia por unidad
-          </span>
+          <div class="dato destacado ganancia">
 
-          <strong>
+            <span>
+              Ganancia por unidad
+            </span>
 
-            {{
-              formatearPrecio(
-                obtenerGananciaUnidad()
-              )
-            }}
+            <strong>
 
-          </strong>
+              {{
+                formatearPrecio(
+                  obtenerGananciaUnidad()
+                )
+              }}
 
-        </div>
+            </strong>
+
+          </div>
+
+        }
 
       </div>
 
@@ -368,7 +378,9 @@
 
   </div>
 
-  <footer class="acciones">
+  <footer
+    class="acciones"
+    [class.solo-cerrar]="!esAdministrador">
 
     <button
       mat-stroked-button
@@ -380,29 +392,45 @@
 
     </button>
 
-    <button
-      mat-stroked-button
-      type="button"
-      class="btn-acciones"
-      [matMenuTriggerFor]="menuAcciones">
+    @if (esAdministrador) {
 
-      <mat-icon>more_vert</mat-icon>
+      <button
+        mat-stroked-button
+        type="button"
+        class="btn-etiqueta"
+        (click)="solicitarEtiqueta()">
 
-      Acciones
+        <mat-icon>qr_code_2</mat-icon>
 
-    </button>
+        Etiqueta
 
-    <button
-      mat-flat-button
-      type="button"
-      class="btn-editar"
-      (click)="solicitarEdicion()">
+      </button>
 
-      <mat-icon>edit</mat-icon>
+      <button
+        mat-stroked-button
+        type="button"
+        class="btn-acciones"
+        [matMenuTriggerFor]="menuAcciones">
 
-      Editar producto
+        <mat-icon>more_vert</mat-icon>
 
-    </button>
+        Acciones
+
+      </button>
+
+      <button
+        mat-flat-button
+        type="button"
+        class="btn-editar"
+        (click)="solicitarEdicion()">
+
+        <mat-icon>edit</mat-icon>
+
+        Editar producto
+
+      </button>
+
+    }
 
   </footer>
 

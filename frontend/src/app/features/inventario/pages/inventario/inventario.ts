@@ -66,6 +66,10 @@ import {
   ActualizarStockComponent
 } from '../../components/actualizar-stock/actualizar-stock';
 
+import {
+  EtiquetaProductoComponent
+} from '../../components/etiqueta-producto/etiqueta-producto';
+
 type VistaInventario =
   | 'productos'
   | 'alertas';
@@ -83,7 +87,8 @@ type ContenidoDrawer =
   | 'nuevo'
   | 'detalle'
   | 'editar'
-  | 'stock';
+  | 'stock'
+  | 'etiqueta';
 
 @Component({
   selector: 'app-inventario',
@@ -97,7 +102,8 @@ type ContenidoDrawer =
     MatSnackBarModule,
     DrawerProductoComponent,
     DetalleProductoComponent,
-    ActualizarStockComponent
+    ActualizarStockComponent,
+    EtiquetaProductoComponent
   ],
   templateUrl: './inventario.html',
   styleUrl: './inventario.scss'
@@ -635,6 +641,32 @@ implements OnInit {
 
     this.contenidoDrawer =
       'stock';
+
+    this.drawerAbierto = true;
+
+    this.cdr.detectChanges();
+
+  }
+
+  abrirEtiquetaProducto(
+    producto: Producto
+  ): void {
+
+    if (!this.esAdministrador) {
+
+      this.mostrarMensaje(
+        'Solo la administradora puede imprimir etiquetas.'
+      );
+
+      return;
+
+    }
+
+    this.productoSeleccionado =
+      producto;
+
+    this.contenidoDrawer =
+      'etiqueta';
 
     this.drawerAbierto = true;
 

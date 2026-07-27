@@ -1,0 +1,332 @@
+<div class="etiqueta-producto">
+
+  <header class="etiqueta-header">
+
+    <div class="titulo-header">
+
+      <span class="icono-header">
+
+        <mat-icon>qr_code_2</mat-icon>
+
+      </span>
+
+      <div>
+
+        <h2>
+          Etiqueta del producto
+        </h2>
+
+        <p>
+          Genera el sticker e imprime las copias necesarias.
+        </p>
+
+      </div>
+
+    </div>
+
+    <button
+      mat-icon-button
+      type="button"
+      aria-label="Cerrar etiqueta"
+      (click)="cerrarVista()">
+
+      <mat-icon>close</mat-icon>
+
+    </button>
+
+  </header>
+
+  <div class="etiqueta-contenido">
+
+    <section class="panel-vista-previa">
+
+      <div class="panel-titulo">
+
+        <div>
+
+          <h3>
+            Vista previa
+          </h3>
+
+          <p>
+            La impresión conservará el tamaño seleccionado.
+          </p>
+
+        </div>
+
+        <span class="medida">
+
+          {{ anchoEtiquetaMm }} × {{ altoEtiquetaMm }} mm
+
+        </span>
+
+      </div>
+
+      <div class="zona-preview">
+
+        <article
+          class="etiqueta-preview"
+          [style.aspect-ratio]="
+            anchoEtiquetaMm + ' / ' + altoEtiquetaMm
+          ">
+
+          <div class="preview-negocio">
+
+            {{ nombreNegocio }}
+
+          </div>
+
+          <div class="preview-producto">
+
+            {{ producto.nombre_producto }}
+
+          </div>
+
+          @if (codigoBarras.valido) {
+
+            <svg
+              class="preview-codigo"
+              [attr.viewBox]="
+                '0 0 '
+                + codigoBarras.anchoTotal
+                + ' 58'
+              "
+              preserveAspectRatio="none"
+              role="img"
+              [attr.aria-label]="
+                'Codigo de barras '
+                + producto.codigo_producto
+              ">
+
+              @for (
+                barra of codigoBarras.barras;
+                track $index
+              ) {
+
+                <rect
+                  [attr.x]="barra.x"
+                  y="0"
+                  [attr.width]="barra.ancho"
+                  height="58">
+                </rect>
+
+              }
+
+            </svg>
+
+            <div class="preview-codigo-texto">
+
+              {{ producto.codigo_producto }}
+
+            </div>
+
+          } @else {
+
+            <div class="codigo-invalido">
+
+              <mat-icon>error_outline</mat-icon>
+
+              <span>
+
+                {{ codigoBarras.mensaje }}
+
+              </span>
+
+            </div>
+
+          }
+
+          <div class="preview-precio">
+
+            {{ formatearPrecio(producto.precio_producto) }}
+
+          </div>
+
+        </article>
+
+      </div>
+
+      @if (codigoMuyLargo) {
+
+        <div class="aviso-codigo">
+
+          <mat-icon>warning_amber</mat-icon>
+
+          <span>
+            El código es largo. Para facilitar la lectura del escáner,
+            usa la etiqueta de 60 × 40 mm.
+          </span>
+
+        </div>
+
+      }
+
+    </section>
+
+    <section class="panel-configuracion">
+
+      <div class="panel-titulo">
+
+        <div>
+
+          <h3>
+            Configuración de impresión
+          </h3>
+
+          <p>
+            Selecciona el papel y la cantidad de etiquetas.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="configuracion-grid">
+
+        <label class="campo-configuracion">
+
+          <span>
+            Tipo de impresión
+          </span>
+
+          <select
+            [(ngModel)]="modoImpresion">
+
+            <option value="termica">
+              Impresora térmica
+            </option>
+
+            <option value="a4">
+              Hoja A4
+            </option>
+
+          </select>
+
+          <small>
+
+            @if (modoImpresion === 'termica') {
+
+              Una etiqueta por página.
+
+            } @else {
+
+              Varias etiquetas organizadas en una hoja.
+
+            }
+
+          </small>
+
+        </label>
+
+        <label class="campo-configuracion">
+
+          <span>
+            Tamaño de etiqueta
+          </span>
+
+          <select
+            [(ngModel)]="tamanoEtiqueta">
+
+            <option value="50x30">
+              50 × 30 mm
+            </option>
+
+            <option value="60x40">
+              60 × 40 mm
+            </option>
+
+          </select>
+
+          <small>
+            Elige el tamaño configurado en la impresora.
+          </small>
+
+        </label>
+
+        <label class="campo-configuracion">
+
+          <span>
+            Número de copias
+          </span>
+
+          <input
+            type="number"
+            min="1"
+            max="100"
+            step="1"
+            [(ngModel)]="numeroCopias"
+            (blur)="limitarCopias()">
+
+          <small>
+            Puedes imprimir entre 1 y 100 etiquetas.
+          </small>
+
+        </label>
+
+      </div>
+
+      <div class="recomendaciones">
+
+        <mat-icon>info</mat-icon>
+
+        <div>
+
+          <strong>
+            Antes de imprimir
+          </strong>
+
+          <p>
+            Selecciona escala 100 %, desactiva encabezados y pies de página,
+            y confirma que el tamaño del papel coincida con la etiqueta.
+          </p>
+
+        </div>
+
+      </div>
+
+      @if (mensajeImpresion) {
+
+        <div class="mensaje-error">
+
+          <mat-icon>error_outline</mat-icon>
+
+          <span>
+            {{ mensajeImpresion }}
+          </span>
+
+        </div>
+
+      }
+
+    </section>
+
+  </div>
+
+  <footer class="acciones">
+
+    <button
+      mat-stroked-button
+      type="button"
+      class="btn-cancelar"
+      (click)="cerrarVista()">
+
+      Cancelar
+
+    </button>
+
+    <button
+      mat-flat-button
+      type="button"
+      class="btn-imprimir"
+      [disabled]="!codigoBarras.valido"
+      (click)="imprimir()">
+
+      <mat-icon>print</mat-icon>
+
+      Imprimir etiquetas
+
+    </button>
+
+  </footer>
+
+</div>

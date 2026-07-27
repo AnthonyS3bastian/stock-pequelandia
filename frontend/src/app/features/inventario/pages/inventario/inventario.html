@@ -28,8 +28,12 @@
 
       <app-detalle-producto
         [producto]="productoSeleccionado"
+        [esAdministrador]="esAdministrador"
         (cerrar)="cerrarDrawer()"
         (editar)="editarProducto($event)"
+        (generarEtiqueta)="
+          abrirEtiquetaProducto($event)
+        "
         (actualizarStock)="
           actualizarStockProducto($event)
         "
@@ -52,6 +56,18 @@
           stockActualizado($event)
         ">
       </app-actualizar-stock>
+
+    }
+
+    @if (
+      contenidoDrawer === 'etiqueta'
+      && productoSeleccionado
+    ) {
+
+      <app-etiqueta-producto
+        [producto]="productoSeleccionado"
+        (cerrar)="cerrarDrawer()">
+      </app-etiqueta-producto>
 
     }
 
