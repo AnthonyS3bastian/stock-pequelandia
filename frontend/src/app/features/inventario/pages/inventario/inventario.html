@@ -13,7 +13,7 @@
     ) {
 
       <app-drawer-producto
-        [categorias]="categorias"
+        [categorias]="categoriasDisponibles"
         [productoEditar]="productoSeleccionado"
         (cerrar)="cerrarDrawer()"
         (guardado)="productoGuardado()">
@@ -74,16 +74,20 @@
 
         </div>
 
-        <button
-          type="button"
-          class="btn-nuevo"
-          (click)="abrirDrawer()">
+        @if (esAdministrador) {
 
-          <mat-icon>add</mat-icon>
+          <button
+            type="button"
+            class="btn-nuevo"
+            (click)="abrirDrawer()">
 
-          Nuevo producto
+            <mat-icon>add</mat-icon>
 
-        </button>
+            Nuevo producto
+
+          </button>
+
+        }
 
       </header>
 
@@ -799,8 +803,11 @@
                     </button>
 
                     @if (
-                      esStockBajo(producto)
-                      || esAgotado(producto)
+                      esAdministrador
+                      && (
+                        esStockBajo(producto)
+                        || esAgotado(producto)
+                      )
                     ) {
 
                       <button

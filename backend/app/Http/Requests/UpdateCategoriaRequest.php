@@ -16,23 +16,55 @@ class UpdateCategoriaRequest extends FormRequest
     }
 
     /**
-     * Reglas de validación.
+     * Limpiar los textos antes de validar.
+     */
+    protected function prepareForValidation(): void
+    {
+        $descripcion =
+            $this->input('descripcion_categoria');
+
+        $this->merge([
+            'nombre_categoria' => trim(
+                (string) $this->input('nombre_categoria')
+            ),
+            'descripcion_categoria' =>
+                is_string($descripcion)
+                    && trim($descripcion) !== ''
+                ? trim($descripcion)
+                : null,
+        ]);
+    }
+
+    /**
+     * Reglas de validacion.
      */
     public function rules(): array
     {
-        $idCategoria = $this->route('id');
+        $idCategoria =
+            (int) $this->route('id');
 
         return [
             'nombre_categoria' => [
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('categoria', 'nombre_categoria')->ignore($idCategoria, 'id_categoria'),
+                Rule::unique(
+                    'categoria',
+                    'nombre_categoria'
+                )->ignore(
+                    $idCategoria,
+                    'id_categoria'
+                ),
             ],
-
-            'descripcion_categoria' => 'nullable|string|max:255',
-
-            'estado' => 'required|boolean',
+            'descripcion_categoria' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'estado' => [
+                'required',
+                'boolean',
+            ],
         ];
     }
 
@@ -42,14 +74,18 @@ class UpdateCategoriaRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'nombre_categoria.required' => 'El nombre de la categoría es obligatorio.',
-            'nombre_categoria.max' => 'El nombre no puede superar los 100 caracteres.',
-            'nombre_categoria.unique' => 'Ya existe una categoría con ese nombre.',
-
-            'descripcion_categoria.max' => 'La descripción no puede superar los 255 caracteres.',
-
-            'estado.required' => 'El estado es obligatorio.',
-            'estado.boolean' => 'El estado debe ser verdadero o falso.',
+            'nombre_categoria.required' =>
+                'El nombre de la categoria es obligatorio.',
+            'nombre_categoria.unique' =>
+                'Ya existe una categoria con ese nombre.',
+            'nombre_categoria.max' =>
+                'El nombre no puede superar los 100 caracteres.',
+            'descripcion_categoria.max' =>
+                'La descripcion no puede superar los 255 caracteres.',
+            'estado.required' =>
+                'El estado es obligatorio.',
+            'estado.boolean' =>
+                'El estado debe ser verdadero o falso.',
         ];
     }
 }

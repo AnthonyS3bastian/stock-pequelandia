@@ -7,29 +7,28 @@ use App\Http\Requests\UpdateCategoriaRequest;
 use App\Services\CategoriaService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 
 class CategoriaController extends Controller
 {
-    protected CategoriaService $categoriaService;
-
-    public function __construct(CategoriaService $categoriaService)
-    {
-        $this->categoriaService = $categoriaService;
+    public function __construct(
+        private readonly CategoriaService $categoriaService
+    ) {
     }
 
     /**
-     * Listar todas las categorías.
+     * Listar todas las categorias.
      */
     public function index(): JsonResponse
     {
         return response()->json([
-            'mensaje' => 'Lista de categorías obtenida correctamente.',
+            'mensaje' => 'Lista de categorias obtenida correctamente.',
             'data' => $this->categoriaService->listar(),
         ]);
     }
 
     /**
-     * Obtener una categoría por ID.
+     * Obtener una categoria por ID.
      */
     public function show(int $id): JsonResponse
     {
@@ -37,34 +36,39 @@ class CategoriaController extends Controller
             $categoria = $this->categoriaService->obtenerPorId($id);
 
             return response()->json([
-                'mensaje' => 'Categoría encontrada.',
+                'mensaje' => 'Categoria encontrada.',
                 'data' => $categoria,
             ]);
-        } catch (ModelNotFoundException $e) {
+        } catch (ModelNotFoundException) {
             return response()->json([
-                'mensaje' => 'La categoría no existe.',
+                'mensaje' => 'La categoria no existe.',
             ], 404);
         }
     }
 
     /**
-     * Registrar una nueva categoría.
+     * Registrar una nueva categoria.
      */
-    public function store(StoreCategoriaRequest $request): JsonResponse
-    {
-        $categoria = $this->categoriaService->crear($request->validated());
+    public function store(
+        StoreCategoriaRequest $request
+    ): JsonResponse {
+        $categoria = $this->categoriaService->crear(
+            $request->validated()
+        );
 
         return response()->json([
-            'mensaje' => 'Categoría registrada correctamente.',
+            'mensaje' => 'Categoria registrada correctamente.',
             'data' => $categoria,
         ], 201);
     }
 
     /**
-     * Actualizar una categoría.
+     * Actualizar una categoria.
      */
-    public function update(UpdateCategoriaRequest $request, int $id): JsonResponse
-    {
+    public function update(
+        UpdateCategoriaRequest $request,
+        int $id
+    ): JsonResponse {
         try {
             $categoria = $this->categoriaService->actualizar(
                 $id,
@@ -72,18 +76,18 @@ class CategoriaController extends Controller
             );
 
             return response()->json([
-                'mensaje' => 'Categoría actualizada correctamente.',
+                'mensaje' => 'Categoria actualizada correctamente.',
                 'data' => $categoria,
             ]);
-        } catch (ModelNotFoundException $e) {
+        } catch (ModelNotFoundException) {
             return response()->json([
-                'mensaje' => 'La categoría no existe.',
+                'mensaje' => 'La categoria no existe.',
             ], 404);
         }
     }
 
     /**
-     * Eliminar una categoría.
+     * Eliminar una categoria sin productos asociados.
      */
     public function destroy(int $id): JsonResponse
     {
@@ -91,12 +95,21 @@ class CategoriaController extends Controller
             $this->categoriaService->eliminar($id);
 
             return response()->json([
-                'mensaje' => 'Categoría eliminada correctamente.',
+                'mensaje' => 'Categoria eliminada correctamente.',
             ]);
-        } catch (ModelNotFoundException $e) {
+        } catch (ModelNotFoundException) {
             return response()->json([
-                'mensaje' => 'La categoría no existe.',
+                'mensaje' => 'La categoria no existe.',
             ], 404);
+        } catch (ValidationException $exception) {
+            $errores = $exception->errors();
+
+            return response()->json([
+                'mensaje' =>
+                    $errores['categoria'][0]
+                    ?? 'No se pudo eliminar la categoria.',
+                'errors' => $errores,
+            ], 422);
         }
     }
 }

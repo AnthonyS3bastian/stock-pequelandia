@@ -1,0 +1,1038 @@
+<main class="pagina-categorias">
+
+  <header class="cabecera">
+
+    <div>
+
+      <span class="etiqueta-seccion">
+        Gestion
+      </span>
+
+      <h1>
+        Categorias
+      </h1>
+
+      <p>
+        Organiza las categorias utilizadas para clasificar
+        los productos del inventario.
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      class="btn-principal"
+      (click)="abrirNuevaCategoria()">
+
+      <mat-icon>
+        add
+      </mat-icon>
+
+      Nueva categoria
+
+    </button>
+
+  </header>
+
+  <section class="tarjetas-resumen">
+
+    <article class="tarjeta total">
+
+      <span class="icono">
+
+        <mat-icon>
+          category
+        </mat-icon>
+
+      </span>
+
+      <div>
+
+        <strong>
+          {{ totalCategorias }}
+        </strong>
+
+        <small>
+          Categorias registradas
+        </small>
+
+      </div>
+
+    </article>
+
+    <article class="tarjeta activas">
+
+      <span class="icono">
+
+        <mat-icon>
+          check_circle
+        </mat-icon>
+
+      </span>
+
+      <div>
+
+        <strong>
+          {{ totalActivas }}
+        </strong>
+
+        <small>
+          Categorias activas
+        </small>
+
+      </div>
+
+    </article>
+
+    <article class="tarjeta inactivas">
+
+      <span class="icono">
+
+        <mat-icon>
+          block
+        </mat-icon>
+
+      </span>
+
+      <div>
+
+        <strong>
+          {{ totalInactivas }}
+        </strong>
+
+        <small>
+          Categorias inactivas
+        </small>
+
+      </div>
+
+    </article>
+
+    <article class="tarjeta productos">
+
+      <span class="icono">
+
+        <mat-icon>
+          inventory_2
+        </mat-icon>
+
+      </span>
+
+      <div>
+
+        <strong>
+          {{ totalProductosAsociados }}
+        </strong>
+
+        <small>
+          Productos asociados
+        </small>
+
+      </div>
+
+    </article>
+
+  </section>
+
+  <section class="panel-filtros">
+
+    <label class="busqueda">
+
+      <mat-icon>
+        search
+      </mat-icon>
+
+      <input
+        type="text"
+        placeholder="Buscar por nombre o descripcion..."
+        [value]="textoBusqueda"
+        (input)="actualizarBusqueda($event)">
+
+      @if (textoBusqueda) {
+
+        <button
+          type="button"
+          aria-label="Limpiar busqueda"
+          (click)="textoBusqueda = ''">
+
+          <mat-icon>
+            close
+          </mat-icon>
+
+        </button>
+
+      }
+
+    </label>
+
+    <select
+      [value]="filtroEstado"
+      (change)="actualizarFiltro($event)">
+
+      <option value="todos">
+        Todos los estados
+      </option>
+
+      <option value="activas">
+        Solo activas
+      </option>
+
+      <option value="inactivas">
+        Solo inactivas
+      </option>
+
+    </select>
+
+    <button
+      type="button"
+      class="btn-secundario"
+      [disabled]="cargando"
+      (click)="obtenerCategorias()">
+
+      @if (cargando) {
+
+        <mat-spinner
+          diameter="18">
+        </mat-spinner>
+
+      } @else {
+
+        <mat-icon>
+          refresh
+        </mat-icon>
+
+      }
+
+      Actualizar
+
+    </button>
+
+  </section>
+
+  <section class="panel-listado">
+
+    <header class="panel-cabecera">
+
+      <div>
+
+        <h2>
+          Lista de categorias
+        </h2>
+
+        <p>
+
+          {{ categoriasFiltradas.length }}
+
+          @if (
+            categoriasFiltradas.length === 1
+          ) {
+
+            resultado encontrado
+
+          } @else {
+
+            resultados encontrados
+
+          }
+
+        </p>
+
+      </div>
+
+      @if (
+        textoBusqueda
+        || filtroEstado !== 'todos'
+      ) {
+
+        <button
+          type="button"
+          class="btn-limpiar"
+          (click)="limpiarFiltros()">
+
+          <mat-icon>
+            filter_alt_off
+          </mat-icon>
+
+          Limpiar filtros
+
+        </button>
+
+      }
+
+    </header>
+
+    @if (cargando) {
+
+      <div class="estado-central">
+
+        <mat-spinner
+          diameter="42">
+        </mat-spinner>
+
+        <strong>
+          Cargando categorias
+        </strong>
+
+        <p>
+          Estamos consultando la informacion registrada.
+        </p>
+
+      </div>
+
+    } @else if (errorCarga) {
+
+      <div class="estado-central error">
+
+        <span class="estado-icono">
+
+          <mat-icon>
+            cloud_off
+          </mat-icon>
+
+        </span>
+
+        <strong>
+          No se pudieron cargar las categorias
+        </strong>
+
+        <p>
+          Verifica que Laravel este encendido e intenta nuevamente.
+        </p>
+
+        <button
+          type="button"
+          (click)="obtenerCategorias()">
+
+          <mat-icon>
+            refresh
+          </mat-icon>
+
+          Reintentar
+
+        </button>
+
+      </div>
+
+    } @else if (
+      categoriasFiltradas.length === 0
+    ) {
+
+      <div class="estado-central">
+
+        <span class="estado-icono">
+
+          <mat-icon>
+            category
+          </mat-icon>
+
+        </span>
+
+        <strong>
+          No se encontraron categorias
+        </strong>
+
+        <p>
+          Registra una categoria nueva o cambia los filtros.
+        </p>
+
+        <button
+          type="button"
+          (click)="abrirNuevaCategoria()">
+
+          <mat-icon>
+            add
+          </mat-icon>
+
+          Nueva categoria
+
+        </button>
+
+      </div>
+
+    } @else {
+
+      <div class="tabla-escritorio">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Categoria</th>
+              <th>Descripcion</th>
+              <th>Productos</th>
+              <th>Estado</th>
+              <th>Actualizacion</th>
+
+              <th class="acciones">
+                Acciones
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            @for (
+              categoria of categoriasFiltradas;
+              track categoria.id_categoria
+            ) {
+
+              <tr>
+
+                <td>
+
+                  <div class="categoria-identidad">
+
+                    <span class="categoria-icono">
+
+                      <mat-icon>
+                        sell
+                      </mat-icon>
+
+                    </span>
+
+                    <div>
+
+                      <strong>
+                        {{ categoria.nombre_categoria }}
+                      </strong>
+
+                      <small>
+                        ID {{ categoria.id_categoria }}
+                      </small>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+                <td>
+
+                  <p class="descripcion">
+
+                    {{
+                      categoria.descripcion_categoria
+                      || 'Sin descripcion'
+                    }}
+
+                  </p>
+
+                </td>
+
+                <td>
+
+                  <span
+                    class="cantidad-productos"
+                    [class.con-productos]="
+                      (categoria.productos_count ?? 0) > 0
+                    ">
+
+                    <mat-icon>
+                      inventory_2
+                    </mat-icon>
+
+                    {{
+                      obtenerTextoProductos(categoria)
+                    }}
+
+                  </span>
+
+                </td>
+
+                <td>
+
+                  <span
+                    class="estado"
+                    [class.activa]="categoria.estado"
+                    [class.inactiva]="!categoria.estado">
+
+                    {{
+                      categoria.estado
+                      ? 'Activa'
+                      : 'Inactiva'
+                    }}
+
+                  </span>
+
+                </td>
+
+                <td>
+
+                  <span class="fecha">
+
+                    {{
+                      formatearFecha(
+                        categoria.updated_at
+                      )
+                    }}
+
+                  </span>
+
+                </td>
+
+                <td class="acciones">
+
+                  <div class="grupo-acciones">
+
+                    <button
+                      type="button"
+                      class="accion editar"
+                      title="Editar categoria"
+                      (click)="
+                        abrirEditarCategoria(categoria)
+                      ">
+
+                      <mat-icon>
+                        edit
+                      </mat-icon>
+
+                    </button>
+
+                    <button
+                      type="button"
+                      class="accion estado-accion"
+                      [class.activar]="!categoria.estado"
+                      [title]="
+                        categoria.estado
+                        ? 'Desactivar categoria'
+                        : 'Activar categoria'
+                      "
+                      [disabled]="
+                        cambiandoEstadoId
+                        === categoria.id_categoria
+                      "
+                      (click)="cambiarEstado(categoria)">
+
+                      @if (
+                        cambiandoEstadoId
+                        === categoria.id_categoria
+                      ) {
+
+                        <mat-spinner
+                          diameter="17">
+                        </mat-spinner>
+
+                      } @else {
+
+                        <mat-icon>
+
+                          {{
+                            categoria.estado
+                            ? 'toggle_on'
+                            : 'toggle_off'
+                          }}
+
+                        </mat-icon>
+
+                      }
+
+                    </button>
+
+                    <button
+                      type="button"
+                      class="accion eliminar"
+                      [class.bloqueada]="
+                        (categoria.productos_count ?? 0) > 0
+                      "
+                      [title]="
+                        (categoria.productos_count ?? 0) > 0
+                        ? 'No se puede eliminar porque tiene productos'
+                        : 'Eliminar categoria'
+                      "
+                      (click)="solicitarEliminar(categoria)">
+
+                      <mat-icon>
+                        delete
+                      </mat-icon>
+
+                    </button>
+
+                  </div>
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <div class="lista-movil">
+
+        @for (
+          categoria of categoriasFiltradas;
+          track categoria.id_categoria
+        ) {
+
+          <article class="categoria-card">
+
+            <header>
+
+              <div class="categoria-identidad">
+
+                <span class="categoria-icono">
+
+                  <mat-icon>
+                    sell
+                  </mat-icon>
+
+                </span>
+
+                <div>
+
+                  <strong>
+                    {{ categoria.nombre_categoria }}
+                  </strong>
+
+                  <small>
+                    ID {{ categoria.id_categoria }}
+                  </small>
+
+                </div>
+
+              </div>
+
+              <span
+                class="estado"
+                [class.activa]="categoria.estado"
+                [class.inactiva]="!categoria.estado">
+
+                {{
+                  categoria.estado
+                  ? 'Activa'
+                  : 'Inactiva'
+                }}
+
+              </span>
+
+            </header>
+
+            <p class="descripcion">
+
+              {{
+                categoria.descripcion_categoria
+                || 'Sin descripcion'
+              }}
+
+            </p>
+
+            <div class="datos-movil">
+
+              <span>
+
+                <small>
+                  Productos
+                </small>
+
+                <strong>
+                  {{
+                    obtenerTextoProductos(categoria)
+                  }}
+                </strong>
+
+              </span>
+
+              <span>
+
+                <small>
+                  Actualizacion
+                </small>
+
+                <strong>
+                  {{
+                    formatearFecha(
+                      categoria.updated_at
+                    )
+                  }}
+                </strong>
+
+              </span>
+
+            </div>
+
+            <footer>
+
+              <button
+                type="button"
+                class="editar"
+                (click)="
+                  abrirEditarCategoria(categoria)
+                ">
+
+                <mat-icon>
+                  edit
+                </mat-icon>
+
+                Editar
+
+              </button>
+
+              <button
+                type="button"
+                (click)="cambiarEstado(categoria)">
+
+                <mat-icon>
+
+                  {{
+                    categoria.estado
+                    ? 'toggle_on'
+                    : 'toggle_off'
+                  }}
+
+                </mat-icon>
+
+                {{
+                  categoria.estado
+                  ? 'Desactivar'
+                  : 'Activar'
+                }}
+
+              </button>
+
+              <button
+                type="button"
+                class="eliminar"
+                [class.bloqueada]="
+                  (categoria.productos_count ?? 0) > 0
+                "
+                (click)="solicitarEliminar(categoria)">
+
+                <mat-icon>
+                  delete
+                </mat-icon>
+
+                Eliminar
+
+              </button>
+
+            </footer>
+
+          </article>
+
+        }
+
+      </div>
+
+    }
+
+  </section>
+
+</main>
+
+@if (formularioAbierto) {
+
+  <div
+    class="modal-fondo"
+    (click)="cerrarFormulario()">
+
+    <section
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      (click)="$event.stopPropagation()">
+
+      <header class="modal-cabecera">
+
+        <div>
+
+          <span class="modal-icono">
+
+            <mat-icon>
+
+              {{
+                categoriaEditando
+                ? 'edit'
+                : 'add'
+              }}
+
+            </mat-icon>
+
+          </span>
+
+          <div>
+
+            <h2>
+
+              {{
+                categoriaEditando
+                ? 'Editar categoria'
+                : 'Nueva categoria'
+              }}
+
+            </h2>
+
+            <p>
+              Completa la informacion de la categoria.
+            </p>
+
+          </div>
+
+        </div>
+
+        <button
+          type="button"
+          aria-label="Cerrar formulario"
+          [disabled]="guardando"
+          (click)="cerrarFormulario()">
+
+          <mat-icon>
+            close
+          </mat-icon>
+
+        </button>
+
+      </header>
+
+      <form
+        [formGroup]="categoriaForm"
+        (ngSubmit)="guardarCategoria()">
+
+        <label class="campo">
+
+          <span>
+            Nombre de la categoria
+          </span>
+
+          <input
+            type="text"
+            maxlength="100"
+            placeholder="Ejemplo: Jugueteria"
+            formControlName="nombre_categoria">
+
+          <small class="contador">
+
+            {{
+              categoriaForm.controls
+                .nombre_categoria
+                .value.length
+            }}/100
+
+          </small>
+
+        </label>
+
+        @if (
+          categoriaForm.controls
+            .nombre_categoria.touched
+          && categoriaForm.controls
+            .nombre_categoria.invalid
+        ) {
+
+          <p class="error-campo">
+
+            @if (
+              categoriaForm.controls
+                .nombre_categoria
+                .hasError('required')
+            ) {
+
+              El nombre es obligatorio.
+
+            } @else {
+
+              El nombre no puede superar
+              los 100 caracteres.
+
+            }
+
+          </p>
+
+        }
+
+        <label class="campo">
+
+          <span>
+            Descripcion
+          </span>
+
+          <textarea
+            rows="4"
+            maxlength="255"
+            placeholder="Describe brevemente los productos de esta categoria."
+            formControlName="descripcion_categoria">
+          </textarea>
+
+          <small class="contador">
+
+            {{
+              categoriaForm.controls
+                .descripcion_categoria
+                .value.length
+            }}/255
+
+          </small>
+
+        </label>
+
+        @if (
+          categoriaForm.controls
+            .descripcion_categoria.touched
+          && categoriaForm.controls
+            .descripcion_categoria.invalid
+        ) {
+
+          <p class="error-campo">
+            La descripcion no puede superar los 255 caracteres.
+          </p>
+
+        }
+
+        <label class="estado-control">
+
+          <input
+            type="checkbox"
+            formControlName="estado">
+
+          <span class="interruptor"></span>
+
+          <span>
+
+            <strong>
+              Categoria activa
+            </strong>
+
+            <small>
+              Las categorias activas pueden utilizarse
+              para organizar productos.
+            </small>
+
+          </span>
+
+        </label>
+
+        <footer class="modal-acciones">
+
+          <button
+            type="button"
+            class="btn-cancelar"
+            [disabled]="guardando"
+            (click)="cerrarFormulario()">
+
+            Cancelar
+
+          </button>
+
+          <button
+            type="submit"
+            class="btn-guardar"
+            [disabled]="guardando">
+
+            @if (guardando) {
+
+              <mat-spinner
+                diameter="18">
+              </mat-spinner>
+
+              Guardando...
+
+            } @else {
+
+              <mat-icon>
+                save
+              </mat-icon>
+
+              {{
+                categoriaEditando
+                ? 'Guardar cambios'
+                : 'Crear categoria'
+              }}
+
+            }
+
+          </button>
+
+        </footer>
+
+      </form>
+
+    </section>
+
+  </div>
+
+}
+
+@if (categoriaAEliminar) {
+
+  <div
+    class="modal-fondo"
+    (click)="cancelarEliminacion()">
+
+    <section
+      class="modal confirmar"
+      role="alertdialog"
+      aria-modal="true"
+      (click)="$event.stopPropagation()">
+
+      <span class="icono-eliminar">
+
+        <mat-icon>
+          delete_forever
+        </mat-icon>
+
+      </span>
+
+      <h2>
+        Eliminar categoria
+      </h2>
+
+      <p>
+        Se eliminara
+        <strong>
+          {{ categoriaAEliminar.nombre_categoria }}
+        </strong>.
+        Esta accion no se puede deshacer.
+      </p>
+
+      <footer class="modal-acciones">
+
+        <button
+          type="button"
+          class="btn-cancelar"
+          [disabled]="eliminandoId !== null"
+          (click)="cancelarEliminacion()">
+
+          Cancelar
+
+        </button>
+
+        <button
+          type="button"
+          class="btn-eliminar-confirmar"
+          [disabled]="eliminandoId !== null"
+          (click)="confirmarEliminacion()">
+
+          @if (eliminandoId !== null) {
+
+            <mat-spinner
+              diameter="18">
+            </mat-spinner>
+
+            Eliminando...
+
+          } @else {
+
+            <mat-icon>
+              delete
+            </mat-icon>
+
+            Eliminar
+
+          }
+
+        </button>
+
+      </footer>
+
+    </section>
+
+  </div>
+
+}

@@ -226,6 +226,20 @@ export class ToolbarComponent {
 
     if (
       ruta.startsWith(
+        '/categorias'
+      )
+    ) {
+
+      this.tituloPagina.set(
+        'Categorias'
+      );
+
+      return;
+
+    }
+
+    if (
+      ruta.startsWith(
         '/ventas'
       )
     ) {

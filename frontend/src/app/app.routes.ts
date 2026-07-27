@@ -75,6 +75,26 @@ export const routes: Routes = [
       },
 
       {
+        path: 'categorias',
+        canActivate: [
+          rolGuard
+        ],
+        data: {
+          roles: [
+            'ADMINISTRADOR'
+          ]
+        },
+        loadComponent: () =>
+          import(
+            './features/categorias/pages/categorias/categorias'
+          )
+            .then(
+              modulo =>
+                modulo.CategoriasComponent
+            )
+      },
+
+      {
         path: 'ventas',
         loadComponent: () =>
           import(

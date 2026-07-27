@@ -51,6 +51,10 @@ import {
 } from '../../services/producto';
 
 import {
+  AuthService
+} from '../../../../core/services/auth.service';
+
+import {
   DrawerProductoComponent
 } from '../../components/drawer-producto/drawer-producto';
 
@@ -106,6 +110,9 @@ implements OnInit {
 
   private productoService =
     inject(ProductoService);
+
+  private authService =
+    inject(AuthService);
 
   private snackBar =
     inject(MatSnackBar);
@@ -339,6 +346,30 @@ implements OnInit {
 
   }
 
+  get esAdministrador(): boolean {
+
+    return this.authService
+      .esAdministrador();
+
+  }
+
+  get categoriasDisponibles():
+    Categoria[] {
+
+    const idCategoriaActual =
+      this.productoSeleccionado
+        ?.id_categoria
+      ?? null;
+
+    return this.categorias.filter(
+      categoria =>
+        categoria.estado
+        || categoria.id_categoria
+          === idCategoriaActual
+    );
+
+  }
+
   get totalProductos(): number {
 
     return this.productos.length;
@@ -479,6 +510,16 @@ implements OnInit {
 
   abrirDrawer(): void {
 
+    if (!this.esAdministrador) {
+
+      this.mostrarMensaje(
+        'Solo la administradora puede registrar productos.'
+      );
+
+      return;
+
+    }
+
     this.productoSeleccionado =
       null;
 
@@ -553,6 +594,16 @@ implements OnInit {
     producto: Producto
   ): void {
 
+    if (!this.esAdministrador) {
+
+      this.mostrarMensaje(
+        'Solo la administradora puede editar productos.'
+      );
+
+      return;
+
+    }
+
     this.productoSeleccionado =
       producto;
 
@@ -568,6 +619,16 @@ implements OnInit {
   actualizarStockProducto(
     producto: Producto
   ): void {
+
+    if (!this.esAdministrador) {
+
+      this.mostrarMensaje(
+        'Solo la administradora puede actualizar el stock.'
+      );
+
+      return;
+
+    }
 
     this.productoSeleccionado =
       producto;
@@ -612,6 +673,16 @@ implements OnInit {
   cambiarEstadoProducto(
     producto: Producto
   ): void {
+
+    if (!this.esAdministrador) {
+
+      this.mostrarMensaje(
+        'Solo la administradora puede cambiar el estado del producto.'
+      );
+
+      return;
+
+    }
 
     const idProducto =
       producto.id_producto;

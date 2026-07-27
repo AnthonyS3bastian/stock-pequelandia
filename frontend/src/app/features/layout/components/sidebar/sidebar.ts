@@ -77,6 +77,11 @@ export class SidebarComponent {
   private readonly gestionAdministrador:
     MenuItem[] = [
       {
+        titulo: 'Categorias',
+        icono: 'category',
+        ruta: '/categorias'
+      },
+      {
         titulo: 'Reportes',
         icono: 'bar_chart',
         ruta: '/reportes'
