@@ -1,1200 +1,1817 @@
 import {
-    ChangeDetectorRef,
-    Component,
-    ElementRef,
-    ViewChild,
-    inject
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  inject
 } from '@angular/core';
 
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTableModule } from '@angular/material/table';
+import {
+  CommonModule
+} from '@angular/common';
 
 import {
-    MatSnackBar,
-    MatSnackBarModule
+  FormsModule
+} from '@angular/forms';
+
+import {
+  MatCardModule
+} from '@angular/material/card';
+
+import {
+  MatFormFieldModule
+} from '@angular/material/form-field';
+
+import {
+  MatInputModule
+} from '@angular/material/input';
+
+import {
+  MatButtonModule
+} from '@angular/material/button';
+
+import {
+  MatIconModule
+} from '@angular/material/icon';
+
+import {
+  MatTableModule
+} from '@angular/material/table';
+
+import {
+  MatSnackBar,
+  MatSnackBarModule
 } from '@angular/material/snack-bar';
 
-import { ProductoService } from '../../../inventario/services/producto';
+import {
+  firstValueFrom
+} from 'rxjs';
 
 import {
-    RegistrarVentaRequest,
-    TipoComprobante,
-    VentaService
+  ProductoService
+} from '../../../inventario/services/producto';
+
+import {
+  TipoComprobante,
+  RegistrarVentaRequest,
+  VentaRegistrada
+} from '../../interfaces/comprobante-venta.interface';
+
+import {
+  VentaService
 } from '../../services/ventas.service';
 
+import {
+  ComprobanteTermicoService
+} from '../../services/comprobante-termico.service';
+
 interface ProductoVenta {
-    id_producto: number;
-    codigo: string;
-    producto: string;
-    cantidad: number;
-    precio: number;
-    subtotal: number;
-    stockDisponible: number;
+  id_producto: number;
+  codigo: string;
+  producto: string;
+  cantidad: number;
+  precio: number;
+  subtotal: number;
+  stockDisponible: number;
+  fechaCaducidad?: string | null;
+  estado: boolean;
 }
 
+type VistaVentas =
+  | 'nueva'
+  | 'anular';
+
 type EstadoConsultaDocumento =
-    | 'inicial'
-    | 'consultando'
-    | 'encontrado'
-    | 'no_encontrado'
-    | 'advertencia'
-    | 'error';
+  | 'inicial'
+  | 'consultando'
+  | 'encontrado'
+  | 'no_encontrado'
+  | 'advertencia'
+  | 'error';
 
 type TipoNotificacion =
-    | 'exito'
-    | 'advertencia'
-    | 'error'
-    | 'informacion';
+  | 'exito'
+  | 'advertencia'
+  | 'error'
+  | 'informacion';
 
 @Component({
-    selector: 'app-ventas',
-
-    standalone: true,
-
-    imports: [
-        CommonModule,
-        FormsModule,
-        MatCardModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatButtonModule,
-        MatIconModule,
-        MatTableModule,
-        MatSnackBarModule
-    ],
-
-    templateUrl: './ventas.html',
-    styleUrl: './ventas.scss'
+  selector: 'app-ventas',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTableModule,
+    MatSnackBarModule
+  ],
+  templateUrl: './ventas.html',
+  styleUrl: './ventas.scss'
 })
-export class Ventas {
+export class Ventas
+implements OnInit, OnDestroy {
 
-    @ViewChild('campoCodigo')
-    campoCodigo?: ElementRef<HTMLInputElement>;
+  @ViewChild('campoCodigo')
+  campoCodigo?: ElementRef<HTMLInputElement>;
 
-    private productoService =
-        inject(ProductoService);
+  @ViewChild('campoComprobante')
+  campoComprobante?: ElementRef<HTMLInputElement>;
 
-    private ventaService =
-        inject(VentaService);
+  private readonly productoService =
+    inject(ProductoService);
 
-    private snackBar =
-        inject(MatSnackBar);
+  private readonly ventaService =
+    inject(VentaService);
 
-    private cdr =
-        inject(ChangeDetectorRef);
+  private readonly comprobanteTermicoService =
+    inject(ComprobanteTermicoService);
 
-    readonly displayedColumns: string[] = [
-        'producto',
-        'cantidad',
-        'precio',
-        'subtotal',
-        'acciones'
-    ];
+  private readonly snackBar =
+    inject(MatSnackBar);
 
-    ventas: ProductoVenta[] = [];
+  private readonly cdr =
+    inject(ChangeDetectorRef);
 
-    codigoBarras = '';
+  private temporizadorImpresora:
+    ReturnType<typeof setInterval> | null =
+      null;
 
-    subtotal = 0;
+  private componenteDestruido = false;
 
-    igv = 0;
+  readonly displayedColumns: string[] = [
+    'producto',
+    'cantidad',
+    'precio',
+    'subtotal',
+    'acciones'
+  ];
 
-    total = 0;
+  vistaActual:
+    VistaVentas = 'nueva';
 
-    registrando = false;
+  ventas:
+    ProductoVenta[] = [];
 
-    buscandoProducto = false;
+  codigoBarras = '';
 
-    consultandoDocumento = false;
+  total = 0;
 
-    tipoComprobante: TipoComprobante =
-        'VENTA RAPIDA';
+  registrando = false;
 
-    numeroDocumento = '';
+  imprimiendo = false;
 
-    nombreCliente =
+  conectandoImpresora = false;
+
+  buscandoProducto = false;
+
+  consultandoDocumento = false;
+
+  /*
+   * Son valores internos para conservar
+   * la compatibilidad con el backend:
+   *
+   * VENTA RAPIDA = Público general.
+   * BOLETA       = Cliente con DNI.
+   * FACTURA      = Cliente con RUC.
+   *
+   * En todos los casos se genera
+   * una NOTA DE VENTA.
+   */
+  tipoComprobante:
+    TipoComprobante = 'VENTA RAPIDA';
+
+  numeroDocumento = '';
+
+  nombreCliente =
+    'PUBLICO GENERAL';
+
+  direccionCliente = '';
+
+  documentoConsultado = true;
+
+  estadoConsultaDocumento:
+    EstadoConsultaDocumento = 'inicial';
+
+  mensajeConsultaDocumento = '';
+
+  imprimirComprobante = true;
+
+  confirmacionVentaVisible = false;
+
+  advertenciaImpresoraVisible = false;
+
+  impresoraCompatible = true;
+
+  impresoraConectada = false;
+
+  nombreImpresora =
+    'Impresora Bluetooth';
+
+  numeroComprobanteBusqueda = '';
+
+  buscandoVenta = false;
+
+  anulandoVenta = false;
+
+  ventaBuscada:
+    VentaRegistrada | null = null;
+
+  puedeAnularVenta = false;
+
+  motivoBloqueoAnulacion = '';
+
+  confirmacionAnulacionVisible = false;
+
+  ngOnInit(): void {
+    this.calcularTotales();
+
+    this.actualizarEstadoImpresora();
+
+    this.temporizadorImpresora =
+      setInterval(
+        () => {
+          this.actualizarEstadoImpresora();
+        },
+        1000
+      );
+
+    this.enfocarCampoCodigo();
+  }
+
+  ngOnDestroy(): void {
+    this.componenteDestruido = true;
+
+    if (this.temporizadorImpresora) {
+      clearInterval(
+        this.temporizadorImpresora
+      );
+
+      this.temporizadorImpresora = null;
+    }
+  }
+
+  get cantidadProductos(): number {
+    return this.ventas.length;
+  }
+
+  get cantidadUnidades(): number {
+    return this.ventas.reduce(
+      (acumulado, producto) =>
+        acumulado + producto.cantidad,
+      0
+    );
+  }
+
+  get operacionEnCurso(): boolean {
+    return (
+      this.registrando
+      || this.imprimiendo
+      || this.conectandoImpresora
+      || this.anulandoVenta
+    );
+  }
+
+  get puedeRegistrar(): boolean {
+    if (
+      this.ventas.length === 0
+      || this.operacionEnCurso
+      || this.buscandoProducto
+      || this.consultandoDocumento
+    ) {
+      return false;
+    }
+
+    if (
+      this.tipoComprobante
+      === 'BOLETA'
+    ) {
+      return (
+        /^\d{8}$/.test(
+          this.numeroDocumento
+        )
+        && this.documentoConsultado
+      );
+    }
+
+    if (
+      this.tipoComprobante
+      === 'FACTURA'
+    ) {
+      return (
+        /^\d{11}$/.test(
+          this.numeroDocumento
+        )
+        && this.documentoConsultado
+      );
+    }
+
+    return true;
+  }
+
+  get textoTipoCliente(): string {
+    if (
+      this.tipoComprobante
+      === 'BOLETA'
+    ) {
+      return 'Cliente con DNI';
+    }
+
+    if (
+      this.tipoComprobante
+      === 'FACTURA'
+    ) {
+      return 'Cliente con RUC';
+    }
+
+    return 'Venta rápida';
+  }
+
+  actualizarEstadoImpresora(
+    mostrarMensaje = false
+  ): void {
+    const estadoAnterior =
+      this.impresoraConectada;
+
+    const nombreAnterior =
+      this.nombreImpresora;
+
+    this.impresoraCompatible =
+      this.comprobanteTermicoService
+        .esCompatible();
+
+    this.impresoraConectada =
+      this.comprobanteTermicoService
+        .estaConectada();
+
+    this.nombreImpresora =
+      this.comprobanteTermicoService
+        .obtenerNombreImpresora()
+      || 'Impresora Bluetooth';
+
+    if (mostrarMensaje) {
+      this.mostrarMensaje(
+        this.impresoraConectada
+          ? `${this.nombreImpresora} está conectada.`
+          : 'La impresora no está conectada.',
+        this.impresoraConectada
+          ? 'exito'
+          : 'informacion'
+      );
+    }
+
+    const estadoCambio =
+      estadoAnterior
+        !== this.impresoraConectada
+      || nombreAnterior
+        !== this.nombreImpresora;
+
+    if (
+      estadoCambio
+      && !this.componenteDestruido
+    ) {
+      this.cdr.detectChanges();
+    }
+  }
+
+  async conectarImpresora():
+    Promise<void> {
+    if (
+      this.conectandoImpresora
+      || this.registrando
+      || this.imprimiendo
+    ) {
+      return;
+    }
+
+    if (
+      !this.comprobanteTermicoService
+        .esCompatible()
+    ) {
+      this.mostrarMensaje(
+        'Este navegador no permite Web Bluetooth. Utilice Google Chrome o Microsoft Edge.',
+        'error'
+      );
+
+      return;
+    }
+
+    this.conectandoImpresora = true;
+    this.cdr.detectChanges();
+
+    try {
+      const nombre =
+        await this
+          .comprobanteTermicoService
+          .conectarImpresora();
+
+      this.actualizarEstadoImpresora();
+
+      this.mostrarMensaje(
+        `${nombre} conectada correctamente.`,
+        'exito'
+      );
+    } catch (error) {
+      this.actualizarEstadoImpresora();
+
+      this.mostrarMensaje(
+        this.obtenerMensajeError(
+          error,
+          'No se pudo conectar la impresora.'
+        ),
+        'error'
+      );
+    } finally {
+      this.conectandoImpresora = false;
+
+      if (!this.componenteDestruido) {
+        this.cdr.detectChanges();
+      }
+    }
+  }
+
+  desconectarImpresora(): void {
+    if (
+      this.conectandoImpresora
+      || this.registrando
+      || this.imprimiendo
+    ) {
+      return;
+    }
+
+    this.comprobanteTermicoService
+      .desconectarImpresora();
+
+    this.actualizarEstadoImpresora();
+
+    this.mostrarMensaje(
+      'Impresora desconectada.',
+      'informacion'
+    );
+  }
+
+  cambiarVista(
+    vista: VistaVentas
+  ): void {
+    if (this.operacionEnCurso) {
+      return;
+    }
+
+    this.vistaActual = vista;
+
+    this.cerrarConfirmacionVenta();
+    this.cerrarConfirmacionAnulacion();
+
+    this.advertenciaImpresoraVisible =
+      false;
+
+    if (vista === 'nueva') {
+      this.enfocarCampoCodigo();
+    } else {
+      this.enfocarCampoComprobante();
+    }
+  }
+
+  agregarProducto(): void {
+    if (
+      this.operacionEnCurso
+      || this.buscandoProducto
+    ) {
+      return;
+    }
+
+    const codigo =
+      this.codigoBarras.trim();
+
+    if (!codigo) {
+      this.mostrarMensaje(
+        'Ingrese o escanee un código de producto.',
+        'advertencia'
+      );
+
+      this.enfocarCampoCodigo();
+      return;
+    }
+
+    this.buscandoProducto = true;
+
+    this.productoService
+      .buscarPorCodigo(codigo)
+      .subscribe({
+        next: (respuesta: any) => {
+          const producto = respuesta?.data;
+
+          if (!producto) {
+            this.mostrarMensaje(
+              'Producto no encontrado.',
+              'advertencia'
+            );
+
+            this.finalizarBusquedaProducto();
+            return;
+          }
+
+          if (!producto.estado) {
+            this.mostrarMensaje(
+              'El producto se encuentra inactivo.',
+              'advertencia'
+            );
+
+            this.finalizarBusquedaProducto();
+            return;
+          }
+
+          if (
+            this.estaVencido(
+              producto.fecha_caducidad
+            )
+          ) {
+            this.mostrarMensaje(
+              'El producto se encuentra vencido y no puede venderse.',
+              'advertencia'
+            );
+
+            this.finalizarBusquedaProducto();
+            return;
+          }
+
+          const stockDisponible = Number(
+            producto.stock_producto ?? 0
+          );
+
+          if (stockDisponible <= 0) {
+            this.mostrarMensaje(
+              'El producto no tiene stock disponible.',
+              'advertencia'
+            );
+
+            this.finalizarBusquedaProducto();
+            return;
+          }
+
+          const existente =
+            this.ventas.find(
+              item =>
+                item.id_producto
+                === Number(
+                  producto.id_producto
+                )
+            );
+
+          if (existente) {
+            if (
+              existente.cantidad
+              >= existente.stockDisponible
+            ) {
+              this.mostrarMensaje(
+                `Stock máximo disponible: ${existente.stockDisponible} unidades.`,
+                'advertencia'
+              );
+
+              this.finalizarBusquedaProducto();
+              return;
+            }
+
+            existente.cantidad += 1;
+
+            existente.subtotal =
+              existente.cantidad
+              * existente.precio;
+          } else {
+            const precio = Number(
+              producto.precio_producto ?? 0
+            );
+
+            this.ventas.push({
+              id_producto: Number(
+                producto.id_producto
+              ),
+
+              codigo: String(
+                producto.codigo_producto
+                ?? codigo
+              ),
+
+              producto: String(
+                producto.nombre_producto
+                ?? 'Producto'
+              ),
+
+              cantidad: 1,
+
+              precio,
+
+              subtotal: precio,
+
+              stockDisponible,
+
+              fechaCaducidad:
+                producto.fecha_caducidad
+                ?? null,
+
+              estado: Boolean(
+                producto.estado
+              )
+            });
+          }
+
+          this.actualizarVentaTemporal();
+          this.finalizarBusquedaProducto();
+        },
+
+        error: (error: any) => {
+          this.mostrarMensaje(
+            this.obtenerMensajeError(
+              error,
+              error?.status === 404
+                ? 'Producto no encontrado.'
+                : 'No se pudo consultar el producto.'
+            ),
+
+            error?.status === 404
+              ? 'advertencia'
+              : 'error'
+          );
+
+          this.finalizarBusquedaProducto();
+        }
+      });
+  }
+
+  aumentarCantidad(
+    producto: ProductoVenta
+  ): void {
+    if (this.operacionEnCurso) {
+      return;
+    }
+
+    if (
+      producto.cantidad
+      >= producto.stockDisponible
+    ) {
+      this.mostrarMensaje(
+        `Stock máximo disponible: ${producto.stockDisponible} unidades.`,
+        'advertencia'
+      );
+
+      return;
+    }
+
+    producto.cantidad += 1;
+
+    producto.subtotal =
+      producto.cantidad
+      * producto.precio;
+
+    this.actualizarVentaTemporal();
+  }
+
+  disminuirCantidad(
+    producto: ProductoVenta
+  ): void {
+    if (this.operacionEnCurso) {
+      return;
+    }
+
+    if (producto.cantidad > 1) {
+      producto.cantidad -= 1;
+
+      producto.subtotal =
+        producto.cantidad
+        * producto.precio;
+
+      this.actualizarVentaTemporal();
+      return;
+    }
+
+    this.eliminarProducto(
+      producto
+    );
+  }
+
+  eliminarProducto(
+    producto: ProductoVenta
+  ): void {
+    if (this.operacionEnCurso) {
+      return;
+    }
+
+    this.ventas =
+      this.ventas.filter(
+        item =>
+          item.id_producto
+          !== producto.id_producto
+      );
+
+    this.calcularTotales();
+    this.enfocarCampoCodigo();
+  }
+
+  limpiarVenta(): void {
+    if (this.operacionEnCurso) {
+      return;
+    }
+
+    this.ventas = [];
+    this.codigoBarras = '';
+
+    this.calcularTotales();
+    this.enfocarCampoCodigo();
+  }
+
+  seleccionarTipoComprobante(
+    tipo: TipoComprobante
+  ): void {
+    if (
+      this.operacionEnCurso
+      || this.consultandoDocumento
+    ) {
+      return;
+    }
+
+    this.tipoComprobante = tipo;
+
+    this.numeroDocumento = '';
+    this.direccionCliente = '';
+
+    this.estadoConsultaDocumento =
+      'inicial';
+
+    this.mensajeConsultaDocumento = '';
+
+    if (
+      tipo === 'VENTA RAPIDA'
+    ) {
+      this.nombreCliente =
         'PUBLICO GENERAL';
 
-    direccionCliente = '';
-
-    documentoConsultado = true;
-
-    estadoConsultaDocumento:
-        EstadoConsultaDocumento = 'inicial';
-
-    mensajeConsultaDocumento = '';
-
-    get cantidadProductos(): number {
-
-        return this.ventas.length;
-
+      this.documentoConsultado = true;
+    } else {
+      this.nombreCliente = '';
+      this.documentoConsultado = false;
     }
 
-    get cantidadUnidades(): number {
+    this.cdr.detectChanges();
+  }
 
-        return this.ventas.reduce(
-            (
-                acumulado,
-                producto
-            ) =>
-                acumulado +
-                producto.cantidad,
-            0
-        );
+  limpiarNumeroDocumento(): void {
+    this.numeroDocumento =
+      this.numeroDocumento.replace(
+        /\D/g,
+        ''
+      );
 
+    const longitudMaxima =
+      this.tipoComprobante
+      === 'FACTURA'
+        ? 11
+        : 8;
+
+    this.numeroDocumento =
+      this.numeroDocumento.substring(
+        0,
+        longitudMaxima
+      );
+
+    this.nombreCliente = '';
+    this.direccionCliente = '';
+
+    this.documentoConsultado = false;
+
+    this.estadoConsultaDocumento =
+      'inicial';
+
+    this.mensajeConsultaDocumento = '';
+  }
+
+  consultarDocumento(): void {
+    if (
+      this.tipoComprobante
+        === 'VENTA RAPIDA'
+      || this.consultandoDocumento
+      || this.operacionEnCurso
+    ) {
+      return;
     }
 
-    get puedeRegistrar(): boolean {
+    const documento =
+      this.numeroDocumento.trim();
 
-        if (
-            this.ventas.length === 0 ||
-            this.registrando ||
-            this.buscandoProducto ||
-            this.consultandoDocumento
-        ) {
-            return false;
-        }
+    if (
+      this.tipoComprobante
+        === 'BOLETA'
+      && !/^\d{8}$/.test(
+        documento
+      )
+    ) {
+      this.establecerEstadoDocumento(
+        'advertencia',
+        'El DNI debe contener exactamente 8 dígitos.'
+      );
 
-        if (
-            this.tipoComprobante !==
-            'VENTA RAPIDA'
-        ) {
-
-            return (
-                this.documentoConsultado &&
-                this.numeroDocumento.trim() !== ''
-            );
-
-        }
-
-        return true;
-
+      return;
     }
 
-    /**
-     * Buscar un producto mediante su código.
-     */
-    agregarProducto(): void {
+    if (
+      this.tipoComprobante
+        === 'FACTURA'
+      && !/^\d{11}$/.test(
+        documento
+      )
+    ) {
+      this.establecerEstadoDocumento(
+        'advertencia',
+        'El RUC debe contener exactamente 11 dígitos.'
+      );
 
-        if (
-            this.registrando ||
-            this.buscandoProducto
-        ) {
-            return;
-        }
-
-        const codigo =
-            this.codigoBarras.trim();
-
-        if (!codigo) {
-
-            this.mostrarMensaje(
-                'Ingrese o escanee un código de producto.',
-                'advertencia'
-            );
-
-            this.enfocarCampoCodigo();
-
-            return;
-
-        }
-
-        this.buscandoProducto = true;
-
-        this.productoService
-            .buscarPorCodigo(codigo)
-            .subscribe({
-
-                next: (respuesta: any) => {
-
-                    const producto =
-                        respuesta?.data;
-
-                    if (!producto) {
-
-                        this.mostrarMensaje(
-                            'Producto no encontrado.',
-                            'advertencia'
-                        );
-
-                        this.finalizarBusquedaProducto();
-
-                        return;
-
-                    }
-
-                    const stockDisponible =
-                        Number(
-                            producto.stock_producto ??
-                            0
-                        );
-
-                    if (stockDisponible <= 0) {
-
-                        this.mostrarMensaje(
-                            'El producto no tiene stock disponible.',
-                            'advertencia'
-                        );
-
-                        this.finalizarBusquedaProducto();
-
-                        return;
-
-                    }
-
-                    const existente =
-                        this.ventas.find(
-                            item =>
-                                item.id_producto ===
-                                Number(
-                                    producto.id_producto
-                                )
-                        );
-
-                    if (existente) {
-
-                        if (
-                            existente.cantidad >=
-                            existente.stockDisponible
-                        ) {
-
-                            this.mostrarMensaje(
-                                `Stock máximo disponible: ${existente.stockDisponible} unidades.`,
-                                'advertencia'
-                            );
-
-                            this.finalizarBusquedaProducto();
-
-                            return;
-
-                        }
-
-                        existente.cantidad++;
-
-                        existente.subtotal =
-                            existente.cantidad *
-                            existente.precio;
-
-                    } else {
-
-                        const precio =
-                            Number(
-                                producto.precio_producto ??
-                                0
-                            );
-
-                        this.ventas.push({
-
-                            id_producto:
-                                Number(
-                                    producto.id_producto
-                                ),
-
-                            codigo:
-                                String(
-                                    producto.codigo_producto ??
-                                    codigo
-                                ),
-
-                            producto:
-                                String(
-                                    producto.nombre_producto ??
-                                    'Producto'
-                                ),
-
-                            cantidad: 1,
-
-                            precio,
-
-                            subtotal: precio,
-
-                            stockDisponible
-
-                        });
-
-                    }
-
-                    this.actualizarVentaTemporal();
-
-                    this.finalizarBusquedaProducto();
-
-                },
-
-                error: (error: any) => {
-
-                    const tipo:
-                        TipoNotificacion =
-                        error?.status === 404
-                            ? 'advertencia'
-                            : 'error';
-
-                    this.mostrarMensaje(
-                        this.obtenerMensajeError(
-                            error,
-                            error?.status === 404
-                                ? 'Producto no encontrado.'
-                                : 'No se pudo consultar el producto.'
-                        ),
-                        tipo
-                    );
-
-                    this.finalizarBusquedaProducto();
-
-                }
-
-            });
-
+      return;
     }
 
-    /**
-     * Aumentar la cantidad.
-     */
-    aumentarCantidad(
-        producto: ProductoVenta
-    ): void {
+    this.consultandoDocumento = true;
+    this.documentoConsultado = false;
 
-        if (this.registrando) {
-            return;
-        }
+    this.nombreCliente = '';
+    this.direccionCliente = '';
 
-        if (
-            producto.cantidad >=
-            producto.stockDisponible
-        ) {
+    this.establecerEstadoDocumento(
+      'consultando',
 
-            this.mostrarMensaje(
-                `Stock máximo disponible: ${producto.stockDisponible} unidades.`,
-                'advertencia'
-            );
+      this.tipoComprobante
+        === 'BOLETA'
+        ? 'Consultando DNI...'
+        : 'Consultando RUC...'
+    );
 
-            return;
+    if (
+      this.tipoComprobante
+      === 'BOLETA'
+    ) {
+      this.consultarDni(
+        documento
+      );
+    } else {
+      this.consultarRuc(
+        documento
+      );
+    }
+  }
 
-        }
-
-        producto.cantidad++;
-
-        producto.subtotal =
-            producto.cantidad *
-            producto.precio;
-
-        this.actualizarVentaTemporal();
-
+  abrirConfirmacionVenta(): void {
+    if (!this.puedeRegistrar) {
+      this.validarVentaAntesDeConfirmar();
+      return;
     }
 
-    /**
-     * Disminuir la cantidad.
-     */
-    disminuirCantidad(
-        producto: ProductoVenta
-    ): void {
+    this.actualizarEstadoImpresora();
 
-        if (this.registrando) {
-            return;
-        }
+    this.confirmacionVentaVisible = true;
+  }
 
-        if (producto.cantidad > 1) {
-
-            producto.cantidad--;
-
-            producto.subtotal =
-                producto.cantidad *
-                producto.precio;
-
-            this.actualizarVentaTemporal();
-
-            return;
-
-        }
-
-        this.eliminarProducto(producto);
-
+  cerrarConfirmacionVenta(): void {
+    if (this.operacionEnCurso) {
+      return;
     }
 
-    /**
-     * Eliminar producto de la venta temporal.
-     */
-    eliminarProducto(
-        producto: ProductoVenta
-    ): void {
+    this.confirmacionVentaVisible = false;
+  }
 
-        if (this.registrando) {
-            return;
-        }
-
-        this.ventas =
-            this.ventas.filter(
-                item =>
-                    item.id_producto !==
-                    producto.id_producto
-            );
-
-        this.calcularTotales();
-
-        this.enfocarCampoCodigo();
-
+  async confirmarVenta():
+    Promise<void> {
+    if (
+      !this.confirmacionVentaVisible
+      || !this.puedeRegistrar
+      || this.operacionEnCurso
+    ) {
+      return;
     }
 
-    /**
-     * Cambiar el tipo de comprobante.
-     */
-    seleccionarTipoComprobante(
-        tipo: TipoComprobante
-    ): void {
+    this.actualizarEstadoImpresora();
 
-        if (
-            this.registrando ||
-            this.consultandoDocumento
-        ) {
-            return;
-        }
+    if (
+      this.imprimirComprobante
+      && !this.impresoraConectada
+    ) {
+      this.confirmacionVentaVisible =
+        false;
 
-        this.tipoComprobante = tipo;
+      this.advertenciaImpresoraVisible =
+        true;
 
-        this.numeroDocumento = '';
-
-        this.direccionCliente = '';
-
-        this.estadoConsultaDocumento =
-            'inicial';
-
-        this.mensajeConsultaDocumento = '';
-
-        if (tipo === 'VENTA RAPIDA') {
-
-            this.nombreCliente =
-                'PUBLICO GENERAL';
-
-            this.documentoConsultado = true;
-
-        } else {
-
-            this.nombreCliente = '';
-
-            this.documentoConsultado = false;
-
-        }
-
-        this.cdr.detectChanges();
-
+      return;
     }
 
-    /**
-     * Permitir solo números.
-     */
-    limpiarNumeroDocumento(): void {
+    await this.registrarVentaConfirmada(
+      this.imprimirComprobante
+    );
+  }
 
-        this.numeroDocumento =
-            this.numeroDocumento.replace(
-                /\D/g,
-                ''
-            );
-
-        const longitudMaxima =
-            this.tipoComprobante ===
-            'FACTURA'
-                ? 11
-                : 8;
-
-        this.numeroDocumento =
-            this.numeroDocumento.substring(
-                0,
-                longitudMaxima
-            );
-
-        this.nombreCliente = '';
-
-        this.direccionCliente = '';
-
-        this.documentoConsultado = false;
-
-        this.estadoConsultaDocumento =
-            'inicial';
-
-        this.mensajeConsultaDocumento = '';
-
+  cerrarAdvertenciaImpresora(): void {
+    if (this.operacionEnCurso) {
+      return;
     }
 
-    /**
-     * Consultar DNI o RUC.
-     */
-    consultarDocumento(): void {
+    this.advertenciaImpresoraVisible =
+      false;
 
-        if (
-            this.tipoComprobante ===
-            'VENTA RAPIDA' ||
-            this.consultandoDocumento ||
-            this.registrando
-        ) {
-            return;
-        }
+    this.confirmacionVentaVisible =
+      true;
+  }
 
-        const documento =
-            this.numeroDocumento.trim();
-
-        if (
-            this.tipoComprobante === 'BOLETA' &&
-            !/^\d{8}$/.test(documento)
-        ) {
-
-            this.establecerEstadoDocumento(
-                'advertencia',
-                'El DNI debe contener exactamente 8 dígitos.'
-            );
-
-            return;
-
-        }
-
-        if (
-            this.tipoComprobante === 'FACTURA' &&
-            !/^\d{11}$/.test(documento)
-        ) {
-
-            this.establecerEstadoDocumento(
-                'advertencia',
-                'El RUC debe contener exactamente 11 dígitos.'
-            );
-
-            return;
-
-        }
-
-        this.consultandoDocumento = true;
-
-        this.documentoConsultado = false;
-
-        this.nombreCliente = '';
-
-        this.direccionCliente = '';
-
-        this.establecerEstadoDocumento(
-            'consultando',
-            this.tipoComprobante === 'BOLETA'
-                ? 'Consultando DNI...'
-                : 'Consultando RUC...'
-        );
-
-        if (
-            this.tipoComprobante === 'BOLETA'
-        ) {
-
-            this.consultarDni(documento);
-
-            return;
-
-        }
-
-        this.consultarRuc(documento);
-
+  async conectarYContinuarVenta():
+    Promise<void> {
+    if (this.operacionEnCurso) {
+      return;
     }
 
-    /**
-     * Consultar persona por DNI.
-     */
-    private consultarDni(
-        dni: string
-    ): void {
+    await this.conectarImpresora();
 
-        this.ventaService
-            .consultarDni(dni)
-            .subscribe({
+    this.actualizarEstadoImpresora();
 
-                next: (respuesta) => {
-
-                    const datos =
-                        respuesta?.datos;
-
-                    const nombre = [
-                        datos?.nombres,
-                        datos?.apellidoPaterno,
-                        datos?.apellidoMaterno
-                    ]
-                        .filter(Boolean)
-                        .join(' ')
-                        .trim();
-
-                    if (!nombre) {
-
-                        this.consultandoDocumento =
-                            false;
-
-                        this.documentoConsultado =
-                            false;
-
-                        this.establecerEstadoDocumento(
-                            'no_encontrado',
-                            'No se encontró información para el DNI ingresado.'
-                        );
-
-                        this.cdr.detectChanges();
-
-                        return;
-
-                    }
-
-                    this.nombreCliente = nombre;
-
-                    this.direccionCliente = '';
-
-                    this.documentoConsultado = true;
-
-                    this.consultandoDocumento = false;
-
-                    this.establecerEstadoDocumento(
-                        'encontrado',
-                        'Cliente encontrado correctamente.'
-                    );
-
-                    this.cdr.detectChanges();
-
-                },
-
-                error: (error: any) => {
-
-                    this.procesarErrorDocumento(
-                        error,
-                        'DNI'
-                    );
-
-                }
-
-            });
-
+    if (!this.impresoraConectada) {
+      return;
     }
 
-    /**
-     * Consultar empresa por RUC.
-     */
-    private consultarRuc(
-        ruc: string
-    ): void {
+    this.advertenciaImpresoraVisible =
+      false;
 
-        this.ventaService
-            .consultarRuc(ruc)
-            .subscribe({
+    await this.registrarVentaConfirmada(
+      true
+    );
+  }
 
-                next: (respuesta) => {
-
-                    const datos =
-                        respuesta?.datos;
-
-                    if (!datos?.razonSocial) {
-
-                        this.consultandoDocumento =
-                            false;
-
-                        this.documentoConsultado =
-                            false;
-
-                        this.establecerEstadoDocumento(
-                            'no_encontrado',
-                            'No se encontró información para el RUC ingresado.'
-                        );
-
-                        this.cdr.detectChanges();
-
-                        return;
-
-                    }
-
-                    this.nombreCliente =
-                        datos.razonSocial;
-
-                    this.direccionCliente =
-                        datos.direccion ?? '';
-
-                    if (datos.estado !== 'ACTIVO') {
-
-                        this.consultandoDocumento =
-                            false;
-
-                        this.documentoConsultado =
-                            false;
-
-                        this.establecerEstadoDocumento(
-                            'advertencia',
-                            `El RUC pertenece a ${this.nombreCliente}, pero su estado es ${datos.estado || 'desconocido'}.`
-                        );
-
-                        this.cdr.detectChanges();
-
-                        return;
-
-                    }
-
-                    if (datos.condicion !== 'HABIDO') {
-
-                        this.consultandoDocumento =
-                            false;
-
-                        this.documentoConsultado =
-                            false;
-
-                        this.establecerEstadoDocumento(
-                            'advertencia',
-                            `El RUC pertenece a ${this.nombreCliente}, pero su condición es ${datos.condicion || 'desconocida'}.`
-                        );
-
-                        this.cdr.detectChanges();
-
-                        return;
-
-                    }
-
-                    this.documentoConsultado = true;
-
-                    this.consultandoDocumento = false;
-
-                    this.establecerEstadoDocumento(
-                        'encontrado',
-                        'Empresa encontrada correctamente.'
-                    );
-
-                    this.cdr.detectChanges();
-
-                },
-
-                error: (error: any) => {
-
-                    this.procesarErrorDocumento(
-                        error,
-                        'RUC'
-                    );
-
-                }
-
-            });
-
+  async continuarSinImprimir():
+    Promise<void> {
+    if (this.operacionEnCurso) {
+      return;
     }
 
-    /**
-     * Clasificar el error de una consulta.
-     */
-    private procesarErrorDocumento(
-        error: any,
-        tipoDocumento: 'DNI' | 'RUC'
-    ): void {
+    this.advertenciaImpresoraVisible =
+      false;
 
-        this.consultandoDocumento = false;
+    this.imprimirComprobante = false;
 
-        this.documentoConsultado = false;
+    await this.registrarVentaConfirmada(
+      false
+    );
+  }
 
-        this.nombreCliente = '';
-
-        this.direccionCliente = '';
-
-        const estadoHttp =
-            Number(error?.status ?? 0);
-
-        if (estadoHttp === 404) {
-
-            this.establecerEstadoDocumento(
-                'no_encontrado',
-                `No se encontró información para el ${tipoDocumento} ingresado.`
-            );
-
-        } else if (
-            estadoHttp === 400 ||
-            estadoHttp === 422
-        ) {
-
-            this.establecerEstadoDocumento(
-                'advertencia',
-                this.obtenerMensajeError(
-                    error,
-                    `El ${tipoDocumento} ingresado no es válido.`
-                )
-            );
-
-        } else if (
-            estadoHttp === 0 ||
-            estadoHttp >= 500
-        ) {
-
-            this.establecerEstadoDocumento(
-                'error',
-                'El servicio de consulta no está disponible. Intente nuevamente.'
-            );
-
-        } else {
-
-            this.establecerEstadoDocumento(
-                'error',
-                this.obtenerMensajeError(
-                    error,
-                    `No se pudo consultar el ${tipoDocumento}.`
-                )
-            );
-
-        }
-
-        this.cdr.detectChanges();
-
+  private async registrarVentaConfirmada(
+    debeImprimir: boolean
+  ): Promise<void> {
+    if (
+      !this.puedeRegistrar
+      || this.operacionEnCurso
+    ) {
+      return;
     }
 
-    /**
-     * Establecer el estado visual de la consulta.
-     */
-    private establecerEstadoDocumento(
-        estado: EstadoConsultaDocumento,
-        mensaje: string
-    ): void {
+    this.confirmacionVentaVisible =
+      false;
 
-        this.estadoConsultaDocumento =
-            estado;
+    this.advertenciaImpresoraVisible =
+      false;
 
-        this.mensajeConsultaDocumento =
-            mensaje;
+    try {
+      const datos =
+        this.construirSolicitudVenta();
 
-    }
+      this.registrando = true;
+      this.cdr.detectChanges();
 
-    /**
-     * Limpiar la venta temporal.
-     */
-    limpiarVenta(): void {
-
-        if (this.registrando) {
-            return;
-        }
-
-        this.ventas = [];
-
-        this.codigoBarras = '';
-
-        this.calcularTotales();
-
-        this.enfocarCampoCodigo();
-
-    }
-
-    /**
-     * Registrar la venta.
-     */
-    registrarVenta(): void {
-
-        if (this.registrando) {
-            return;
-        }
-
-        if (this.ventas.length === 0) {
-
-            this.mostrarMensaje(
-                'Debe agregar al menos un producto.',
-                'advertencia'
-            );
-
-            return;
-
-        }
-
-        const productoSinStock =
-            this.ventas.find(
-                producto =>
-                    producto.cantidad >
-                    producto.stockDisponible
-            );
-
-        if (productoSinStock) {
-
-            this.mostrarMensaje(
-                `La cantidad de ${productoSinStock.producto} supera el stock disponible.`,
-                'advertencia'
-            );
-
-            return;
-
-        }
-
-        if (
-            this.tipoComprobante !==
-            'VENTA RAPIDA'
-        ) {
-
-            if (!this.numeroDocumento.trim()) {
-
-                this.establecerEstadoDocumento(
-                    'advertencia',
-                    this.tipoComprobante ===
-                    'BOLETA'
-                        ? 'Ingrese el DNI del cliente.'
-                        : 'Ingrese el RUC de la empresa.'
-                );
-
-                return;
-
-            }
-
-            if (!this.documentoConsultado) {
-
-                this.establecerEstadoDocumento(
-                    'advertencia',
-                    'Consulte y valide el documento antes de registrar.'
-                );
-
-                return;
-
-            }
-
-        }
-
-        const datos: RegistrarVentaRequest = {
-
-            tipo_comprobante:
-                this.tipoComprobante,
-
-            numero_documento:
-                this.tipoComprobante ===
-                'VENTA RAPIDA'
-                    ? null
-                    : this.numeroDocumento,
-
-            detalles:
-                this.ventas.map(
-                    producto => ({
-
-                        id_producto:
-                            producto.id_producto,
-
-                        cantidad:
-                            producto.cantidad
-
-                    })
-                )
-
-        };
-
-        this.registrando = true;
-
-        this.ventaService
+      const respuesta =
+        await firstValueFrom(
+          this.ventaService
             .registrar(datos)
-            .subscribe({
+        );
 
-                next: (respuesta) => {
+      this.registrando = false;
 
-                    this.registrando = false;
+      let mensaje =
+        respuesta.mensaje
+        || 'Venta registrada correctamente.';
 
-                    this.mostrarMensaje(
-                        respuesta.mensaje ||
-                        'Venta registrada correctamente.',
-                        'exito'
-                    );
+      let tipoMensaje:
+        TipoNotificacion = 'exito';
 
-                    this.reiniciarVentaCompleta();
+      if (debeImprimir) {
+        try {
+          this.imprimiendo = true;
+          this.cdr.detectChanges();
 
-                    this.cdr.detectChanges();
-
-                    this.enfocarCampoCodigo();
-
-                },
-
-                error: (error: any) => {
-
-                    this.registrando = false;
-
-                    this.mostrarMensaje(
-                        this.obtenerMensajeError(
-                            error,
-                            'No se pudo completar la venta. Intente nuevamente.'
-                        ),
-                        'error'
-                    );
-
-                    this.cdr.detectChanges();
-
-                }
-
-            });
-
-    }
-
-    /**
-     * Calcular totales.
-     */
-    calcularTotales(): void {
-
-        this.subtotal =
-            this.ventas.reduce(
-                (
-                    acumulado,
-                    producto
-                ) =>
-                    acumulado +
-                    Number(
-                        producto.subtotal
-                    ),
-                0
+          await this
+            .comprobanteTermicoService
+            .imprimirComprobante(
+              respuesta.venta
             );
 
-        this.igv = 0;
+          mensaje +=
+            ' Nota de venta impresa correctamente.';
+        } catch (error) {
+          mensaje =
+            'Venta registrada correctamente, pero no se pudo imprimir la nota de venta. '
+            + this.obtenerMensajeError(
+              error,
+              'Revise la conexión de la impresora.'
+            );
 
-        this.total =
-            this.subtotal +
-            this.igv;
+          tipoMensaje =
+            'advertencia';
+        } finally {
+          this.imprimiendo = false;
+        }
+      }
 
+      this.mostrarMensaje(
+        mensaje,
+        tipoMensaje
+      );
+
+      this.reiniciarVentaCompleta();
+
+      this.actualizarEstadoImpresora();
+
+      this.cdr.detectChanges();
+      this.enfocarCampoCodigo();
+    } catch (error) {
+      this.registrando = false;
+      this.imprimiendo = false;
+
+      this.mostrarMensaje(
+        this.obtenerMensajeError(
+          error,
+          'No se pudo registrar la venta.'
+        ),
+        'error'
+      );
+
+      this.cdr.detectChanges();
     }
+  }
 
-    /**
-     * Actualizar tabla y totales.
-     */
-    private actualizarVentaTemporal(): void {
-
-        this.ventas = [
-            ...this.ventas
-        ];
-
-        this.calcularTotales();
-
-    }
-
-    /**
-     * Finalizar búsqueda de producto.
-     */
-    private finalizarBusquedaProducto(): void {
-
-        this.buscandoProducto = false;
-
-        this.codigoBarras = '';
-
-        this.cdr.detectChanges();
-
-        this.enfocarCampoCodigo();
-
-    }
-
-    /**
-     * Reiniciar la venta completa.
-     */
-    private reiniciarVentaCompleta(): void {
-
-        this.ventas = [];
-
-        this.codigoBarras = '';
-
-        this.subtotal = 0;
-
-        this.igv = 0;
-
-        this.total = 0;
-
-        this.tipoComprobante =
-            'VENTA RAPIDA';
-
-        this.numeroDocumento = '';
-
-        this.nombreCliente =
-            'PUBLICO GENERAL';
-
-        this.direccionCliente = '';
-
-        this.documentoConsultado = true;
-
-        this.consultandoDocumento = false;
-
-        this.buscandoProducto = false;
-
-        this.estadoConsultaDocumento =
-            'inicial';
-
-        this.mensajeConsultaDocumento = '';
-
-    }
-
-    /**
-     * Enfocar nuevamente el escáner.
-     */
-    private enfocarCampoCodigo(): void {
-
-        setTimeout(
-            () => {
-
-                this.campoCodigo
-                    ?.nativeElement
-                    .focus();
-
-            },
-            100
+  normalizarNumeroComprobante(): void {
+    this.numeroComprobanteBusqueda =
+      this.numeroComprobanteBusqueda
+        .toUpperCase()
+        .replace(
+          /[^A-Z0-9]/g,
+          ''
+        )
+        .substring(
+          0,
+          20
         );
 
+    this.ventaBuscada = null;
+    this.puedeAnularVenta = false;
+    this.motivoBloqueoAnulacion = '';
+  }
+
+  async buscarVentaParaAnular():
+    Promise<void> {
+    const numero =
+      this.numeroComprobanteBusqueda
+        .trim()
+        .toUpperCase();
+
+    if (!numero) {
+      this.mostrarMensaje(
+        'Ingrese o escanee el código de la nota de venta.',
+        'advertencia'
+      );
+
+      this.enfocarCampoComprobante();
+      return;
     }
 
-    /**
-     * Obtener un mensaje del backend.
-     */
-    private obtenerMensajeError(
-        error: any,
-        mensajePredeterminado: string
-    ): string {
-
-        if (error?.error?.mensaje) {
-            return error.error.mensaje;
-        }
-
-        if (error?.error?.message) {
-            return error.error.message;
-        }
-
-        if (error?.error?.errors) {
-
-            const errores =
-                Object.values(
-                    error.error.errors
-                );
-
-            const primerError =
-                errores[0];
-
-            if (Array.isArray(primerError)) {
-
-                return String(
-                    primerError[0]
-                );
-
-            }
-
-            if (primerError) {
-
-                return String(
-                    primerError
-                );
-
-            }
-
-        }
-
-        return mensajePredeterminado;
-
+    if (
+      this.buscandoVenta
+      || this.operacionEnCurso
+    ) {
+      return;
     }
 
-    /**
-     * Mostrar notificación del sistema.
-     */
-    private mostrarMensaje(
-        mensaje: string,
-        tipo: TipoNotificacion =
-            'informacion'
-    ): void {
+    this.buscandoVenta = true;
 
-        this.snackBar.open(
-            mensaje,
-            'Cerrar',
-            {
-                duration: 5000,
-                horizontalPosition: 'right',
-                verticalPosition: 'bottom',
-                panelClass: [
-                    'notificacion-sistema',
-                    `notificacion-${tipo}`
-                ]
-            }
+    this.ventaBuscada = null;
+    this.puedeAnularVenta = false;
+    this.motivoBloqueoAnulacion = '';
+
+    this.cdr.detectChanges();
+
+    try {
+      const respuesta =
+        await firstValueFrom(
+          this.ventaService
+            .buscarPorComprobante(
+              numero
+            )
         );
 
+      this.ventaBuscada =
+        respuesta.venta;
+
+      this.puedeAnularVenta =
+        respuesta.puede_anular;
+
+      this.motivoBloqueoAnulacion =
+        respuesta.motivo_bloqueo
+        ?? '';
+    } catch (error) {
+      this.mostrarMensaje(
+        this.obtenerMensajeError(
+          error,
+          'No se pudo buscar la nota de venta.'
+        ),
+        'error'
+      );
+    } finally {
+      this.buscandoVenta = false;
+      this.cdr.detectChanges();
     }
+  }
+
+  abrirConfirmacionAnulacion(): void {
+    if (
+      !this.ventaBuscada
+      || !this.puedeAnularVenta
+      || this.operacionEnCurso
+    ) {
+      return;
+    }
+
+    this.confirmacionAnulacionVisible =
+      true;
+  }
+
+  cerrarConfirmacionAnulacion(): void {
+    if (
+      this.anulandoVenta
+    ) {
+      return;
+    }
+
+    this.confirmacionAnulacionVisible =
+      false;
+  }
+
+  async confirmarAnulacion():
+    Promise<void> {
+    if (
+      !this.ventaBuscada
+      || !this.puedeAnularVenta
+      || this.anulandoVenta
+    ) {
+      return;
+    }
+
+    this.anulandoVenta = true;
+    this.cdr.detectChanges();
+
+    try {
+      const respuesta =
+        await firstValueFrom(
+          this.ventaService
+            .anularPorComprobante(
+              this.ventaBuscada
+                .numero_comprobante
+            )
+        );
+
+      this.ventaBuscada =
+        respuesta.venta;
+
+      this.puedeAnularVenta =
+        false;
+
+      this.motivoBloqueoAnulacion =
+        'La venta ya se encuentra anulada.';
+
+      this.confirmacionAnulacionVisible =
+        false;
+
+      this.mostrarMensaje(
+        respuesta.mensaje,
+        'exito'
+      );
+    } catch (error) {
+      this.mostrarMensaje(
+        this.obtenerMensajeError(
+          error,
+          'No se pudo anular la venta.'
+        ),
+        'error'
+      );
+    } finally {
+      this.anulandoVenta = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  obtenerCantidadUnidadesVenta(
+    venta: VentaRegistrada
+  ): number {
+    return (
+      venta.detalle_ventas
+      ?? []
+    ).reduce(
+      (
+        acumulado,
+        detalle
+      ) =>
+        acumulado
+        + Number(
+          detalle
+            .cantidad_detalle_venta
+          ?? 0
+        ),
+      0
+    );
+  }
+
+  obtenerNombreClienteVenta(
+    venta: VentaRegistrada
+  ): string {
+    const cliente =
+      venta.cliente;
+
+    if (!cliente) {
+      return 'PUBLICO GENERAL';
+    }
+
+    const opciones = [
+      cliente.nombre_cliente,
+
+      cliente.razon_social_cliente,
+
+      cliente.nombre_razon_social,
+
+      [
+        cliente.nombres_cliente,
+
+        cliente.apellidos_cliente
+          ?? cliente.apellido_cliente
+      ]
+        .filter(Boolean)
+        .join(' ')
+    ];
+
+    return String(
+      opciones.find(
+        valor =>
+          String(
+            valor ?? ''
+          ).trim()
+      )
+      ?? 'PUBLICO GENERAL'
+    ).trim();
+  }
+
+  obtenerNombreVendedorVenta(
+    venta: VentaRegistrada
+  ): string {
+    const personal =
+      venta.usuario?.personal;
+
+    const nombre = [
+      personal?.nombre_personal,
+
+      personal?.apellido_personal
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .trim();
+
+    return nombre
+      || venta.usuario?.nombre_usuario
+      || 'Usuario';
+  }
+
+  formatearFechaHora(
+    fecha: string
+  ): string {
+    return new Intl.DateTimeFormat(
+      'es-PE',
+      {
+        timeZone:
+          'America/Lima',
+
+        dateStyle:
+          'short',
+
+        timeStyle:
+          'medium'
+      }
+    ).format(
+      new Date(fecha)
+    );
+  }
+
+  calcularTotales(): void {
+    this.total =
+      this.ventas.reduce(
+        (
+          acumulado,
+          producto
+        ) =>
+          acumulado
+          + Number(
+            producto.subtotal
+          ),
+        0
+      );
+  }
+
+  private consultarDni(
+    dni: string
+  ): void {
+    this.ventaService
+      .consultarDni(dni)
+      .subscribe({
+        next: (respuesta) => {
+          const datos =
+            respuesta?.datos;
+
+          const nombre = [
+            datos?.nombres,
+
+            datos?.apellidoPaterno,
+
+            datos?.apellidoMaterno
+          ]
+            .filter(Boolean)
+            .join(' ')
+            .trim();
+
+          if (!nombre) {
+            this.consultandoDocumento =
+              false;
+
+            this.documentoConsultado =
+              false;
+
+            this.establecerEstadoDocumento(
+              'no_encontrado',
+              'No se encontró información para el DNI ingresado.'
+            );
+
+            this.cdr.detectChanges();
+            return;
+          }
+
+          this.nombreCliente =
+            nombre;
+
+          this.direccionCliente =
+            '';
+
+          this.documentoConsultado =
+            true;
+
+          this.consultandoDocumento =
+            false;
+
+          this.establecerEstadoDocumento(
+            'encontrado',
+            'Cliente encontrado correctamente.'
+          );
+
+          this.cdr.detectChanges();
+        },
+
+        error: (error: any) => {
+          this.procesarErrorDocumento(
+            error,
+            'DNI'
+          );
+        }
+      });
+  }
+
+  private consultarRuc(
+    ruc: string
+  ): void {
+    this.ventaService
+      .consultarRuc(ruc)
+      .subscribe({
+        next: (respuesta) => {
+          const datos =
+            respuesta?.datos;
+
+          if (
+            !datos?.razonSocial
+          ) {
+            this.consultandoDocumento =
+              false;
+
+            this.documentoConsultado =
+              false;
+
+            this.establecerEstadoDocumento(
+              'no_encontrado',
+              'No se encontró información para el RUC ingresado.'
+            );
+
+            this.cdr.detectChanges();
+            return;
+          }
+
+          this.nombreCliente =
+            datos.razonSocial;
+
+          this.direccionCliente =
+            datos.direccion
+            ?? '';
+
+          if (
+            datos.estado !== 'ACTIVO'
+          ) {
+            this.consultandoDocumento =
+              false;
+
+            this.documentoConsultado =
+              false;
+
+            this.establecerEstadoDocumento(
+              'advertencia',
+              `El RUC tiene estado ${datos.estado || 'desconocido'}.`
+            );
+
+            this.cdr.detectChanges();
+            return;
+          }
+
+          if (
+            datos.condicion !== 'HABIDO'
+          ) {
+            this.consultandoDocumento =
+              false;
+
+            this.documentoConsultado =
+              false;
+
+            this.establecerEstadoDocumento(
+              'advertencia',
+              `El RUC tiene condición ${datos.condicion || 'desconocida'}.`
+            );
+
+            this.cdr.detectChanges();
+            return;
+          }
+
+          this.documentoConsultado =
+            true;
+
+          this.consultandoDocumento =
+            false;
+
+          this.establecerEstadoDocumento(
+            'encontrado',
+            'Empresa encontrada correctamente.'
+          );
+
+          this.cdr.detectChanges();
+        },
+
+        error: (error: any) => {
+          this.procesarErrorDocumento(
+            error,
+            'RUC'
+          );
+        }
+      });
+  }
+
+  private procesarErrorDocumento(
+    error: any,
+    tipoDocumento: 'DNI' | 'RUC'
+  ): void {
+    this.consultandoDocumento =
+      false;
+
+    this.documentoConsultado =
+      false;
+
+    this.nombreCliente = '';
+    this.direccionCliente = '';
+
+    const estadoHttp =
+      Number(
+        error?.status ?? 0
+      );
+
+    if (
+      estadoHttp === 404
+    ) {
+      this.establecerEstadoDocumento(
+        'no_encontrado',
+        `No se encontró información para el ${tipoDocumento} ingresado.`
+      );
+    } else if (
+      estadoHttp === 400
+      || estadoHttp === 422
+    ) {
+      this.establecerEstadoDocumento(
+        'advertencia',
+
+        this.obtenerMensajeError(
+          error,
+          `El ${tipoDocumento} ingresado no es válido.`
+        )
+      );
+    } else {
+      this.establecerEstadoDocumento(
+        'error',
+
+        this.obtenerMensajeError(
+          error,
+          `No se pudo consultar el ${tipoDocumento}.`
+        )
+      );
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  private validarVentaAntesDeConfirmar(): void {
+    if (
+      this.ventas.length === 0
+    ) {
+      this.mostrarMensaje(
+        'Debe agregar al menos un producto.',
+        'advertencia'
+      );
+
+      return;
+    }
+
+    if (
+      this.tipoComprobante
+        === 'BOLETA'
+      && !this.numeroDocumento
+    ) {
+      this.establecerEstadoDocumento(
+        'advertencia',
+        'Ingrese y consulte el DNI del cliente.'
+      );
+
+      return;
+    }
+
+    if (
+      this.tipoComprobante
+        === 'FACTURA'
+      && !this.numeroDocumento
+    ) {
+      this.establecerEstadoDocumento(
+        'advertencia',
+        'Ingrese y consulte el RUC del cliente.'
+      );
+
+      return;
+    }
+
+    if (
+      this.tipoComprobante
+        !== 'VENTA RAPIDA'
+      && !this.documentoConsultado
+    ) {
+      this.establecerEstadoDocumento(
+        'advertencia',
+
+        this.tipoComprobante
+          === 'BOLETA'
+          ? 'Consulte el DNI antes de registrar la venta.'
+          : 'Consulte el RUC antes de registrar la venta.'
+      );
+    }
+  }
+
+  private construirSolicitudVenta():
+    RegistrarVentaRequest {
+    return {
+      tipo_comprobante:
+        this.tipoComprobante,
+
+      numero_documento:
+        this.numeroDocumento.trim()
+          ? this.numeroDocumento.trim()
+          : null,
+
+      detalles:
+        this.ventas.map(
+          producto => ({
+            id_producto:
+              producto.id_producto,
+
+            cantidad:
+              producto.cantidad
+          })
+        )
+    };
+  }
+
+  private actualizarVentaTemporal(): void {
+    this.ventas = [
+      ...this.ventas
+    ];
+
+    this.calcularTotales();
+  }
+
+  private finalizarBusquedaProducto(): void {
+    this.buscandoProducto = false;
+
+    this.codigoBarras = '';
+
+    this.cdr.detectChanges();
+    this.enfocarCampoCodigo();
+  }
+
+  private reiniciarVentaCompleta(): void {
+    this.ventas = [];
+
+    this.codigoBarras = '';
+
+    this.total = 0;
+
+    this.tipoComprobante =
+      'VENTA RAPIDA';
+
+    this.numeroDocumento = '';
+
+    this.nombreCliente =
+      'PUBLICO GENERAL';
+
+    this.direccionCliente = '';
+
+    this.documentoConsultado =
+      true;
+
+    this.consultandoDocumento =
+      false;
+
+    this.buscandoProducto =
+      false;
+
+    this.estadoConsultaDocumento =
+      'inicial';
+
+    this.mensajeConsultaDocumento =
+      '';
+
+    this.imprimirComprobante =
+      true;
+
+    this.confirmacionVentaVisible =
+      false;
+
+    this.advertenciaImpresoraVisible =
+      false;
+  }
+
+  private establecerEstadoDocumento(
+    estado: EstadoConsultaDocumento,
+    mensaje: string
+  ): void {
+    this.estadoConsultaDocumento =
+      estado;
+
+    this.mensajeConsultaDocumento =
+      mensaje;
+  }
+
+  private estaVencido(
+    fechaCaducidad:
+      string | null | undefined
+  ): boolean {
+    if (!fechaCaducidad) {
+      return false;
+    }
+
+    const fecha =
+      new Date(
+        `${String(fechaCaducidad).substring(0, 10)}T00:00:00`
+      );
+
+    const hoy =
+      new Date();
+
+    hoy.setHours(
+      0,
+      0,
+      0,
+      0
+    );
+
+    return fecha.getTime()
+      < hoy.getTime();
+  }
+
+  private enfocarCampoCodigo(): void {
+    setTimeout(
+      () => {
+        this.campoCodigo
+          ?.nativeElement
+          .focus();
+      },
+      100
+    );
+  }
+
+  private enfocarCampoComprobante(): void {
+    setTimeout(
+      () => {
+        this.campoComprobante
+          ?.nativeElement
+          .focus();
+      },
+      100
+    );
+  }
+
+  private obtenerMensajeError(
+    error: any,
+    mensajePredeterminado: string
+  ): string {
+    if (
+      error instanceof Error
+    ) {
+      return error.message
+        || mensajePredeterminado;
+    }
+
+    if (
+      error?.error?.mensaje
+    ) {
+      return error.error.mensaje;
+    }
+
+    if (
+      error?.error?.message
+    ) {
+      return error.error.message;
+    }
+
+    if (
+      error?.error?.errors
+    ) {
+      const errores =
+        Object.values(
+          error.error.errors
+        );
+
+      const primerError =
+        errores[0];
+
+      if (
+        Array.isArray(
+          primerError
+        )
+      ) {
+        return String(
+          primerError[0]
+        );
+      }
+
+      if (primerError) {
+        return String(
+          primerError
+        );
+      }
+    }
+
+    return mensajePredeterminado;
+  }
+
+  private mostrarMensaje(
+    mensaje: string,
+    tipo:
+      TipoNotificacion =
+        'informacion'
+  ): void {
+    this.snackBar.open(
+      mensaje,
+      'Cerrar',
+      {
+        duration: 6000,
+
+        horizontalPosition:
+          'right',
+
+        verticalPosition:
+          'bottom',
+
+        panelClass: [
+          'notificacion-sistema',
+          `notificacion-${tipo}`
+        ]
+      }
+    );
+  }
 
 }

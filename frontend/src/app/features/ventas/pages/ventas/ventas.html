@@ -1,791 +1,1501 @@
 <div class="ventas-container">
 
-    <header class="cabecera-ventas">
+  <header class="cabecera-ventas">
 
-        <div>
+    <div>
+      <h1>Ventas</h1>
 
-            <h1>
-                Ventas
-            </h1>
+      <p>
+        Registra productos, imprime notas de venta
+        y anula ventas del día.
+      </p>
+    </div>
 
-            <p>
-                Registra los productos y completa la venta.
-            </p>
+    <div class="resumen-cabecera">
 
-        </div>
+      <mat-icon>shopping_cart</mat-icon>
 
-        <div class="resumen-cabecera">
+      <span>
+        {{ cantidadUnidades }} unidades
+      </span>
 
-            <mat-icon>
-                shopping_cart
-            </mat-icon>
+      <strong>
+        S/ {{ total | number:'1.2-2' }}
+      </strong>
 
-            <span>
-                {{ cantidadUnidades }}
-                {{
-                    cantidadUnidades === 1
-                        ? 'unidad'
-                        : 'unidades'
-                }}
-            </span>
+    </div>
 
-            <strong>
-                S/ {{ total | number:'1.2-2' }}
-            </strong>
+  </header>
 
-        </div>
+  <nav class="pestanas-ventas">
 
-    </header>
+    <button
+      type="button"
+      [class.activa]="vistaActual === 'nueva'"
+      [disabled]="operacionEnCurso"
+      (click)="cambiarVista('nueva')">
+
+      <mat-icon>point_of_sale</mat-icon>
+      Nueva venta
+
+    </button>
+
+    <button
+      type="button"
+      [class.activa]="vistaActual === 'anular'"
+      [disabled]="operacionEnCurso"
+      (click)="cambiarVista('anular')">
+
+      <mat-icon>cancel</mat-icon>
+      Anular venta
+
+    </button>
+
+  </nav>
+
+  <!-- =================================================== -->
+  <!-- NUEVA VENTA -->
+  <!-- =================================================== -->
+
+  <section
+    class="vista-ventas"
+    *ngIf="vistaActual === 'nueva'">
 
     <div class="contenido-ventas">
 
-        <!-- ===================================== -->
-        <!-- VENTA ACTUAL -->
-        <!-- ===================================== -->
+      <mat-card class="panel panel-productos">
 
-        <mat-card class="panel panel-productos">
+        <div class="cabecera-panel">
 
-            <div class="cabecera-panel">
+          <div>
+            <h2>Venta actual</h2>
 
-                <div>
+            <span>
+              {{ cantidadProductos }}
+              {{
+                cantidadProductos === 1
+                  ? 'producto'
+                  : 'productos'
+              }}
+              ·
+              {{ cantidadUnidades }} unidades
+            </span>
+          </div>
 
-                    <h2>
-                        Venta actual
-                    </h2>
+          <button
+            type="button"
+            mat-stroked-button
+            class="boton-limpiar-superior"
+            [disabled]="
+              ventas.length === 0
+              || operacionEnCurso
+            "
+            (click)="limpiarVenta()">
 
-                    <span>
-                        {{ cantidadProductos }}
-                        {{
-                            cantidadProductos === 1
-                                ? 'producto agregado'
-                                : 'productos agregados'
-                        }}
-                    </span>
+            <mat-icon>delete_sweep</mat-icon>
+            Limpiar
 
-                </div>
+          </button>
 
-                <button
-                    type="button"
-                    mat-stroked-button
-                    class="boton-limpiar-superior"
-                    [disabled]="
-                        ventas.length === 0 ||
-                        registrando
-                    "
-                    (click)="limpiarVenta()">
+        </div>
+
+        <div class="barra-codigo">
+
+          <mat-form-field
+            appearance="outline"
+            class="campo-codigo">
+
+            <mat-label>
+              Código del producto
+            </mat-label>
+
+            <mat-icon matPrefix>
+              qr_code_scanner
+            </mat-icon>
+
+            <input
+              #campoCodigo
+              matInput
+              autofocus
+              autocomplete="off"
+              placeholder="Escanee o escriba el código"
+              [(ngModel)]="codigoBarras"
+              [disabled]="
+                operacionEnCurso
+                || buscandoProducto
+              "
+              (keyup.enter)="agregarProducto()">
+
+          </mat-form-field>
+
+          <button
+            type="button"
+            mat-flat-button
+            class="boton-agregar"
+            [disabled]="
+              operacionEnCurso
+              || buscandoProducto
+              || !codigoBarras.trim()
+            "
+            (click)="agregarProducto()">
+
+            <mat-icon>
+              {{
+                buscandoProducto
+                  ? 'hourglass_top'
+                  : 'add'
+              }}
+            </mat-icon>
+
+            {{
+              buscandoProducto
+                ? 'Buscando'
+                : 'Agregar'
+            }}
+
+          </button>
+
+        </div>
+
+        <div
+          class="tabla-contenedor"
+          *ngIf="
+            ventas.length > 0;
+            else ventaVacia
+          ">
+
+          <table
+            mat-table
+            [dataSource]="ventas"
+            class="tabla">
+
+            <ng-container matColumnDef="producto">
+
+              <th
+                mat-header-cell
+                *matHeaderCellDef>
+                Producto
+              </th>
+
+              <td
+                mat-cell
+                *matCellDef="let elemento">
+
+                <div class="producto-tabla">
+
+                  <div class="icono-producto">
 
                     <mat-icon>
-                        delete_sweep
+                      inventory_2
                     </mat-icon>
 
-                    Limpiar
+                  </div>
 
-                </button>
+                  <div class="datos-producto">
 
-            </div>
-
-            <!-- ESCÁNER -->
-
-            <div class="barra-codigo">
-
-                <mat-form-field
-                    appearance="outline"
-                    class="campo-codigo">
-
-                    <mat-label>
-                        Código del producto
-                    </mat-label>
-
-                    <mat-icon matPrefix>
-                        qr_code_scanner
-                    </mat-icon>
-
-                    <input
-                        #campoCodigo
-                        matInput
-                        autofocus
-                        autocomplete="off"
-                        placeholder="Escanee o escriba el código"
-                        [(ngModel)]="codigoBarras"
-                        [disabled]="
-                            registrando ||
-                            buscandoProducto
-                        "
-                        (keyup.enter)="agregarProducto()">
-
-                </mat-form-field>
-
-                <button
-                    type="button"
-                    mat-flat-button
-                    class="boton-agregar"
-                    [disabled]="
-                        registrando ||
-                        buscandoProducto ||
-                        !codigoBarras.trim()
-                    "
-                    (click)="agregarProducto()">
-
-                    <mat-icon>
-                        {{
-                            buscandoProducto
-                                ? 'hourglass_top'
-                                : 'add'
-                        }}
-                    </mat-icon>
-
-                    {{
-                        buscandoProducto
-                            ? 'Buscando'
-                            : 'Agregar'
-                    }}
-
-                </button>
-
-            </div>
-
-            <!-- TABLA -->
-
-            <div
-                class="tabla-contenedor"
-                *ngIf="
-                    ventas.length > 0;
-                    else ventaVacia
-                ">
-
-                <table
-                    mat-table
-                    [dataSource]="ventas"
-                    class="tabla">
-
-                    <ng-container matColumnDef="producto">
-
-                        <th
-                            mat-header-cell
-                            *matHeaderCellDef>
-
-                            Producto
-
-                        </th>
-
-                        <td
-                            mat-cell
-                            *matCellDef="let elemento">
-
-                            <div class="producto-tabla">
-
-                                <div class="icono-producto">
-
-                                    <mat-icon>
-                                        inventory_2
-                                    </mat-icon>
-
-                                </div>
-
-                                <div class="datos-producto">
-
-                                    <strong>
-                                        {{ elemento.producto }}
-                                    </strong>
-
-                                    <span>
-                                        {{ elemento.codigo }}
-                                    </span>
-
-                                    <small
-                                        [class.stock-bajo]="
-                                            elemento.stockDisponible <= 5
-                                        ">
-
-                                        Stock:
-                                        {{ elemento.stockDisponible }}
-
-                                    </small>
-
-                                </div>
-
-                            </div>
-
-                        </td>
-
-                    </ng-container>
-
-                    <ng-container matColumnDef="cantidad">
-
-                        <th
-                            mat-header-cell
-                            *matHeaderCellDef>
-
-                            Cantidad
-
-                        </th>
-
-                        <td
-                            mat-cell
-                            *matCellDef="let elemento">
-
-                            <div class="control-cantidad">
-
-                                <button
-                                    type="button"
-                                    mat-icon-button
-                                    [disabled]="registrando"
-                                    (click)="
-                                        disminuirCantidad(
-                                            elemento
-                                        )
-                                    ">
-
-                                    <mat-icon>
-                                        remove
-                                    </mat-icon>
-
-                                </button>
-
-                                <span>
-                                    {{ elemento.cantidad }}
-                                </span>
-
-                                <button
-                                    type="button"
-                                    mat-icon-button
-                                    [disabled]="
-                                        registrando ||
-                                        elemento.cantidad >=
-                                        elemento.stockDisponible
-                                    "
-                                    (click)="
-                                        aumentarCantidad(
-                                            elemento
-                                        )
-                                    ">
-
-                                    <mat-icon>
-                                        add
-                                    </mat-icon>
-
-                                </button>
-
-                            </div>
-
-                        </td>
-
-                    </ng-container>
-
-                    <ng-container matColumnDef="precio">
-
-                        <th
-                            mat-header-cell
-                            *matHeaderCellDef>
-
-                            Precio
-
-                        </th>
-
-                        <td
-                            mat-cell
-                            *matCellDef="let elemento">
-
-                            S/
-                            {{
-                                elemento.precio
-                                    | number:'1.2-2'
-                            }}
-
-                        </td>
-
-                    </ng-container>
-
-                    <ng-container matColumnDef="subtotal">
-
-                        <th
-                            mat-header-cell
-                            *matHeaderCellDef>
-
-                            Subtotal
-
-                        </th>
-
-                        <td
-                            mat-cell
-                            *matCellDef="let elemento">
-
-                            <strong class="subtotal-producto">
-
-                                S/
-                                {{
-                                    elemento.subtotal
-                                        | number:'1.2-2'
-                                }}
-
-                            </strong>
-
-                        </td>
-
-                    </ng-container>
-
-                    <ng-container matColumnDef="acciones">
-
-                        <th
-                            mat-header-cell
-                            *matHeaderCellDef>
-
-                            Acción
-
-                        </th>
-
-                        <td
-                            mat-cell
-                            *matCellDef="let elemento">
-
-                            <button
-                                type="button"
-                                mat-icon-button
-                                class="boton-eliminar"
-                                [disabled]="registrando"
-                                (click)="
-                                    eliminarProducto(
-                                        elemento
-                                    )
-                                ">
-
-                                <mat-icon>
-                                    delete_outline
-                                </mat-icon>
-
-                            </button>
-
-                        </td>
-
-                    </ng-container>
-
-                    <tr
-                        mat-header-row
-                        *matHeaderRowDef="
-                            displayedColumns
-                        ">
-                    </tr>
-
-                    <tr
-                        mat-row
-                        *matRowDef="
-                            let fila;
-                            columns: displayedColumns;
-                        ">
-                    </tr>
-
-                </table>
-
-            </div>
-
-            <ng-template #ventaVacia>
-
-                <div class="venta-vacia">
-
-                    <div class="icono-vacio">
-
-                        <mat-icon>
-                            shopping_cart
-                        </mat-icon>
-
-                    </div>
-
-                    <h3>
-                        Venta vacía
-                    </h3>
-
-                    <p>
-                        Escanea un producto para comenzar.
-                    </p>
-
-                </div>
-
-            </ng-template>
-
-        </mat-card>
-
-        <!-- ===================================== -->
-        <!-- COBRO -->
-        <!-- ===================================== -->
-
-        <mat-card class="panel panel-cobro">
-
-            <div class="total-cobro">
-
-                <div>
+                    <strong>
+                      {{ elemento.producto }}
+                    </strong>
 
                     <span>
-                        Total a cobrar
+                      {{ elemento.codigo }}
                     </span>
 
-                    <small>
-                        {{ cantidadUnidades }}
-                        {{
-                            cantidadUnidades === 1
-                                ? 'unidad'
-                                : 'unidades'
-                        }}
+                    <small
+                      [class.stock-bajo]="
+                        elemento.stockDisponible <= 5
+                      ">
+
+                      Stock:
+                      {{ elemento.stockDisponible }}
+
                     </small>
 
+                  </div>
+
                 </div>
 
-                <strong>
-                    S/ {{ total | number:'1.2-2' }}
+              </td>
+
+            </ng-container>
+
+            <ng-container matColumnDef="cantidad">
+
+              <th
+                mat-header-cell
+                *matHeaderCellDef>
+                Cantidad
+              </th>
+
+              <td
+                mat-cell
+                *matCellDef="let elemento">
+
+                <div class="control-cantidad">
+
+                  <button
+                    type="button"
+                    mat-icon-button
+                    [disabled]="operacionEnCurso"
+                    (click)="
+                      disminuirCantidad(elemento)
+                    ">
+
+                    <mat-icon>remove</mat-icon>
+
+                  </button>
+
+                  <span>
+                    {{ elemento.cantidad }}
+                  </span>
+
+                  <button
+                    type="button"
+                    mat-icon-button
+                    [disabled]="
+                      operacionEnCurso
+                      || elemento.cantidad
+                        >= elemento.stockDisponible
+                    "
+                    (click)="
+                      aumentarCantidad(elemento)
+                    ">
+
+                    <mat-icon>add</mat-icon>
+
+                  </button>
+
+                </div>
+
+              </td>
+
+            </ng-container>
+
+            <ng-container matColumnDef="precio">
+
+              <th
+                mat-header-cell
+                *matHeaderCellDef>
+                Precio
+              </th>
+
+              <td
+                mat-cell
+                *matCellDef="let elemento">
+
+                <strong class="precio-producto">
+
+                  S/
+                  {{
+                    elemento.precio
+                      | number:'1.2-2'
+                  }}
+
                 </strong>
 
-            </div>
+              </td>
 
-            <!-- COMPROBANTE -->
+            </ng-container>
 
-            <section class="seccion-cobro">
+            <ng-container matColumnDef="subtotal">
 
-                <label>
-                    Comprobante
-                </label>
+              <th
+                mat-header-cell
+                *matHeaderCellDef>
+                Importe
+              </th>
 
-                <div class="tipos-comprobante">
+              <td
+                mat-cell
+                *matCellDef="let elemento">
 
-                    <button
-                        type="button"
-                        class="opcion-comprobante"
-                        [class.seleccionado]="
-                            tipoComprobante ===
-                            'VENTA RAPIDA'
-                        "
-                        [disabled]="
-                            registrando ||
-                            consultandoDocumento
-                        "
-                        (click)="
-                            seleccionarTipoComprobante(
-                                'VENTA RAPIDA'
-                            )
-                        ">
+                <strong class="subtotal-producto">
 
-                        <mat-icon>
-                            bolt
-                        </mat-icon>
+                  S/
+                  {{
+                    elemento.subtotal
+                      | number:'1.2-2'
+                  }}
 
-                        <span>
-                            Rápida
-                        </span>
+                </strong>
 
-                    </button>
+              </td>
 
-                    <button
-                        type="button"
-                        class="opcion-comprobante"
-                        [class.seleccionado]="
-                            tipoComprobante ===
-                            'BOLETA'
-                        "
-                        [disabled]="
-                            registrando ||
-                            consultandoDocumento
-                        "
-                        (click)="
-                            seleccionarTipoComprobante(
-                                'BOLETA'
-                            )
-                        ">
+            </ng-container>
 
-                        <mat-icon>
-                            person
-                        </mat-icon>
+            <ng-container matColumnDef="acciones">
 
-                        <span>
-                            Boleta
-                        </span>
+              <th
+                mat-header-cell
+                *matHeaderCellDef>
+                Acción
+              </th>
 
-                    </button>
+              <td
+                mat-cell
+                *matCellDef="let elemento">
 
-                    <button
-                        type="button"
-                        class="opcion-comprobante"
-                        [class.seleccionado]="
-                            tipoComprobante ===
-                            'FACTURA'
-                        "
-                        [disabled]="
-                            registrando ||
-                            consultandoDocumento
-                        "
-                        (click)="
-                            seleccionarTipoComprobante(
-                                'FACTURA'
-                            )
-                        ">
+                <button
+                  type="button"
+                  mat-icon-button
+                  class="boton-eliminar"
+                  [disabled]="operacionEnCurso"
+                  (click)="
+                    eliminarProducto(elemento)
+                  ">
 
-                        <mat-icon>
-                            business
-                        </mat-icon>
+                  <mat-icon>
+                    delete_outline
+                  </mat-icon>
 
-                        <span>
-                            Factura
-                        </span>
+                </button>
 
-                    </button>
+              </td>
 
-                </div>
+            </ng-container>
 
-            </section>
+            <tr
+              mat-header-row
+              *matHeaderRowDef="
+                displayedColumns
+              ">
+            </tr>
 
-            <!-- PÚBLICO GENERAL -->
+            <tr
+              mat-row
+              *matRowDef="
+                let fila;
+                columns: displayedColumns;
+              ">
+            </tr>
 
-            <div
-                class="cliente-publico"
-                *ngIf="
-                    tipoComprobante ===
-                    'VENTA RAPIDA'
-                ">
+          </table>
 
-                <mat-icon>
-                    person
-                </mat-icon>
+        </div>
 
-                <div>
+        <ng-template #ventaVacia>
 
-                    <span>
-                        Cliente
-                    </span>
+          <div class="venta-vacia">
 
-                    <strong>
-                        Público general
-                    </strong>
+            <div class="icono-vacio">
 
-                </div>
+              <mat-icon>
+                shopping_cart
+              </mat-icon>
 
             </div>
 
-            <!-- DNI / RUC -->
+            <h3>Venta vacía</h3>
 
-            <div
-                class="datos-documento"
-                *ngIf="
-                    tipoComprobante !==
-                    'VENTA RAPIDA'
-                ">
+            <p>
+              Escanea un producto para comenzar.
+            </p>
 
-                <div class="consulta-documento">
+          </div>
 
-                    <mat-form-field appearance="outline">
+        </ng-template>
 
-                        <mat-label>
+      </mat-card>
 
-                            {{
-                                tipoComprobante ===
-                                'BOLETA'
-                                    ? 'DNI'
-                                    : 'RUC'
-                            }}
+      <mat-card class="panel panel-cobro">
 
-                        </mat-label>
+        <div class="total-cobro">
 
-                        <input
-                            matInput
-                            inputmode="numeric"
-                            autocomplete="off"
-                            [placeholder]="
-                                tipoComprobante ===
-                                'BOLETA'
-                                    ? '8 dígitos'
-                                    : '11 dígitos'
-                            "
-                            [maxlength]="
-                                tipoComprobante ===
-                                'BOLETA'
-                                    ? 8
-                                    : 11
-                            "
-                            [(ngModel)]="numeroDocumento"
-                            [disabled]="
-                                registrando ||
-                                consultandoDocumento
-                            "
-                            (ngModelChange)="
-                                limpiarNumeroDocumento()
-                            "
-                            (keyup.enter)="
-                                consultarDocumento()
-                            ">
+          <div>
 
-                    </mat-form-field>
+            <span>
+              Total a cobrar
+            </span>
 
-                    <button
-                        type="button"
-                        mat-flat-button
-                        class="boton-consultar"
-                        [disabled]="
-                            registrando ||
-                            consultandoDocumento ||
-                            !numeroDocumento
-                        "
-                        (click)="consultarDocumento()">
+            <small>
+              {{ cantidadUnidades }} unidades
+            </small>
 
-                        <mat-icon>
-                            {{
-                                consultandoDocumento
-                                    ? 'hourglass_top'
-                                    : 'search'
-                            }}
-                        </mat-icon>
+          </div>
 
-                    </button>
+          <strong>
+            S/ {{ total | number:'1.2-2' }}
+          </strong>
 
-                </div>
+        </div>
 
-                <!-- RESULTADO ENCONTRADO -->
+        <section class="seccion-cobro">
 
-                <div
-                    class="resultado-documento encontrado"
-                    *ngIf="
-                        estadoConsultaDocumento ===
-                        'encontrado'
-                    ">
+          <label>
+            Datos del cliente
+          </label>
 
-                    <mat-icon>
-                        check_circle
-                    </mat-icon>
-
-                    <div class="resultado-contenido">
-
-                        <span>
-
-                            {{
-                                tipoComprobante ===
-                                'BOLETA'
-                                    ? 'Cliente encontrado'
-                                    : 'Empresa encontrada'
-                            }}
-
-                        </span>
-
-                        <strong>
-                            {{ nombreCliente }}
-                        </strong>
-
-                        <p
-                            *ngIf="
-                                tipoComprobante ===
-                                'FACTURA' &&
-                                direccionCliente
-                            ">
-
-                            {{ direccionCliente }}
-
-                        </p>
-
-                    </div>
-
-                </div>
-
-                <!-- ESTADOS DE CONSULTA -->
-
-                <div
-                    class="estado-documento"
-                    [class.consultando]="
-                        estadoConsultaDocumento ===
-                        'consultando'
-                    "
-                    [class.no-encontrado]="
-                        estadoConsultaDocumento ===
-                        'no_encontrado'
-                    "
-                    [class.advertencia]="
-                        estadoConsultaDocumento ===
-                        'advertencia'
-                    "
-                    [class.error]="
-                        estadoConsultaDocumento ===
-                        'error'
-                    "
-                    *ngIf="
-                        estadoConsultaDocumento !==
-                        'inicial' &&
-                        estadoConsultaDocumento !==
-                        'encontrado'
-                    ">
-
-                    <mat-icon>
-
-                        {{
-                            estadoConsultaDocumento ===
-                            'consultando'
-                                ? 'hourglass_top'
-                                : estadoConsultaDocumento ===
-                                  'error'
-                                    ? 'error'
-                                    : estadoConsultaDocumento ===
-                                      'no_encontrado'
-                                        ? 'search_off'
-                                        : 'warning'
-                        }}
-
-                    </mat-icon>
-
-                    <span>
-                        {{ mensajeConsultaDocumento }}
-                    </span>
-
-                </div>
-
-            </div>
-
-            <!-- IMPORTES -->
-
-            <div class="resumen-importes">
-
-                <div>
-
-                    <span>
-                        Subtotal
-                    </span>
-
-                    <strong>
-                        S/ {{ subtotal | number:'1.2-2' }}
-                    </strong>
-
-                </div>
-
-                <div class="fila-total">
-
-                    <span>
-                        Total
-                    </span>
-
-                    <strong>
-                        S/ {{ total | number:'1.2-2' }}
-                    </strong>
-
-                </div>
-
-            </div>
+          <div class="tipos-comprobante">
 
             <button
-                type="button"
-                mat-flat-button
-                class="boton-registrar"
-                [disabled]="!puedeRegistrar"
-                (click)="registrarVenta()">
+              type="button"
+              class="opcion-comprobante"
+              [class.seleccionado]="
+                tipoComprobante
+                === 'VENTA RAPIDA'
+              "
+              [disabled]="
+                operacionEnCurso
+                || consultandoDocumento
+              "
+              (click)="
+                seleccionarTipoComprobante(
+                  'VENTA RAPIDA'
+                )
+              ">
 
-                <mat-icon>
-                    {{
-                        registrando
-                            ? 'hourglass_top'
-                            : 'check_circle'
-                    }}
-                </mat-icon>
-
-                {{
-                    registrando
-                        ? 'Registrando...'
-                        : 'Registrar venta'
-                }}
+              <mat-icon>bolt</mat-icon>
+              <span>Venta rápida</span>
 
             </button>
 
-        </mat-card>
+            <button
+              type="button"
+              class="opcion-comprobante"
+              [class.seleccionado]="
+                tipoComprobante
+                === 'BOLETA'
+              "
+              [disabled]="
+                operacionEnCurso
+                || consultandoDocumento
+              "
+              (click)="
+                seleccionarTipoComprobante(
+                  'BOLETA'
+                )
+              ">
+
+              <mat-icon>badge</mat-icon>
+              <span>DNI</span>
+
+            </button>
+
+            <button
+              type="button"
+              class="opcion-comprobante"
+              [class.seleccionado]="
+                tipoComprobante
+                === 'FACTURA'
+              "
+              [disabled]="
+                operacionEnCurso
+                || consultandoDocumento
+              "
+              (click)="
+                seleccionarTipoComprobante(
+                  'FACTURA'
+                )
+              ">
+
+              <mat-icon>business</mat-icon>
+              <span>RUC</span>
+
+            </button>
+
+          </div>
+
+        </section>
+
+        <div
+          class="cliente-publico"
+          *ngIf="
+            tipoComprobante
+            === 'VENTA RAPIDA'
+          ">
+
+          <mat-icon>person</mat-icon>
+
+          <div>
+
+            <span>Cliente</span>
+
+            <strong>
+              Público general
+            </strong>
+
+          </div>
+
+        </div>
+
+        <div
+          class="datos-documento"
+          *ngIf="
+            tipoComprobante
+            !== 'VENTA RAPIDA'
+          ">
+
+          <div class="consulta-documento">
+
+            <mat-form-field appearance="outline">
+
+              <mat-label>
+                {{
+                  tipoComprobante === 'BOLETA'
+                    ? 'DNI del cliente'
+                    : 'RUC del cliente'
+                }}
+              </mat-label>
+
+              <input
+                matInput
+                inputmode="numeric"
+                autocomplete="off"
+                [placeholder]="
+                  tipoComprobante === 'BOLETA'
+                    ? '8 dígitos'
+                    : '11 dígitos'
+                "
+                [maxlength]="
+                  tipoComprobante === 'BOLETA'
+                    ? 8
+                    : 11
+                "
+                [(ngModel)]="numeroDocumento"
+                [disabled]="
+                  operacionEnCurso
+                  || consultandoDocumento
+                "
+                (ngModelChange)="
+                  limpiarNumeroDocumento()
+                "
+                (keyup.enter)="
+                  consultarDocumento()
+                ">
+
+            </mat-form-field>
+
+            <button
+              type="button"
+              mat-flat-button
+              class="boton-consultar"
+              [disabled]="
+                operacionEnCurso
+                || consultandoDocumento
+                || !numeroDocumento
+              "
+              (click)="consultarDocumento()">
+
+              <mat-icon>
+                {{
+                  consultandoDocumento
+                    ? 'hourglass_top'
+                    : 'search'
+                }}
+              </mat-icon>
+
+            </button>
+
+          </div>
+
+          <div
+            class="resultado-documento encontrado"
+            *ngIf="
+              estadoConsultaDocumento
+              === 'encontrado'
+            ">
+
+            <mat-icon>check_circle</mat-icon>
+
+            <div class="resultado-contenido">
+
+              <span>
+                Cliente encontrado
+              </span>
+
+              <strong>
+                {{ nombreCliente }}
+              </strong>
+
+              <p *ngIf="direccionCliente">
+                {{ direccionCliente }}
+              </p>
+
+            </div>
+
+          </div>
+
+          <div
+            class="estado-documento"
+            [class.consultando]="
+              estadoConsultaDocumento
+              === 'consultando'
+            "
+            [class.no-encontrado]="
+              estadoConsultaDocumento
+              === 'no_encontrado'
+            "
+            [class.advertencia]="
+              estadoConsultaDocumento
+              === 'advertencia'
+            "
+            [class.error]="
+              estadoConsultaDocumento
+              === 'error'
+            "
+            *ngIf="
+              estadoConsultaDocumento
+                !== 'inicial'
+              && estadoConsultaDocumento
+                !== 'encontrado'
+            ">
+
+            <mat-icon>
+              {{
+                estadoConsultaDocumento
+                  === 'consultando'
+                  ? 'hourglass_top'
+                  : estadoConsultaDocumento
+                      === 'error'
+                    ? 'error'
+                    : estadoConsultaDocumento
+                        === 'no_encontrado'
+                      ? 'search_off'
+                      : 'warning'
+              }}
+            </mat-icon>
+
+            <span>
+              {{ mensajeConsultaDocumento }}
+            </span>
+
+          </div>
+
+        </div>
+
+        <div class="resumen-importes">
+
+          <div class="fila-total">
+
+            <span>Total</span>
+
+            <strong>
+              S/ {{ total | number:'1.2-2' }}
+            </strong>
+
+          </div>
+
+        </div>
+
+        <label class="opcion-impresion">
+
+          <input
+            type="checkbox"
+            [(ngModel)]="imprimirComprobante"
+            [disabled]="operacionEnCurso">
+
+          <span class="check-visual">
+            <mat-icon>check</mat-icon>
+          </span>
+
+          <span class="texto-impresion">
+
+            <strong>
+              Imprimir nota de venta
+            </strong>
+
+            <small>
+              Puede continuar sin imprimir
+              si la impresora no está disponible.
+            </small>
+
+          </span>
+
+        </label>
+
+        <div
+          class="estado-impresora"
+          [class.conectada]="impresoraConectada"
+          [class.no-compatible]="!impresoraCompatible">
+
+          <div class="estado-impresora-info">
+
+            <mat-icon>
+              {{
+                !impresoraCompatible
+                  ? 'error'
+                  : impresoraConectada
+                    ? 'bluetooth_connected'
+                    : 'bluetooth_disabled'
+              }}
+            </mat-icon>
+
+            <div>
+
+              <strong>
+                {{
+                  !impresoraCompatible
+                    ? 'Bluetooth no compatible'
+                    : impresoraConectada
+                      ? 'Impresora conectada'
+                      : 'Impresora sin conectar'
+                }}
+              </strong>
+
+              <span>
+                {{
+                  !impresoraCompatible
+                    ? 'Use Chrome o Microsoft Edge.'
+                    : impresoraConectada
+                      ? nombreImpresora
+                      : 'Conecte la impresora antes de imprimir.'
+                }}
+              </span>
+
+            </div>
+
+          </div>
+
+          <div class="acciones-impresora">
+
+            <button
+              type="button"
+              mat-stroked-button
+              class="boton-conectar"
+              *ngIf="!impresoraConectada"
+              [disabled]="
+                operacionEnCurso
+                || !impresoraCompatible
+              "
+              (click)="conectarImpresora()">
+
+              <mat-icon>
+                {{
+                  conectandoImpresora
+                    ? 'hourglass_top'
+                    : 'bluetooth_searching'
+                }}
+              </mat-icon>
+
+              {{
+                conectandoImpresora
+                  ? 'Conectando...'
+                  : 'Conectar'
+              }}
+
+            </button>
+
+            <button
+              type="button"
+              mat-stroked-button
+              class="boton-desconectar"
+              *ngIf="impresoraConectada"
+              [disabled]="operacionEnCurso"
+              (click)="desconectarImpresora()">
+
+              <mat-icon>link_off</mat-icon>
+              Desconectar
+
+            </button>
+
+            <button
+              type="button"
+              mat-icon-button
+              class="boton-actualizar"
+              title="Actualizar estado"
+              [disabled]="operacionEnCurso"
+              (click)="actualizarEstadoImpresora(true)">
+
+              <mat-icon>refresh</mat-icon>
+
+            </button>
+
+          </div>
+
+        </div>
+
+        <button
+          type="button"
+          mat-flat-button
+          class="boton-registrar"
+          [disabled]="!puedeRegistrar"
+          (click)="abrirConfirmacionVenta()">
+
+          <mat-icon>
+            {{
+              operacionEnCurso
+                ? 'hourglass_top'
+                : 'check_circle'
+            }}
+          </mat-icon>
+
+          {{
+            registrando
+              ? 'Registrando venta...'
+              : imprimiendo
+                ? 'Imprimiendo...'
+                : 'Registrar venta'
+          }}
+
+        </button>
+
+      </mat-card>
 
     </div>
+
+  </section>
+
+  <!-- =================================================== -->
+  <!-- ANULAR VENTA -->
+  <!-- =================================================== -->
+
+  <section
+    class="vista-ventas"
+    *ngIf="vistaActual === 'anular'">
+
+    <mat-card class="panel panel-anulacion">
+
+      <div class="cabecera-panel">
+
+        <div>
+
+          <h2>Anular venta</h2>
+
+          <span>
+            Escanee el código de barras
+            ubicado al final de la nota.
+          </span>
+
+        </div>
+
+      </div>
+
+      <div class="busqueda-anulacion">
+
+        <mat-form-field
+          appearance="outline">
+
+          <mat-label>
+            Código de nota de venta
+          </mat-label>
+
+          <mat-icon matPrefix>
+            qr_code_scanner
+          </mat-icon>
+
+          <input
+            #campoComprobante
+            matInput
+            autocomplete="off"
+            placeholder="Ejemplo: NV00100000001"
+            [(ngModel)]="
+              numeroComprobanteBusqueda
+            "
+            [disabled]="
+              buscandoVenta
+              || operacionEnCurso
+            "
+            (ngModelChange)="
+              normalizarNumeroComprobante()
+            "
+            (keyup.enter)="
+              buscarVentaParaAnular()
+            ">
+
+        </mat-form-field>
+
+        <button
+          type="button"
+          mat-flat-button
+          class="boton-buscar-venta"
+          [disabled]="
+            buscandoVenta
+            || operacionEnCurso
+            || !numeroComprobanteBusqueda.trim()
+          "
+          (click)="buscarVentaParaAnular()">
+
+          <mat-icon>
+            {{
+              buscandoVenta
+                ? 'hourglass_top'
+                : 'search'
+            }}
+          </mat-icon>
+
+          {{
+            buscandoVenta
+              ? 'Buscando'
+              : 'Buscar venta'
+          }}
+
+        </button>
+
+      </div>
+
+      <div
+        class="resultado-venta-anulacion"
+        *ngIf="ventaBuscada">
+
+        <div class="cabecera-resultado-venta">
+
+          <div>
+
+            <span>Nota de venta</span>
+
+            <strong>
+              {{ ventaBuscada.numero_comprobante }}
+            </strong>
+
+          </div>
+
+          <span
+            class="estado-venta"
+            [class.anulada]="
+              ventaBuscada.estado_venta
+              === 'ANULADA'
+            ">
+
+            {{
+              ventaBuscada.estado_venta
+              || 'REGISTRADA'
+            }}
+
+          </span>
+
+        </div>
+
+        <div class="datos-venta-encontrada">
+
+          <div>
+
+            <span>Fecha y hora</span>
+
+            <strong>
+              {{
+                formatearFechaHora(
+                  ventaBuscada.fecha_venta
+                )
+              }}
+            </strong>
+
+          </div>
+
+          <div>
+
+            <span>Cliente</span>
+
+            <strong>
+              {{
+                obtenerNombreClienteVenta(
+                  ventaBuscada
+                )
+              }}
+            </strong>
+
+          </div>
+
+          <div>
+
+            <span>Vendedor</span>
+
+            <strong>
+              {{
+                obtenerNombreVendedorVenta(
+                  ventaBuscada
+                )
+              }}
+            </strong>
+
+          </div>
+
+          <div>
+
+            <span>Unidades</span>
+
+            <strong>
+              {{
+                obtenerCantidadUnidadesVenta(
+                  ventaBuscada
+                )
+              }}
+            </strong>
+
+          </div>
+
+          <div>
+
+            <span>Total</span>
+
+            <strong>
+              S/
+              {{
+                ventaBuscada.total_venta
+                  | number:'1.2-2'
+              }}
+            </strong>
+
+          </div>
+
+        </div>
+
+        <div
+          class="motivo-bloqueo"
+          *ngIf="
+            !puedeAnularVenta
+            && motivoBloqueoAnulacion
+          ">
+
+          <mat-icon>info</mat-icon>
+
+          <span>
+            {{ motivoBloqueoAnulacion }}
+          </span>
+
+        </div>
+
+        <button
+          type="button"
+          mat-flat-button
+          class="boton-anular"
+          [disabled]="
+            !puedeAnularVenta
+            || operacionEnCurso
+          "
+          (click)="
+            abrirConfirmacionAnulacion()
+          ">
+
+          <mat-icon>cancel</mat-icon>
+          Anular venta
+
+        </button>
+
+      </div>
+
+    </mat-card>
+
+  </section>
+
+</div>
+
+<!-- ===================================================== -->
+<!-- CONFIRMACIÓN DE VENTA -->
+<!-- ===================================================== -->
+
+<div
+  class="modal-fondo"
+  *ngIf="confirmacionVentaVisible">
+
+  <section
+    class="modal-confirmacion
+           modal-confirmacion-grande">
+
+    <div class="encabezado-modal">
+
+      <div class="icono-modal exito">
+
+        <mat-icon>
+          receipt_long
+        </mat-icon>
+
+      </div>
+
+      <div>
+
+        <h2>Confirmar venta</h2>
+
+        <p>
+          Revise los productos y el total
+          antes de registrar.
+        </p>
+
+      </div>
+
+    </div>
+
+    <div class="resumen-confirmacion">
+
+      <div>
+
+        <span>Documento</span>
+
+        <strong>
+          Nota de venta
+        </strong>
+
+      </div>
+
+      <div>
+
+        <span>Tipo de cliente</span>
+
+        <strong>
+          {{ textoTipoCliente }}
+        </strong>
+
+      </div>
+
+      <div>
+
+        <span>Cliente</span>
+
+        <strong>
+          {{ nombreCliente }}
+        </strong>
+
+      </div>
+
+      <div
+        *ngIf="
+          tipoComprobante
+          !== 'VENTA RAPIDA'
+        ">
+
+        <span>
+          {{
+            tipoComprobante === 'BOLETA'
+              ? 'DNI'
+              : 'RUC'
+          }}
+        </span>
+
+        <strong>
+          {{ numeroDocumento }}
+        </strong>
+
+      </div>
+
+    </div>
+
+    <section class="productos-confirmacion">
+
+      <div class="titulo-productos-confirmacion">
+
+        <strong>
+          Productos de la venta
+        </strong>
+
+        <span>
+          {{ cantidadUnidades }} unidades
+        </span>
+
+      </div>
+
+      <div class="lista-productos-confirmacion">
+
+        <div
+          class="producto-confirmacion"
+          *ngFor="let producto of ventas">
+
+          <div>
+
+            <strong>
+              {{ producto.producto }}
+            </strong>
+
+            <span>
+              {{ producto.cantidad }}
+              ×
+              S/
+              {{
+                producto.precio
+                  | number:'1.2-2'
+              }}
+            </span>
+
+          </div>
+
+          <strong>
+            S/
+            {{
+              producto.subtotal
+                | number:'1.2-2'
+            }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <div class="total-confirmacion">
+
+      <span>Total a cobrar</span>
+
+      <strong>
+        S/ {{ total | number:'1.2-2' }}
+      </strong>
+
+    </div>
+
+    <div class="acciones-modal">
+
+      <button
+        type="button"
+        mat-stroked-button
+        [disabled]="operacionEnCurso"
+        (click)="cerrarConfirmacionVenta()">
+
+        Cancelar
+
+      </button>
+
+      <button
+        type="button"
+        mat-flat-button
+        class="boton-confirmar"
+        [disabled]="operacionEnCurso"
+        (click)="confirmarVenta()">
+
+        <mat-icon>check</mat-icon>
+        Confirmar venta
+
+      </button>
+
+    </div>
+
+  </section>
+
+</div>
+
+<!-- ===================================================== -->
+<!-- ADVERTENCIA DE IMPRESORA -->
+<!-- ===================================================== -->
+
+<div
+  class="modal-fondo"
+  *ngIf="advertenciaImpresoraVisible">
+
+  <section
+    class="modal-confirmacion
+           modal-advertencia-impresora">
+
+    <div class="encabezado-modal">
+
+      <div class="icono-modal advertencia">
+
+        <mat-icon>
+          print_disabled
+        </mat-icon>
+
+      </div>
+
+      <div>
+
+        <h2>
+          Impresora no conectada
+        </h2>
+
+        <p>
+          La venta está lista, pero no hay
+          una impresora Bluetooth conectada.
+        </p>
+
+      </div>
+
+    </div>
+
+    <div class="aviso-impresora-grande">
+
+      <mat-icon>warning_amber</mat-icon>
+
+      <div>
+
+        <strong>
+          ¿Seguro que desea continuar?
+        </strong>
+
+        <span>
+          Puede conectar la impresora ahora
+          o registrar la venta sin imprimir.
+        </span>
+
+      </div>
+
+    </div>
+
+    <div class="acciones-modal acciones-modal-tres">
+
+      <button
+        type="button"
+        mat-stroked-button
+        [disabled]="operacionEnCurso"
+        (click)="cerrarAdvertenciaImpresora()">
+
+        Volver
+
+      </button>
+
+      <button
+        type="button"
+        mat-stroked-button
+        class="boton-conectar-modal"
+        [disabled]="
+          operacionEnCurso
+          || !impresoraCompatible
+        "
+        (click)="conectarYContinuarVenta()">
+
+        <mat-icon>
+          {{
+            conectandoImpresora
+              ? 'hourglass_top'
+              : 'bluetooth_searching'
+          }}
+        </mat-icon>
+
+        {{
+          conectandoImpresora
+            ? 'Conectando...'
+            : 'Conectar e imprimir'
+        }}
+
+      </button>
+
+      <button
+        type="button"
+        mat-flat-button
+        class="boton-continuar-sin-imprimir"
+        [disabled]="operacionEnCurso"
+        (click)="continuarSinImprimir()">
+
+        <mat-icon>check</mat-icon>
+        Continuar sin imprimir
+
+      </button>
+
+    </div>
+
+  </section>
+
+</div>
+
+<!-- ===================================================== -->
+<!-- CONFIRMACIÓN DE ANULACIÓN -->
+<!-- ===================================================== -->
+
+<div
+  class="modal-fondo"
+  *ngIf="
+    confirmacionAnulacionVisible
+    && ventaBuscada
+  ">
+
+  <section class="modal-confirmacion">
+
+    <div class="encabezado-modal">
+
+      <div class="icono-modal advertencia">
+
+        <mat-icon>warning</mat-icon>
+
+      </div>
+
+      <div>
+
+        <h2>Confirmar anulación</h2>
+
+        <p>
+          La venta quedará anulada
+          y el stock será restaurado.
+        </p>
+
+      </div>
+
+    </div>
+
+    <div class="aviso-anulacion">
+
+      <mat-icon>inventory</mat-icon>
+
+      <div>
+
+        <strong>
+          Se restaurará el stock
+        </strong>
+
+        <span>
+          La venta permanecerá registrada
+          con estado ANULADA.
+        </span>
+
+      </div>
+
+    </div>
+
+    <div class="resumen-confirmacion">
+
+      <div>
+
+        <span>Nota de venta</span>
+
+        <strong>
+          {{ ventaBuscada.numero_comprobante }}
+        </strong>
+
+      </div>
+
+      <div>
+
+        <span>Cliente</span>
+
+        <strong>
+          {{
+            obtenerNombreClienteVenta(
+              ventaBuscada
+            )
+          }}
+        </strong>
+
+      </div>
+
+    </div>
+
+    <div class="total-confirmacion">
+
+      <span>Total</span>
+
+      <strong>
+        S/
+        {{
+          ventaBuscada.total_venta
+            | number:'1.2-2'
+        }}
+      </strong>
+
+    </div>
+
+    <div class="acciones-modal">
+
+      <button
+        type="button"
+        mat-stroked-button
+        [disabled]="anulandoVenta"
+        (click)="
+          cerrarConfirmacionAnulacion()
+        ">
+
+        Cancelar
+
+      </button>
+
+      <button
+        type="button"
+        mat-flat-button
+        class="boton-confirmar-anulacion"
+        [disabled]="anulandoVenta"
+        (click)="confirmarAnulacion()">
+
+        <mat-icon>
+          {{
+            anulandoVenta
+              ? 'hourglass_top'
+              : 'cancel'
+          }}
+        </mat-icon>
+
+        {{
+          anulandoVenta
+            ? 'Anulando...'
+            : 'Sí, anular venta'
+        }}
+
+      </button>
+
+    </div>
+
+  </section>
 
 </div>

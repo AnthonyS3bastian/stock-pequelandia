@@ -7,12 +7,26 @@ use App\Models\Producto;
 use App\Models\SerieComprobante;
 use App\Models\Usuario;
 use App\Models\Venta;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class VentaService
 {
+    private const ZONA_HORARIA =
+        'America/Lima';
+
+    private const ESTADO_REGISTRADA =
+        'REGISTRADA';
+
+    private const ESTADO_ANULADA =
+        'ANULADA';
+
+    private const SERIE_NOTA_VENTA =
+        'NV001';
+
     public function __construct(
         private ConsultaDocumentoService $consultaDocumentoService,
         private ClienteService $clienteService
@@ -22,40 +36,32 @@ class VentaService
     /**
      * Registrar una nueva venta.
      */
-    public function registrar(array $datos): array
-    {
+    public function registrar(
+        array $datos
+    ): array {
+        $usuarioAutenticado =
+            $this->obtenerUsuarioAutenticado();
+
+        $idUsuario =
+            (int) $usuarioAutenticado
+                ->id_usuario;
+
         /*
-         * Obtener al usuario autenticado mediante Laravel Sanctum.
+         * Se mantienen estos nombres internos
+         * para conservar compatibilidad:
          *
-         * El ID del usuario nunca se recibe desde Angular.
+         * VENTA RAPIDA = Público general.
+         * BOLETA       = Cliente con DNI.
+         * FACTURA      = Cliente con RUC.
+         *
+         * Todos generan una NOTA DE VENTA.
          */
-        $usuarioAutenticado = Auth::user();
-
-        if (!$usuarioAutenticado instanceof Usuario) {
-            throw ValidationException::withMessages([
-                'usuario' => [
-                    'No existe un usuario autenticado para registrar la venta.',
-                ],
-            ]);
-        }
-
-        if (!$usuarioAutenticado->estado_usuario) {
-            throw ValidationException::withMessages([
-                'usuario' => [
-                    'El usuario autenticado se encuentra inactivo.',
-                ],
-            ]);
-        }
-
-        $idUsuario = (int) $usuarioAutenticado->id_usuario;
-
-        /*
-         * Normalizar y validar el tipo de comprobante.
-         */
-        $tipoComprobante = strtoupper(
+        $tipoCliente = strtoupper(
             trim(
                 (string) (
-                    $datos['tipo_comprobante']
+                    $datos[
+                        'tipo_comprobante'
+                    ]
                     ?? ''
                 )
             )
@@ -69,50 +75,43 @@ class VentaService
 
         if (
             !in_array(
-                $tipoComprobante,
+                $tipoCliente,
                 $tiposPermitidos,
                 true
             )
         ) {
             throw ValidationException::withMessages([
                 'tipo_comprobante' => [
-                    'El tipo de comprobante no es válido.',
+                    'El tipo de cliente no es válido.',
                 ],
             ]);
         }
 
-        /*
-         * Conservar solamente los números del documento.
-         */
-        $numeroDocumento = preg_replace(
-            '/\D+/',
-            '',
-            (string) (
-                $datos['numero_documento']
-                ?? ''
-            )
-        );
+        $numeroDocumento =
+            preg_replace(
+                '/\D+/',
+                '',
+                (string) (
+                    $datos[
+                        'numero_documento'
+                    ]
+                    ?? ''
+                )
+            );
 
         $numeroDocumento =
             $numeroDocumento ?? '';
 
         /*
-         * Validar y consultar el documento antes de iniciar
-         * la transacción.
-         *
-         * Así no mantenemos bloqueada la base de datos
-         * mientras responde un servicio externo.
+         * La consulta externa se realiza antes
+         * de abrir la transacción.
          */
         $datosClienteConsultado =
-            $this->consultarClienteSegunComprobante(
-                $tipoComprobante,
+            $this->consultarClienteSegunTipo(
+                $tipoCliente,
                 $numeroDocumento
             );
 
-        /*
-         * Obtener y validar los detalles antes de bloquear
-         * registros en la base de datos.
-         */
         $detallesRecibidos =
             $datos['detalles']
             ?? $datos['productos']
@@ -123,33 +122,21 @@ class VentaService
                 $detallesRecibidos
             );
 
-        /*
-         * Toda la operación se ejecuta como una sola transacción.
-         *
-         * Si falla la venta, un detalle, el stock o la serie,
-         * Laravel revierte todo automáticamente.
-         */
         $venta = DB::transaction(
             function () use (
                 $idUsuario,
-                $tipoComprobante,
+                $tipoCliente,
                 $datosClienteConsultado,
                 $cantidadesPorProducto
             ): Venta {
-
-                /*
-                 * Confirmar que el usuario continúe activo.
-                 *
-                 * Se bloquea temporalmente para evitar que su
-                 * estado cambie mientras registra la venta.
-                 */
-                $usuario = Usuario::query()
-                    ->where(
-                        'id_usuario',
-                        $idUsuario
-                    )
-                    ->lockForUpdate()
-                    ->first();
+                $usuario =
+                    Usuario::query()
+                        ->where(
+                            'id_usuario',
+                            $idUsuario
+                        )
+                        ->lockForUpdate()
+                        ->first();
 
                 if (!$usuario) {
                     throw ValidationException::withMessages([
@@ -159,7 +146,10 @@ class VentaService
                     ]);
                 }
 
-                if (!$usuario->estado_usuario) {
+                if (
+                    !$usuario
+                        ->estado_usuario
+                ) {
                     throw ValidationException::withMessages([
                         'usuario' => [
                             'El usuario autenticado se encuentra inactivo.',
@@ -167,10 +157,9 @@ class VentaService
                     ]);
                 }
 
-                /*
-                 * Resolver el cliente según el comprobante.
-                 */
-                $cliente = match ($tipoComprobante) {
+                $cliente = match (
+                    $tipoCliente
+                ) {
                     'VENTA RAPIDA' =>
                         $this->clienteService
                             ->obtenerPublicoGeneral(),
@@ -199,76 +188,70 @@ class VentaService
                 }
 
                 /*
-                 * Buscar y bloquear la serie correspondiente.
-                 *
-                 * VENTA RAPIDA -> NV001
-                 * BOLETA       -> B001
-                 * FACTURA      -> F001
+                 * Todas las ventas usan una sola serie
+                 * interna de nota de venta.
                  */
                 $serieComprobante =
                     SerieComprobante::query()
                         ->where(
-                            'tipo_documento_serie',
-                            $tipoComprobante
+                            'serie_documento',
+                            self::SERIE_NOTA_VENTA
                         )
                         ->lockForUpdate()
                         ->first();
 
                 if (!$serieComprobante) {
                     throw ValidationException::withMessages([
-                        'tipo_comprobante' => [
-                            "No existe una serie configurada para {$tipoComprobante}.",
-                        ],
-                    ]);
-                }
-
-                $serieDocumento = trim(
-                    (string) $serieComprobante
-                        ->serie_documento
-                );
-
-                if ($serieDocumento === '') {
-                    throw ValidationException::withMessages([
                         'serie_comprobante' => [
-                            'La serie del comprobante no se encuentra configurada.',
+                            'No existe la serie NV001 para las notas de venta.',
                         ],
                     ]);
                 }
+
+                $serieDocumento =
+                    strtoupper(
+                        preg_replace(
+                            '/[^A-Z0-9]/',
+                            '',
+                            trim(
+                                (string) $serieComprobante
+                                    ->serie_documento
+                            )
+                        )
+                        ?? ''
+                    );
 
                 $numeroCorrelativo =
                     (int) $serieComprobante
                         ->numero_correlativo;
 
-                if ($numeroCorrelativo <= 0) {
+                if (
+                    $serieDocumento === ''
+                    || $numeroCorrelativo <= 0
+                ) {
                     throw ValidationException::withMessages([
                         'serie_comprobante' => [
-                            'El número correlativo de la serie no es válido.',
+                            'La serie o el correlativo de la nota de venta no están configurados correctamente.',
                         ],
                     ]);
                 }
 
                 $productosVenta = [];
 
-                $totalVenta = 0;
+                $totalVenta = 0.0;
 
-                /*
-                 * Consultar, bloquear y validar los productos.
-                 *
-                 * Los IDs ya se encuentran ordenados para que
-                 * todas las ventas bloqueen los productos en
-                 * el mismo orden.
-                 */
                 foreach (
                     $cantidadesPorProducto
                     as $idProducto => $cantidad
                 ) {
-                    $producto = Producto::query()
-                        ->where(
-                            'id_producto',
-                            $idProducto
-                        )
-                        ->lockForUpdate()
-                        ->first();
+                    $producto =
+                        Producto::query()
+                            ->where(
+                                'id_producto',
+                                $idProducto
+                            )
+                            ->lockForUpdate()
+                            ->first();
 
                     if (!$producto) {
                         throw ValidationException::withMessages([
@@ -286,11 +269,36 @@ class VentaService
                         ]);
                     }
 
+                    if (
+                        $producto
+                            ->fecha_caducidad
+                        && Carbon::parse(
+                            $producto
+                                ->fecha_caducidad,
+                            self::ZONA_HORARIA
+                        )
+                            ->startOfDay()
+                            ->lt(
+                                now(
+                                    self::ZONA_HORARIA
+                                )->startOfDay()
+                            )
+                    ) {
+                        throw ValidationException::withMessages([
+                            'productos' => [
+                                "El producto {$producto->nombre_producto} se encuentra vencido y no puede venderse.",
+                            ],
+                        ]);
+                    }
+
                     $stockDisponible =
                         (int) $producto
                             ->stock_producto;
 
-                    if ($stockDisponible < $cantidad) {
+                    if (
+                        $stockDisponible
+                        < $cantidad
+                    ) {
                         throw ValidationException::withMessages([
                             'stock' => [
                                 "Stock insuficiente para {$producto->nombre_producto}. "
@@ -300,12 +308,22 @@ class VentaService
                         ]);
                     }
 
+                    $precioUnitario =
+                        round(
+                            (float) $producto
+                                ->precio_producto,
+                            2
+                        );
+
+                    $costoUnitario =
+                        round(
+                            (float) $producto
+                                ->costo_producto,
+                            2
+                        );
+
                     if (
-                        !is_numeric(
-                            $producto->precio_producto
-                        )
-                        || (float) $producto
-                            ->precio_producto <= 0
+                        $precioUnitario <= 0
                     ) {
                         throw ValidationException::withMessages([
                             'precio' => [
@@ -315,11 +333,7 @@ class VentaService
                     }
 
                     if (
-                        !is_numeric(
-                            $producto->costo_producto
-                        )
-                        || (float) $producto
-                            ->costo_producto < 0
+                        $costoUnitario < 0
                     ) {
                         throw ValidationException::withMessages([
                             'costo' => [
@@ -328,27 +342,19 @@ class VentaService
                         ]);
                     }
 
-                    $precioUnitario = round(
-                        (float) $producto
-                            ->precio_producto,
-                        2
-                    );
+                    $subtotal =
+                        round(
+                            $precioUnitario
+                            * $cantidad,
+                            2
+                        );
 
-                    $costoUnitario = round(
-                        (float) $producto
-                            ->costo_producto,
-                        2
-                    );
-
-                    $subtotal = round(
-                        $precioUnitario * $cantidad,
-                        2
-                    );
-
-                    $totalVenta = round(
-                        $totalVenta + $subtotal,
-                        2
-                    );
+                    $totalVenta =
+                        round(
+                            $totalVenta
+                            + $subtotal,
+                            2
+                        );
 
                     $productosVenta[] = [
                         'producto' =>
@@ -374,16 +380,12 @@ class VentaService
                 }
 
                 /*
-                 * Generar el número del comprobante.
+                 * Formato final sin guion:
                  *
-                 * Ejemplos:
-                 * NV001-00000003
-                 * B001-00000001
-                 * F001-00000001
+                 * NV00100000001
                  */
                 $numeroComprobante =
                     $serieDocumento
-                    . '-'
                     . str_pad(
                         (string) $numeroCorrelativo,
                         8,
@@ -392,30 +394,31 @@ class VentaService
                     );
 
                 if (
-                    strlen($numeroComprobante) > 20
+                    strlen(
+                        $numeroComprobante
+                    ) > 20
                 ) {
                     throw ValidationException::withMessages([
                         'numero_comprobante' => [
-                            'El número de comprobante supera los 20 caracteres permitidos.',
+                            'El código de la nota de venta supera los 20 caracteres permitidos.',
                         ],
                     ]);
                 }
 
-                /*
-                 * Registrar la cabecera de la venta.
-                 *
-                 * now() utilizará la zona horaria configurada
-                 * en Laravel.
-                 */
                 $venta = Venta::create([
                     'fecha_venta' =>
-                        now(),
+                        now(
+                            self::ZONA_HORARIA
+                        ),
 
                     'numero_comprobante' =>
                         $numeroComprobante,
 
                     'total_venta' =>
                         $totalVenta,
+
+                    'estado_venta' =>
+                        self::ESTADO_REGISTRADA,
 
                     'id_usuario' =>
                         $idUsuario,
@@ -425,41 +428,35 @@ class VentaService
                             ->id_serie_comprobante,
 
                     'id_cliente' =>
-                        $cliente->id_cliente,
+                        $cliente
+                            ->id_cliente,
                 ]);
 
-                /*
-                 * Registrar cada detalle y descontar el stock.
-                 */
                 foreach (
                     $productosVenta
                     as $productoVenta
                 ) {
                     /** @var Producto $producto */
                     $producto =
-                        $productoVenta['producto'];
+                        $productoVenta[
+                            'producto'
+                        ];
 
                     $cantidad =
                         (int) $productoVenta[
                             'cantidad'
                         ];
 
-                    $precioUnitario =
-                        (float) $productoVenta[
-                            'precio_unitario'
-                        ];
-
-                    $costoUnitario =
-                        (float) $productoVenta[
-                            'costo_unitario'
-                        ];
-
                     DetalleVenta::create([
                         'precio_publico_venta' =>
-                            $precioUnitario,
+                            (float) $productoVenta[
+                                'precio_unitario'
+                            ],
 
                         'costo_detalle_venta' =>
-                            $costoUnitario,
+                            (float) $productoVenta[
+                                'costo_unitario'
+                            ],
 
                         'cantidad_detalle_venta' =>
                             $cantidad,
@@ -473,36 +470,26 @@ class VentaService
                                 ->id_venta,
                     ]);
 
-                    $producto->stock_producto =
-                        (int) $producto
-                            ->stock_producto
-                        - $cantidad;
+                    $producto
+                        ->stock_producto =
+                            (int) $producto
+                                ->stock_producto
+                            - $cantidad;
 
                     $producto->save();
                 }
 
-                /*
-                 * Incrementar el correlativo únicamente después
-                 * de registrar correctamente la venta.
-                 */
                 $serieComprobante
                     ->numero_correlativo =
-                        $numeroCorrelativo + 1;
+                        $numeroCorrelativo
+                        + 1;
 
                 $serieComprobante->save();
 
-                /*
-                 * Cargar las relaciones dentro de la transacción.
-                 *
-                 * Si alguna consulta falla, todavía puede
-                 * revertirse la operación completa.
-                 */
-                $venta->load([
-                    'usuario',
-                    'cliente',
-                    'serieComprobante',
-                    'detalleVentas.producto',
-                ]);
+                $venta->load(
+                    $this
+                        ->relacionesCompletas()
+                );
 
                 return $venta;
             }
@@ -518,20 +505,223 @@ class VentaService
     }
 
     /**
-     * Consultar y validar al cliente según el comprobante.
+     * Buscar una venta por el código
+     * de la nota de venta.
+     *
+     * También reconoce ventas antiguas
+     * guardadas con guion.
      */
-    private function consultarClienteSegunComprobante(
-        string $tipoComprobante,
+    public function buscarPorNumeroComprobante(
+        string $numeroComprobante
+    ): array {
+        $numeroNormalizado =
+            $this->normalizarNumeroComprobante(
+                $numeroComprobante
+            );
+
+        $venta =
+            $this->consultaPorNumeroNormalizado(
+                $numeroNormalizado
+            )
+                ->with(
+                    $this
+                        ->relacionesCompletas()
+                )
+                ->first();
+
+        if (!$venta) {
+            throw ValidationException::withMessages([
+                'numero_comprobante' => [
+                    'No se encontró una venta con ese código de nota de venta.',
+                ],
+            ]);
+        }
+
+        $evaluacion =
+            $this->evaluarAnulacion(
+                $venta
+            );
+
+        return [
+            'venta' =>
+                $venta,
+
+            'puede_anular' =>
+                $evaluacion[
+                    'puede_anular'
+                ],
+
+            'motivo_bloqueo' =>
+                $evaluacion[
+                    'motivo_bloqueo'
+                ],
+        ];
+    }
+
+    /**
+     * Anular una venta del día actual
+     * y devolver el stock.
+     */
+    public function anular(
+        string $numeroComprobante
+    ): array {
+        $usuarioAutenticado =
+            $this->obtenerUsuarioAutenticado();
+
+        $idUsuarioAnulacion =
+            (int) $usuarioAutenticado
+                ->id_usuario;
+
+        $numeroNormalizado =
+            $this->normalizarNumeroComprobante(
+                $numeroComprobante
+            );
+
+        $venta = DB::transaction(
+            function () use (
+                $numeroNormalizado,
+                $idUsuarioAnulacion
+            ): Venta {
+                $venta =
+                    $this
+                        ->consultaPorNumeroNormalizado(
+                            $numeroNormalizado
+                        )
+                        ->lockForUpdate()
+                        ->first();
+
+                if (!$venta) {
+                    throw ValidationException::withMessages([
+                        'numero_comprobante' => [
+                            'No se encontró una venta con ese código de nota de venta.',
+                        ],
+                    ]);
+                }
+
+                $evaluacion =
+                    $this->evaluarAnulacion(
+                        $venta
+                    );
+
+                if (
+                    !$evaluacion[
+                        'puede_anular'
+                    ]
+                ) {
+                    throw ValidationException::withMessages([
+                        'venta' => [
+                            $evaluacion[
+                                'motivo_bloqueo'
+                            ]
+                            ?? 'La venta no puede anularse.',
+                        ],
+                    ]);
+                }
+
+                $detalles =
+                    DetalleVenta::query()
+                        ->where(
+                            'id_venta',
+                            $venta->id_venta
+                        )
+                        ->orderBy(
+                            'id_producto'
+                        )
+                        ->get();
+
+                if (
+                    $detalles->isEmpty()
+                ) {
+                    throw ValidationException::withMessages([
+                        'venta' => [
+                            'La venta no contiene detalles y no puede restaurarse el stock.',
+                        ],
+                    ]);
+                }
+
+                foreach (
+                    $detalles
+                    as $detalle
+                ) {
+                    $producto =
+                        Producto::query()
+                            ->where(
+                                'id_producto',
+                                $detalle
+                                    ->id_producto
+                            )
+                            ->lockForUpdate()
+                            ->first();
+
+                    if (!$producto) {
+                        throw ValidationException::withMessages([
+                            'producto' => [
+                                'No se pudo restaurar el stock porque uno de los productos ya no existe.',
+                            ],
+                        ]);
+                    }
+
+                    $producto
+                        ->stock_producto =
+                            (int) $producto
+                                ->stock_producto
+                            + (int) $detalle
+                                ->cantidad_detalle_venta;
+
+                    $producto->save();
+                }
+
+                $venta->estado_venta =
+                    self::ESTADO_ANULADA;
+
+                $venta->fecha_anulacion =
+                    now(
+                        self::ZONA_HORARIA
+                    );
+
+                $venta
+                    ->id_usuario_anulacion =
+                        $idUsuarioAnulacion;
+
+                $venta->save();
+
+                $venta->load(
+                    $this
+                        ->relacionesCompletas()
+                );
+
+                return $venta;
+            }
+        );
+
+        return [
+            'mensaje' =>
+                'Venta anulada correctamente. El stock fue restaurado.',
+
+            'venta' =>
+                $venta,
+        ];
+    }
+
+    /**
+     * Consultar y validar al cliente
+     * según el dato seleccionado.
+     */
+    private function consultarClienteSegunTipo(
+        string $tipoCliente,
         string $numeroDocumento
     ): ?array {
         if (
-            $tipoComprobante ===
-            'VENTA RAPIDA'
+            $tipoCliente
+            === 'VENTA RAPIDA'
         ) {
             return null;
         }
 
-        if ($tipoComprobante === 'BOLETA') {
+        if (
+            $tipoCliente
+            === 'BOLETA'
+        ) {
             if (
                 !preg_match(
                     '/^\d{8}$/',
@@ -546,33 +736,37 @@ class VentaService
             }
 
             $datosCliente =
-                $this->consultaDocumentoService
+                $this
+                    ->consultaDocumentoService
                     ->consultarDni(
                         $numeroDocumento
                     );
 
-            $dniDevuelto = preg_replace(
-                '/\D+/',
-                '',
-                (string) (
-                    $datosCliente['dni']
-                    ?? ''
-                )
-            );
-
             $dniDevuelto =
-                $dniDevuelto ?? '';
+                preg_replace(
+                    '/\D+/',
+                    '',
+                    (string) (
+                        $datosCliente[
+                            'dni'
+                        ]
+                        ?? ''
+                    )
+                );
 
-            $nombres = trim(
-                (string) (
-                    $datosCliente['nombres']
-                    ?? ''
-                )
-            );
+            $nombres =
+                trim(
+                    (string) (
+                        $datosCliente[
+                            'nombres'
+                        ]
+                        ?? ''
+                    )
+                );
 
             if (
-                $dniDevuelto !==
-                $numeroDocumento
+                $dniDevuelto
+                    !== $numeroDocumento
                 || $nombres === ''
             ) {
                 throw ValidationException::withMessages([
@@ -599,33 +793,37 @@ class VentaService
         }
 
         $datosCliente =
-            $this->consultaDocumentoService
+            $this
+                ->consultaDocumentoService
                 ->consultarRuc(
                     $numeroDocumento
                 );
 
-        $rucDevuelto = preg_replace(
-            '/\D+/',
-            '',
-            (string) (
-                $datosCliente['ruc']
-                ?? ''
-            )
-        );
-
         $rucDevuelto =
-            $rucDevuelto ?? '';
+            preg_replace(
+                '/\D+/',
+                '',
+                (string) (
+                    $datosCliente[
+                        'ruc'
+                    ]
+                    ?? ''
+                )
+            );
 
-        $razonSocial = trim(
-            (string) (
-                $datosCliente['razonSocial']
-                ?? ''
-            )
-        );
+        $razonSocial =
+            trim(
+                (string) (
+                    $datosCliente[
+                        'razonSocial'
+                    ]
+                    ?? ''
+                )
+            );
 
         if (
-            $rucDevuelto !==
-            $numeroDocumento
+            $rucDevuelto
+                !== $numeroDocumento
             || $razonSocial === ''
         ) {
             throw ValidationException::withMessages([
@@ -635,42 +833,46 @@ class VentaService
             ]);
         }
 
-        /*
-         * Esta validación también debe existir en Laravel.
-         *
-         * No basta con bloquearlo visualmente en Angular,
-         * porque una petición podría enviarse directamente.
-         */
-        $estadoRuc = strtoupper(
-            trim(
-                (string) (
-                    $datosCliente['estado']
-                    ?? ''
+        $estadoRuc =
+            strtoupper(
+                trim(
+                    (string) (
+                        $datosCliente[
+                            'estado'
+                        ]
+                        ?? ''
+                    )
                 )
-            )
-        );
+            );
 
-        $condicionRuc = strtoupper(
-            trim(
-                (string) (
-                    $datosCliente['condicion']
-                    ?? ''
+        $condicionRuc =
+            strtoupper(
+                trim(
+                    (string) (
+                        $datosCliente[
+                            'condicion'
+                        ]
+                        ?? ''
+                    )
                 )
-            )
-        );
+            );
 
-        if ($estadoRuc !== 'ACTIVO') {
+        if (
+            $estadoRuc !== 'ACTIVO'
+        ) {
             throw ValidationException::withMessages([
                 'numero_documento' => [
-                    "El RUC consultado tiene estado {$estadoRuc} y no puede utilizarse para registrar la factura.",
+                    "El RUC consultado tiene estado {$estadoRuc}.",
                 ],
             ]);
         }
 
-        if ($condicionRuc !== 'HABIDO') {
+        if (
+            $condicionRuc !== 'HABIDO'
+        ) {
             throw ValidationException::withMessages([
                 'numero_documento' => [
-                    "El RUC consultado tiene condición {$condicionRuc} y no puede utilizarse para registrar la factura.",
+                    "El RUC consultado tiene condición {$condicionRuc}.",
                 ],
             ]);
         }
@@ -679,14 +881,18 @@ class VentaService
     }
 
     /**
-     * Validar y agrupar los productos repetidos.
+     * Validar y agrupar productos repetidos.
      */
     private function normalizarDetalles(
         mixed $detallesRecibidos
     ): array {
         if (
-            !is_array($detallesRecibidos)
-            || count($detallesRecibidos) === 0
+            !is_array(
+                $detallesRecibidos
+            )
+            || count(
+                $detallesRecibidos
+            ) === 0
         ) {
             throw ValidationException::withMessages([
                 'detalles' => [
@@ -701,7 +907,11 @@ class VentaService
             $detallesRecibidos
             as $indice => $detalleRecibido
         ) {
-            if (!is_array($detalleRecibido)) {
+            if (
+                !is_array(
+                    $detalleRecibido
+                )
+            ) {
                 throw ValidationException::withMessages([
                     "detalles.{$indice}" => [
                         'El detalle del producto no tiene un formato válido.',
@@ -725,7 +935,9 @@ class VentaService
                 ?? null;
 
             if (
-                !is_numeric($idProducto)
+                !is_numeric(
+                    $idProducto
+                )
                 || (int) $idProducto <= 0
                 || (int) $idProducto
                     != (float) $idProducto
@@ -738,8 +950,11 @@ class VentaService
             }
 
             if (
-                !is_numeric($cantidadRecibida)
-                || (float) $cantidadRecibida <= 0
+                !is_numeric(
+                    $cantidadRecibida
+                )
+                || (float) $cantidadRecibida
+                    <= 0
                 || (int) $cantidadRecibida
                     != (float) $cantidadRecibida
             ) {
@@ -773,12 +988,201 @@ class VentaService
             ] += $cantidad;
         }
 
-        /*
-         * Mantener un orden constante de bloqueo
-         * reduce el riesgo de interbloqueos.
-         */
-        ksort($cantidadesPorProducto);
+        ksort(
+            $cantidadesPorProducto
+        );
 
         return $cantidadesPorProducto;
+    }
+
+    /**
+     * Confirmar usuario autenticado y activo.
+     */
+    private function obtenerUsuarioAutenticado():
+        Usuario {
+        $usuario = Auth::user();
+
+        if (
+            !$usuario instanceof Usuario
+        ) {
+            throw ValidationException::withMessages([
+                'usuario' => [
+                    'No existe un usuario autenticado para realizar la operación.',
+                ],
+            ]);
+        }
+
+        if (
+            !$usuario->estado_usuario
+        ) {
+            throw ValidationException::withMessages([
+                'usuario' => [
+                    'El usuario autenticado se encuentra inactivo.',
+                ],
+            ]);
+        }
+
+        return $usuario;
+    }
+
+    /**
+     * Buscar ignorando guiones, espacios
+     * y otros caracteres.
+     */
+    private function consultaPorNumeroNormalizado(
+        string $numeroNormalizado
+    ): Builder {
+        return Venta::query()
+            ->whereRaw(
+                "
+                REPLACE(
+                    REPLACE(
+                        UPPER(numero_comprobante),
+                        '-',
+                        ''
+                    ),
+                    ' ',
+                    ''
+                ) = ?
+                ",
+                [
+                    $numeroNormalizado,
+                ]
+            );
+    }
+
+    /**
+     * Evaluar si una venta puede anularse.
+     */
+    private function evaluarAnulacion(
+        Venta $venta
+    ): array {
+        $estadoVenta =
+            strtoupper(
+                trim(
+                    (string) $venta
+                        ->estado_venta
+                )
+            );
+
+        if (
+            $estadoVenta
+            === self::ESTADO_ANULADA
+        ) {
+            return [
+                'puede_anular' =>
+                    false,
+
+                'motivo_bloqueo' =>
+                    'La venta ya se encuentra anulada.',
+            ];
+        }
+
+        if (
+            $estadoVenta
+            !== self::ESTADO_REGISTRADA
+        ) {
+            return [
+                'puede_anular' =>
+                    false,
+
+                'motivo_bloqueo' =>
+                    'La venta no tiene un estado válido para anularse.',
+            ];
+        }
+
+        $fechaVenta =
+            Carbon::parse(
+                $venta->fecha_venta,
+                self::ZONA_HORARIA
+            )
+                ->timezone(
+                    self::ZONA_HORARIA
+                );
+
+        $hoy =
+            now(
+                self::ZONA_HORARIA
+            );
+
+        if (
+            !$fechaVenta->isSameDay(
+                $hoy
+            )
+        ) {
+            return [
+                'puede_anular' =>
+                    false,
+
+                'motivo_bloqueo' =>
+                    'Solo pueden anularse ventas realizadas durante el día actual.',
+            ];
+        }
+
+        return [
+            'puede_anular' =>
+                true,
+
+            'motivo_bloqueo' =>
+                null,
+        ];
+    }
+
+    /**
+     * Normalizar el código escaneado.
+     */
+    private function normalizarNumeroComprobante(
+        string $numeroComprobante
+    ): string {
+        $numeroNormalizado =
+            strtoupper(
+                preg_replace(
+                    '/[^A-Z0-9]/',
+                    '',
+                    trim(
+                        $numeroComprobante
+                    )
+                )
+                ?? ''
+            );
+
+        if (
+            $numeroNormalizado === ''
+        ) {
+            throw ValidationException::withMessages([
+                'numero_comprobante' => [
+                    'El código de la nota de venta es obligatorio.',
+                ],
+            ]);
+        }
+
+        if (
+            strlen(
+                $numeroNormalizado
+            ) > 20
+        ) {
+            throw ValidationException::withMessages([
+                'numero_comprobante' => [
+                    'El código de la nota de venta no es válido.',
+                ],
+            ]);
+        }
+
+        return $numeroNormalizado;
+    }
+
+    /**
+     * Relaciones necesarias para imprimir,
+     * buscar y anular.
+     */
+    private function relacionesCompletas():
+        array {
+        return [
+            'usuario.personal',
+            'usuarioAnulacion.personal',
+            'cliente',
+            'serieComprobante',
+            'detalleVentas.producto',
+        ];
     }
 }

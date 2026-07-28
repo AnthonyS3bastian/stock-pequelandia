@@ -35,20 +35,10 @@ class VentaController extends Controller
                     $resultado['venta'],
             ], 201);
         } catch (ValidationException $e) {
-            $errores = $e->errors();
-
-            $primerMensaje =
-                $this->obtenerPrimerMensaje(
-                    $errores
-                );
-
-            return response()->json([
-                'ok' => false,
-                'mensaje' =>
-                    $primerMensaje,
-                'errores' =>
-                    $errores,
-            ], 422);
+            return $this->respuestaValidacion(
+                $e,
+                'No se pudo registrar la venta.'
+            );
         } catch (Throwable $e) {
             report($e);
 
@@ -61,10 +51,104 @@ class VentaController extends Controller
     }
 
     /**
-     * Obtener el primer mensaje de una validación.
+     * Buscar una venta por número de comprobante.
      */
+    public function buscarPorComprobante(
+        string $numeroComprobante
+    ): JsonResponse {
+        try {
+            $resultado =
+                $this->ventaService
+                    ->buscarPorNumeroComprobante(
+                        $numeroComprobante
+                    );
+
+            return response()->json([
+                'ok' => true,
+                'mensaje' =>
+                    'Venta encontrada correctamente.',
+                'venta' =>
+                    $resultado['venta'],
+                'puede_anular' =>
+                    $resultado['puede_anular'],
+                'motivo_bloqueo' =>
+                    $resultado['motivo_bloqueo'],
+            ]);
+        } catch (ValidationException $e) {
+            return $this->respuestaValidacion(
+                $e,
+                'No se encontró la venta.'
+            );
+        } catch (Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'ok' => false,
+                'mensaje' =>
+                    'Ocurrió un error al buscar la venta.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Anular una venta del día actual.
+     */
+    public function anular(
+        string $numeroComprobante
+    ): JsonResponse {
+        try {
+            $resultado =
+                $this->ventaService->anular(
+                    $numeroComprobante
+                );
+
+            return response()->json([
+                'ok' => true,
+                'mensaje' =>
+                    $resultado['mensaje'],
+                'venta' =>
+                    $resultado['venta'],
+            ]);
+        } catch (ValidationException $e) {
+            return $this->respuestaValidacion(
+                $e,
+                'No se pudo anular la venta.'
+            );
+        } catch (Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'ok' => false,
+                'mensaje' =>
+                    'Ocurrió un error al anular la venta.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Formatear errores de validación.
+     */
+    private function respuestaValidacion(
+        ValidationException $e,
+        string $mensajePredeterminado
+    ): JsonResponse {
+        $errores = $e->errors();
+
+        return response()->json([
+            'ok' => false,
+            'mensaje' =>
+                $this->obtenerPrimerMensaje(
+                    $errores,
+                    $mensajePredeterminado
+                ),
+            'errores' =>
+                $errores,
+        ], 422);
+    }
+
     private function obtenerPrimerMensaje(
-        array $errores
+        array $errores,
+        string $mensajePredeterminado
     ): string {
         foreach ($errores as $mensajes) {
             if (
@@ -79,6 +163,6 @@ class VentaController extends Controller
             }
         }
 
-        return 'No se pudo registrar la venta.';
+        return $mensajePredeterminado;
     }
 }

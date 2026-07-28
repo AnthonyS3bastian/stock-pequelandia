@@ -7,20 +7,23 @@ use Illuminate\Validation\Rule;
 
 class StoreVentaRequest extends FormRequest
 {
-    /**
-     * Determina si el usuario está autorizado.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Reglas de validación para registrar una venta.
-     */
     public function rules(): array
     {
         return [
+            /*
+             * Valores internos:
+             *
+             * VENTA RAPIDA = Público general.
+             * BOLETA       = Cliente con DNI.
+             * FACTURA      = Cliente con RUC.
+             *
+             * Todos generan una NOTA DE VENTA.
+             */
             'tipo_comprobante' => [
                 'required',
                 'string',
@@ -35,37 +38,63 @@ class StoreVentaRequest extends FormRequest
                 Rule::requiredIf(
                     fn (): bool =>
                         in_array(
-                            $this->input('tipo_comprobante'),
-                            ['BOLETA', 'FACTURA'],
+                            $this->input(
+                                'tipo_comprobante'
+                            ),
+                            [
+                                'BOLETA',
+                                'FACTURA',
+                            ],
                             true
                         )
                 ),
+
                 'nullable',
                 'string',
+
                 function (
                     string $attribute,
                     mixed $value,
                     \Closure $fail
                 ): void {
-                    $tipoComprobante = $this->input(
-                        'tipo_comprobante'
-                    );
+                    $tipoComprobante =
+                        $this->input(
+                            'tipo_comprobante'
+                        );
+
+                    $documento =
+                        preg_replace(
+                            '/\D+/',
+                            '',
+                            (string) $value
+                        );
+
+                    $documento =
+                        $documento ?? '';
 
                     if (
-                        $tipoComprobante === 'BOLETA'
-                        && !preg_match('/^\d{8}$/', (string) $value)
+                        $tipoComprobante
+                        === 'BOLETA'
+                        && !preg_match(
+                            '/^\d{8}$/',
+                            $documento
+                        )
                     ) {
                         $fail(
-                            'Para una boleta, el DNI debe contener exactamente 8 dígitos.'
+                            'El DNI debe contener exactamente 8 dígitos.'
                         );
                     }
 
                     if (
-                        $tipoComprobante === 'FACTURA'
-                        && !preg_match('/^\d{11}$/', (string) $value)
+                        $tipoComprobante
+                        === 'FACTURA'
+                        && !preg_match(
+                            '/^\d{11}$/',
+                            $documento
+                        )
                     ) {
                         $fail(
-                            'Para una factura, el RUC debe contener exactamente 11 dígitos.'
+                            'El RUC debe contener exactamente 11 dígitos.'
                         );
                     }
                 },
@@ -91,26 +120,17 @@ class StoreVentaRequest extends FormRequest
         ];
     }
 
-    /**
-     * Mensajes personalizados.
-     */
     public function messages(): array
     {
         return [
             'tipo_comprobante.required' =>
-                'El tipo de comprobante es obligatorio.',
-
-            'tipo_comprobante.string' =>
-                'El tipo de comprobante no es válido.',
+                'Debe seleccionar el tipo de cliente.',
 
             'tipo_comprobante.in' =>
-                'El tipo de comprobante debe ser VENTA RAPIDA, BOLETA o FACTURA.',
+                'El tipo de cliente seleccionado no es válido.',
 
             'numero_documento.required' =>
-                'El número de documento es obligatorio.',
-
-            'numero_documento.string' =>
-                'El número de documento no es válido.',
+                'El documento del cliente es obligatorio.',
 
             'detalles.required' =>
                 'La venta debe contener al menos un producto.',
@@ -141,23 +161,33 @@ class StoreVentaRequest extends FormRequest
         ];
     }
 
-    /**
-     * Normaliza los datos antes de validarlos.
-     */
     protected function prepareForValidation(): void
     {
-        $tipoComprobante = strtoupper(
-            trim((string) $this->input('tipo_comprobante'))
-        );
+        $tipoComprobante =
+            strtoupper(
+                trim(
+                    (string) $this->input(
+                        'tipo_comprobante'
+                    )
+                )
+            );
 
-        $numeroDocumento = preg_replace(
-            '/\D/',
-            '',
-            (string) $this->input('numero_documento')
-        );
+        $numeroDocumento =
+            preg_replace(
+                '/\D+/',
+                '',
+                (string) $this->input(
+                    'numero_documento'
+                )
+            );
+
+        $numeroDocumento =
+            $numeroDocumento ?? '';
 
         $this->merge([
-            'tipo_comprobante' => $tipoComprobante,
+            'tipo_comprobante' =>
+                $tipoComprobante,
+
             'numero_documento' =>
                 $numeroDocumento !== ''
                     ? $numeroDocumento

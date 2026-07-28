@@ -99,10 +99,6 @@ Route::middleware('auth:sanctum')
             [ProductoController::class, 'index']
         );
 
-        /*
-         * Esta ruta debe permanecer antes
-         * de /productos/{id}.
-         */
         Route::get(
             '/productos/codigo/{codigo}',
             [
@@ -125,6 +121,19 @@ Route::middleware('auth:sanctum')
         Route::post(
             '/ventas',
             [VentaController::class, 'registrar']
+        );
+
+        Route::get(
+            '/ventas/comprobante/{numeroComprobante}',
+            [
+                VentaController::class,
+                'buscarPorComprobante',
+            ]
+        );
+
+        Route::patch(
+            '/ventas/comprobante/{numeroComprobante}/anular',
+            [VentaController::class, 'anular']
         );
 
         /*
@@ -170,26 +179,17 @@ Route::middleware('auth:sanctum')
 
                 Route::post(
                     '/categorias',
-                    [
-                        CategoriaController::class,
-                        'store',
-                    ]
+                    [CategoriaController::class, 'store']
                 );
 
                 Route::put(
                     '/categorias/{id}',
-                    [
-                        CategoriaController::class,
-                        'update',
-                    ]
+                    [CategoriaController::class, 'update']
                 );
 
                 Route::delete(
                     '/categorias/{id}',
-                    [
-                        CategoriaController::class,
-                        'destroy',
-                    ]
+                    [CategoriaController::class, 'destroy']
                 );
 
                 /*
@@ -200,42 +200,27 @@ Route::middleware('auth:sanctum')
 
                 Route::post(
                     '/productos',
-                    [
-                        ProductoController::class,
-                        'store',
-                    ]
+                    [ProductoController::class, 'store']
                 );
 
                 Route::patch(
                     '/productos/{id}/stock',
-                    [
-                        ProductoController::class,
-                        'actualizarStock',
-                    ]
+                    [ProductoController::class, 'actualizarStock']
                 );
 
                 Route::patch(
                     '/productos/{id}/estado',
-                    [
-                        ProductoController::class,
-                        'cambiarEstado',
-                    ]
+                    [ProductoController::class, 'cambiarEstado']
                 );
 
                 Route::put(
                     '/productos/{id}',
-                    [
-                        ProductoController::class,
-                        'update',
-                    ]
+                    [ProductoController::class, 'update']
                 );
 
                 Route::delete(
                     '/productos/{id}',
-                    [
-                        ProductoController::class,
-                        'destroy',
-                    ]
+                    [ProductoController::class, 'destroy']
                 );
 
                 /*
@@ -246,28 +231,17 @@ Route::middleware('auth:sanctum')
 
                 Route::get(
                     '/reportes/diario',
-                    [
-                        ReporteController::class,
-                        'diario',
-                    ]
+                    [ReporteController::class, 'diario']
                 );
 
                 Route::get(
                     '/reportes/semanal',
-                    [
-                        ReporteController::class,
-                        'semanal',
-                    ]
+                    [ReporteController::class, 'semanal']
                 );
 
                 Route::get(
                     '/reportes/mensual',
-                    [
-                        ReporteController::class,
-                        'mensual',
-                    ]
+                    [ReporteController::class, 'mensual']
                 );
-
             });
-
     });
