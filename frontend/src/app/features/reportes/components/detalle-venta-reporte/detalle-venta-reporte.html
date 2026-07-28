@@ -1,0 +1,265 @@
+@if (venta) {
+
+    <div
+        class="fondo-modal"
+        (click)="cerrarModal()">
+
+        <section
+            class="modal-detalle"
+            (click)="$event.stopPropagation()">
+
+            <header class="cabecera-modal">
+
+                <div
+                    class="icono-modal"
+                    [class.anulada]="ventaAnulada">
+
+                    <mat-icon>
+                        {{
+                            ventaAnulada
+                                ? 'cancel'
+                                : 'receipt_long'
+                        }}
+                    </mat-icon>
+
+                </div>
+
+                <div>
+
+                    <h2>
+                        Detalle de venta
+                    </h2>
+
+                    <p>
+                        Información registrada por el sistema.
+                    </p>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="boton-cerrar"
+                    (click)="cerrarModal()">
+
+                    <mat-icon>close</mat-icon>
+
+                </button>
+
+            </header>
+
+            <div class="identificacion-venta">
+
+                <div>
+
+                    <span>
+                        Venta
+                    </span>
+
+                    <strong>
+                        {{ venta.numero_venta }}
+                    </strong>
+
+                </div>
+
+                <div>
+
+                    <span>
+                        Código
+                    </span>
+
+                    <strong>
+                        {{ venta.numero_comprobante }}
+                    </strong>
+
+                </div>
+
+                <span
+                    class="estado"
+                    [class.anulada]="ventaAnulada">
+
+                    {{ venta.estado }}
+
+                </span>
+
+            </div>
+
+            <div class="datos-venta">
+
+                <div>
+
+                    <span>Fecha</span>
+
+                    <strong>
+                        {{
+                            venta.fecha
+                                | date:'dd/MM/yyyy'
+                        }}
+                    </strong>
+
+                </div>
+
+                <div>
+
+                    <span>Hora</span>
+
+                    <strong>
+                        {{ venta.hora }}
+                    </strong>
+
+                </div>
+
+                <div>
+
+                    <span>Registrada por</span>
+
+                    <strong>
+                        {{ venta.usuario }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+            @if (ventaAnulada) {
+
+                <div class="aviso-anulacion">
+
+                    <mat-icon>
+                        warning_amber
+                    </mat-icon>
+
+                    <div>
+
+                        <strong>
+                            Venta anulada
+                        </strong>
+
+                        <span>
+                            {{
+                                venta.descripcion
+                            }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="datos-anulacion">
+
+                    <div>
+
+                        <span>
+                            Anulada por
+                        </span>
+
+                        <strong>
+                            {{
+                                venta.usuario_anulacion
+                                || 'Usuario no disponible'
+                            }}
+                        </strong>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Fecha de anulación
+                        </span>
+
+                        <strong>
+                            {{
+                                venta.fecha_anulacion
+                                    ? (
+                                        venta.fecha_anulacion
+                                        | date:'dd/MM/yyyy'
+                                    )
+                                    : 'No disponible'
+                            }}
+                        </strong>
+
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Hora de anulación
+                        </span>
+
+                        <strong>
+                            {{
+                                venta.hora_anulacion
+                                || 'No disponible'
+                            }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                <div class="total-anulado-modal">
+
+                    <span>
+                        Total original
+                    </span>
+
+                    <strong>
+                        S/
+                        {{
+                            venta.total
+                                | number:'1.2-2'
+                        }}
+                    </strong>
+
+                    <small>
+                        No contabilizado en los indicadores.
+                    </small>
+
+                </div>
+
+            } @else {
+
+                <section class="productos-modal">
+
+                    <span class="etiqueta-seccion">
+                        Productos vendidos
+                    </span>
+
+                    <p>
+                        {{ venta.productos }}
+                    </p>
+
+                </section>
+
+                <div class="total-modal">
+
+                    <span>
+                        Total vendido
+                    </span>
+
+                    <strong>
+                        S/
+                        {{
+                            venta.total
+                                | number:'1.2-2'
+                        }}
+                    </strong>
+
+                </div>
+
+            }
+
+            <button
+                type="button"
+                class="boton-entendido"
+                (click)="cerrarModal()">
+
+                Entendido
+
+            </button>
+
+        </section>
+
+    </div>
+
+}

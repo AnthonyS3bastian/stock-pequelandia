@@ -1,0 +1,195 @@
+<section class="grafico-ventas">
+
+    <header class="cabecera-grafico">
+
+        <div>
+
+            <h3>
+                {{ titulo }}
+            </h3>
+
+            <p>
+                {{ subtitulo }}
+            </p>
+
+        </div>
+
+        @if (puntoMayor && tieneVentas) {
+
+            <div class="resumen-mayor">
+
+                <span>
+                    Punto más alto
+                </span>
+
+                <strong>
+                    {{ puntoMayor.etiqueta }}
+                    ·
+                    {{
+                        formatearMoneda(
+                            puntoMayor.valor
+                        )
+                    }}
+                </strong>
+
+            </div>
+
+        }
+
+    </header>
+
+    <div class="contenedor-svg">
+
+        <svg
+            viewBox="0 0 1000 280"
+            role="img"
+            [attr.aria-label]="titulo">
+
+            <defs>
+
+                <linearGradient
+                    id="rellenoGraficoVentas"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1">
+
+                    <stop
+                        offset="0%"
+                        stop-color="#7c3aed"
+                        stop-opacity="0.28">
+                    </stop>
+
+                    <stop
+                        offset="100%"
+                        stop-color="#ec4899"
+                        stop-opacity="0.02">
+                    </stop>
+
+                </linearGradient>
+
+                <linearGradient
+                    id="lineaGraficoVentas"
+                    x1="0"
+                    y1="0"
+                    x2="1"
+                    y2="0">
+
+                    <stop
+                        offset="0%"
+                        stop-color="#7c3aed">
+                    </stop>
+
+                    <stop
+                        offset="100%"
+                        stop-color="#ec4899">
+                    </stop>
+
+                </linearGradient>
+
+            </defs>
+
+            @for (
+                guia of guias;
+                track guia.y
+            ) {
+
+                <line
+                    class="linea-guia"
+                    x1="76"
+                    [attr.y1]="guia.y"
+                    x2="970"
+                    [attr.y2]="guia.y">
+                </line>
+
+                <text
+                    class="texto-guia"
+                    x="66"
+                    [attr.y]="guia.y + 4"
+                    text-anchor="end">
+
+                    {{ guia.texto }}
+
+                </text>
+
+            }
+
+            @if (puntosRender.length > 0) {
+
+                <polygon
+                    class="area-grafico"
+                    [attr.points]="puntosArea">
+                </polygon>
+
+                <polyline
+                    class="linea-grafico"
+                    [attr.points]="puntosLinea">
+                </polyline>
+
+                @for (
+                    punto of puntosRender;
+                    track $index
+                ) {
+
+                    <circle
+                        class="punto-grafico"
+                        [attr.cx]="punto.x"
+                        [attr.cy]="punto.y"
+                        r="5">
+
+                        <title>
+                            {{ punto.etiqueta }}
+                            ·
+                            {{
+                                formatearMoneda(
+                                    punto.valor
+                                )
+                            }}
+                            {{ punto.detalle }}
+                        </title>
+
+                    </circle>
+
+                }
+
+                @for (
+                    etiqueta of etiquetasEjeX;
+                    track $index
+                ) {
+
+                    <text
+                        class="texto-eje-x"
+                        [attr.x]="etiqueta.x"
+                        y="263"
+                        text-anchor="middle">
+
+                        {{ etiqueta.etiqueta }}
+
+                    </text>
+
+                }
+
+            }
+
+        </svg>
+
+        @if (!tieneVentas) {
+
+            <div class="grafico-sin-datos">
+
+                <strong>
+                    Sin ventas registradas
+                </strong>
+
+                <span>
+                    No existen montos para representar
+                    en este periodo.
+                </span>
+
+            </div>
+
+        }
+
+    </div>
+
+</section>

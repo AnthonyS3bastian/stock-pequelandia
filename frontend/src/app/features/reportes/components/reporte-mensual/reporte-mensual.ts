@@ -1,23 +1,51 @@
-import { CommonModule } from '@angular/common';
+import {
+    CommonModule
+} from '@angular/common';
+
 import {
     ChangeDetectorRef,
     Component,
     OnInit,
     inject
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
 
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
+import {
+    FormsModule
+} from '@angular/forms';
+
+import {
+    finalize
+} from 'rxjs';
+
+import {
+    MatCardModule
+} from '@angular/material/card';
+
+import {
+    MatIconModule
+} from '@angular/material/icon';
+
 import {
     MatProgressSpinnerModule
 } from '@angular/material/progress-spinner';
+
 import {
     MatSnackBar,
     MatSnackBarModule
 } from '@angular/material/snack-bar';
-import { MatTableModule } from '@angular/material/table';
+
+import {
+    MatTableModule
+} from '@angular/material/table';
+
+import {
+    DetalleVentaReporteComponent
+} from '../detalle-venta-reporte/detalle-venta-reporte';
+
+import {
+    GraficoVentasComponent,
+    PuntoGraficoVentas
+} from '../grafico-ventas/grafico-ventas';
 
 import {
     MejorDiaReporte,
@@ -38,12 +66,15 @@ import {
         MatIconModule,
         MatProgressSpinnerModule,
         MatSnackBarModule,
-        MatTableModule
+        MatTableModule,
+        GraficoVentasComponent,
+        DetalleVentaReporteComponent
     ],
     templateUrl: './reporte-mensual.html',
     styleUrl: './reporte-mensual.scss'
 })
-export class ReporteMensualComponent implements OnInit {
+export class ReporteMensualComponent
+implements OnInit {
 
     private readonly reporteService =
         inject(ReporteService);
@@ -55,46 +86,34 @@ export class ReporteMensualComponent implements OnInit {
         inject(ChangeDetectorRef);
 
     mesSeleccionado = '';
-
     mesMaximo = '';
 
     inicioMes = '';
-
     finMes = '';
-
     nombreMes = '';
-
     anio = 0;
-
     cantidadDiasMes = 0;
 
     totalVendido = 0;
-
     costoEstimado = 0;
-
     gananciaEstimada = 0;
-
     ventasRealizadas = 0;
-
     productosVendidos = 0;
-
     ticketPromedio = 0;
 
     metaDiaria = 100;
-
     metaMensual = 0;
-
     porcentajeMeta = 0;
-
     metaCumplida = false;
-
     diasMetaCumplida = 0;
 
     mejorDia:
-        MejorDiaReporte | null = null;
+        MejorDiaReporte | null =
+            null;
 
     productoMasVendido:
-        ProductoMasVendidoReporte | null = null;
+        ProductoMasVendidoReporte | null =
+            null;
 
     ventasPorUsuario:
         VentaPorUsuarioReporte[] = [];
@@ -104,6 +123,13 @@ export class ReporteMensualComponent implements OnInit {
 
     ultimasVentas:
         UltimaVentaReporte[] = [];
+
+    datosGrafico:
+        PuntoGraficoVentas[] = [];
+
+    ventaSeleccionada:
+        UltimaVentaReporte | null =
+            null;
 
     cargando = false;
 
@@ -123,11 +149,11 @@ export class ReporteMensualComponent implements OnInit {
         'venta',
         'productos',
         'usuario',
+        'estado',
         'total'
     ];
 
     ngOnInit(): void {
-
         const mesActualPeru =
             this.obtenerMesActualPeru();
 
@@ -141,7 +167,6 @@ export class ReporteMensualComponent implements OnInit {
     }
 
     cambiarMes(): void {
-
         if (
             !this.mesSeleccionado
             || this.cargando
@@ -167,7 +192,6 @@ export class ReporteMensualComponent implements OnInit {
     }
 
     cargarReporteMensual(): void {
-
         if (
             !this.mesSeleccionado
             || this.cargando
@@ -189,7 +213,6 @@ export class ReporteMensualComponent implements OnInit {
             )
             .pipe(
                 finalize(() => {
-
                     this.cargando = false;
 
                     this.changeDetectorRef
@@ -198,7 +221,6 @@ export class ReporteMensualComponent implements OnInit {
             )
             .subscribe({
                 next: response => {
-
                     const reporte =
                         response.reporte;
 
@@ -265,11 +287,30 @@ export class ReporteMensualComponent implements OnInit {
                     this.ultimasVentas =
                         reporte.ultimas_ventas;
 
+                    this.datosGrafico =
+                        reporte.ventas_por_dia.map(
+                            item => ({
+                                etiqueta:
+                                    String(
+                                        item.numero_dia
+                                    ),
+
+                                valor:
+                                    item.total_vendido,
+
+                                detalle:
+                                    `${item.dia} · ${item.numero_ventas} ventas`
+                            })
+                        );
+
+                    this.ventaSeleccionada =
+                        null;
+
                     this.changeDetectorRef
                         .detectChanges();
                 },
-                error: error => {
 
+                error: error => {
                     this.limpiarReporte();
 
                     const mensaje =
@@ -287,62 +328,45 @@ export class ReporteMensualComponent implements OnInit {
     }
 
     verVenta(
-        idVenta: number
+        venta: UltimaVentaReporte
     ): void {
+        this.ventaSeleccionada =
+            venta;
+    }
 
-        console.log(
-            'Venta seleccionada:',
-            idVenta
-        );
+    cerrarDetalleVenta(): void {
+        this.ventaSeleccionada =
+            null;
     }
 
     private limpiarReporte(): void {
-
         this.inicioMes = '';
-
         this.finMes = '';
-
         this.nombreMes = '';
-
         this.anio = 0;
-
         this.cantidadDiasMes = 0;
-
         this.totalVendido = 0;
-
         this.costoEstimado = 0;
-
         this.gananciaEstimada = 0;
-
         this.ventasRealizadas = 0;
-
         this.productosVendidos = 0;
-
         this.ticketPromedio = 0;
-
         this.metaMensual = 0;
-
         this.porcentajeMeta = 0;
-
         this.metaCumplida = false;
-
         this.diasMetaCumplida = 0;
-
         this.mejorDia = null;
-
         this.productoMasVendido = null;
-
         this.ventasPorUsuario = [];
-
         this.ventasPorDia = [];
-
         this.ultimasVentas = [];
+        this.datosGrafico = [];
+        this.ventaSeleccionada = null;
     }
 
     private mostrarMensaje(
         mensaje: string
     ): void {
-
         this.snackBar.open(
             mensaje,
             'Cerrar',
@@ -354,15 +378,20 @@ export class ReporteMensualComponent implements OnInit {
         );
     }
 
-    private obtenerMesActualPeru(): string {
-
+    private obtenerMesActualPeru():
+        string {
         const partes =
             new Intl.DateTimeFormat(
                 'en-CA',
                 {
-                    timeZone: 'America/Lima',
-                    year: 'numeric',
-                    month: '2-digit'
+                    timeZone:
+                        'America/Lima',
+
+                    year:
+                        'numeric',
+
+                    month:
+                        '2-digit'
                 }
             ).formatToParts(
                 new Date()

@@ -1,9 +1,5 @@
 <div class="reporte-semanal">
 
-    <!-- ========================= -->
-    <!-- CABECERA -->
-    <!-- ========================= -->
-
     <div class="cabecera-semanal">
 
         <div>
@@ -13,7 +9,8 @@
             </h2>
 
             <p>
-                Consulta las ventas registradas de lunes a domingo.
+                Consulta las ventas registradas
+                de lunes a domingo.
             </p>
 
             @if (inicioSemana && finSemana) {
@@ -24,8 +21,16 @@
                         date_range
                     </mat-icon>
 
-                    Del {{ inicioSemana | date:'dd/MM/yyyy' }}
-                    al {{ finSemana | date:'dd/MM/yyyy' }}
+                    Del
+                    {{
+                        inicioSemana
+                            | date:'dd/MM/yyyy'
+                    }}
+                    al
+                    {{
+                        finSemana
+                            | date:'dd/MM/yyyy'
+                    }}
 
                 </span>
 
@@ -51,16 +56,11 @@
 
     </div>
 
-    <!-- ========================= -->
-    <!-- CARGANDO -->
-    <!-- ========================= -->
-
     @if (cargando) {
 
         <div class="cargando-reporte">
 
-            <mat-spinner
-                diameter="42">
+            <mat-spinner diameter="42">
             </mat-spinner>
 
             <span>
@@ -71,38 +71,21 @@
 
     }
 
-    <!-- ========================= -->
-    <!-- CONTENIDO -->
-    <!-- ========================= -->
-
     <div
         class="contenido-semanal"
         [class.contenido-cargando]="cargando">
 
-        <!-- ========================= -->
-        <!-- RESUMEN PRINCIPAL -->
-        <!-- ========================= -->
-
         <div class="grid-resumen">
 
             <mat-card class="tarjeta-resumen">
-
                 <mat-card-content>
-
                     <div class="icono-resumen">
-
-                        <mat-icon>
-                            payments
-                        </mat-icon>
-
+                        <mat-icon>payments</mat-icon>
                     </div>
-
                     <div>
-
                         <span class="etiqueta">
                             Total vendido
                         </span>
-
                         <strong>
                             S/
                             {{
@@ -110,31 +93,19 @@
                                     | number:'1.2-2'
                             }}
                         </strong>
-
                     </div>
-
                 </mat-card-content>
-
             </mat-card>
 
             <mat-card class="tarjeta-resumen">
-
                 <mat-card-content>
-
                     <div class="icono-resumen">
-
-                        <mat-icon>
-                            shopping_bag
-                        </mat-icon>
-
+                        <mat-icon>shopping_bag</mat-icon>
                     </div>
-
                     <div>
-
                         <span class="etiqueta">
                             Costo estimado
                         </span>
-
                         <strong>
                             S/
                             {{
@@ -142,31 +113,19 @@
                                     | number:'1.2-2'
                             }}
                         </strong>
-
                     </div>
-
                 </mat-card-content>
-
             </mat-card>
 
             <mat-card class="tarjeta-resumen">
-
                 <mat-card-content>
-
                     <div class="icono-resumen">
-
-                        <mat-icon>
-                            trending_up
-                        </mat-icon>
-
+                        <mat-icon>trending_up</mat-icon>
                     </div>
-
                     <div>
-
                         <span class="etiqueta">
                             Ganancia estimada
                         </span>
-
                         <strong>
                             S/
                             {{
@@ -174,87 +133,51 @@
                                     | number:'1.2-2'
                             }}
                         </strong>
-
                     </div>
-
                 </mat-card-content>
-
             </mat-card>
 
             <mat-card class="tarjeta-resumen">
-
                 <mat-card-content>
-
                     <div class="icono-resumen">
-
-                        <mat-icon>
-                            receipt_long
-                        </mat-icon>
-
+                        <mat-icon>receipt_long</mat-icon>
                     </div>
-
                     <div>
-
                         <span class="etiqueta">
                             Ventas realizadas
                         </span>
-
                         <strong>
                             {{ ventasRealizadas }}
                         </strong>
-
                     </div>
-
                 </mat-card-content>
-
             </mat-card>
 
             <mat-card class="tarjeta-resumen">
-
                 <mat-card-content>
-
                     <div class="icono-resumen">
-
-                        <mat-icon>
-                            inventory_2
-                        </mat-icon>
-
+                        <mat-icon>inventory_2</mat-icon>
                     </div>
-
                     <div>
-
                         <span class="etiqueta">
                             Productos vendidos
                         </span>
-
                         <strong>
                             {{ productosVendidos }}
                         </strong>
-
                     </div>
-
                 </mat-card-content>
-
             </mat-card>
 
             <mat-card class="tarjeta-resumen">
-
                 <mat-card-content>
-
                     <div class="icono-resumen">
-
-                        <mat-icon>
-                            calculate
-                        </mat-icon>
-
+                        <mat-icon>calculate</mat-icon>
                     </div>
-
                     <div>
-
                         <span class="etiqueta">
                             Ticket promedio
                         </span>
-
                         <strong>
                             S/
                             {{
@@ -262,18 +185,11 @@
                                     | number:'1.2-2'
                             }}
                         </strong>
-
                     </div>
-
                 </mat-card-content>
-
             </mat-card>
 
         </div>
-
-        <!-- ========================= -->
-        <!-- META SEMANAL -->
-        <!-- ========================= -->
 
         <div class="grid-destacados">
 
@@ -287,7 +203,10 @@
 
                     <mat-card-subtitle>
                         Meta diaria de S/
-                        {{ metaDiaria | number:'1.2-2' }}
+                        {{
+                            metaDiaria
+                                | number:'1.2-2'
+                        }}
                         durante siete días.
                     </mat-card-subtitle>
 
@@ -298,11 +217,9 @@
                     <div class="meta-cabecera">
 
                         <div>
-
                             <span>
                                 Meta establecida
                             </span>
-
                             <strong>
                                 S/
                                 {{
@@ -310,15 +227,12 @@
                                         | number:'1.2-2'
                                 }}
                             </strong>
-
                         </div>
 
                         <div>
-
                             <span>
                                 Cumplimiento
                             </span>
-
                             <strong>
                                 {{
                                     porcentajeMeta
@@ -326,25 +240,21 @@
                                 }}
                                 %
                             </strong>
-
                         </div>
 
                         <div>
-
                             <span>
                                 Días con meta cumplida
                             </span>
-
                             <strong>
-                                {{ diasMetaCumplida }} de 7
+                                {{ diasMetaCumplida }}
+                                de 7
                             </strong>
-
                         </div>
 
                     </div>
 
                     <div class="barra-meta">
-
                         <div
                             class="barra-meta-progreso"
                             [style.width.%]="
@@ -353,7 +263,6 @@
                                     : porcentajeMeta
                             ">
                         </div>
-
                     </div>
 
                     <div
@@ -383,18 +292,12 @@
 
             </mat-card>
 
-            <!-- ========================= -->
-            <!-- MEJOR DÍA -->
-            <!-- ========================= -->
-
             <mat-card class="tarjeta-destacada">
 
                 <mat-card-header>
-
                     <mat-card-title>
                         Mejor día de la semana
                     </mat-card-title>
-
                 </mat-card-header>
 
                 <mat-card-content>
@@ -404,17 +307,18 @@
                         <div class="destacado-contenido">
 
                             <div class="destacado-icono">
-
                                 <mat-icon>
                                     emoji_events
                                 </mat-icon>
-
                             </div>
 
                             <div>
 
                                 <span class="destacado-etiqueta">
-                                    {{ mejorDia.dia | titlecase }}
+                                    {{
+                                        mejorDia.dia
+                                            | titlecase
+                                    }}
                                 </span>
 
                                 <strong>
@@ -426,10 +330,14 @@
                                 </strong>
 
                                 <small>
-                                    {{ mejorDia.numero_ventas }}
+                                    {{
+                                        mejorDia.numero_ventas
+                                    }}
                                     ventas y
-                                    {{ mejorDia.productos_vendidos }}
-                                    productos vendidos
+                                    {{
+                                        mejorDia.productos_vendidos
+                                    }}
+                                    productos
                                 </small>
 
                             </div>
@@ -457,18 +365,12 @@
 
             </mat-card>
 
-            <!-- ========================= -->
-            <!-- PRODUCTO MÁS VENDIDO -->
-            <!-- ========================= -->
-
             <mat-card class="tarjeta-destacada">
 
                 <mat-card-header>
-
                     <mat-card-title>
                         Producto más vendido
                     </mat-card-title>
-
                 </mat-card-header>
 
                 <mat-card-content>
@@ -478,11 +380,9 @@
                         <div class="destacado-contenido">
 
                             <div class="destacado-icono producto">
-
                                 <mat-icon>
                                     workspace_premium
                                 </mat-icon>
-
                             </div>
 
                             <div>
@@ -533,22 +433,22 @@
 
         </div>
 
-        <!-- ========================= -->
-        <!-- VENTAS POR DÍA -->
-        <!-- ========================= -->
+        <app-grafico-ventas
+            titulo="Ventas de la semana"
+            subtitulo="Comparación del total vendido entre lunes y domingo."
+            [datos]="datosGrafico">
+        </app-grafico-ventas>
 
         <mat-card class="tarjeta-seccion">
 
             <mat-card-header>
-
                 <mat-card-title>
                     Ventas por día
                 </mat-card-title>
-
                 <mat-card-subtitle>
-                    Rendimiento de cada día de la semana seleccionada.
+                    Valores exactos de cada día
+                    de la semana seleccionada.
                 </mat-card-subtitle>
-
             </mat-card-header>
 
             <mat-card-content>
@@ -561,112 +461,75 @@
                             mat-table
                             [dataSource]="ventasPorDia">
 
-                            <!-- DÍA -->
-
                             <ng-container matColumnDef="dia">
-
                                 <th
                                     mat-header-cell
                                     *matHeaderCellDef>
-
                                     Día
-
                                 </th>
-
                                 <td
                                     mat-cell
                                     *matCellDef="let item">
-
                                     <strong class="nombre-dia">
-                                        {{ item.dia | titlecase }}
+                                        {{
+                                            item.dia
+                                                | titlecase
+                                        }}
                                     </strong>
-
                                 </td>
-
                             </ng-container>
-
-                            <!-- FECHA -->
 
                             <ng-container matColumnDef="fecha">
-
                                 <th
                                     mat-header-cell
                                     *matHeaderCellDef>
-
                                     Fecha
-
                                 </th>
-
                                 <td
                                     mat-cell
                                     *matCellDef="let item">
-
-                                    {{ item.fecha | date:'dd/MM/yyyy' }}
-
+                                    {{
+                                        item.fecha
+                                            | date:'dd/MM/yyyy'
+                                    }}
                                 </td>
-
                             </ng-container>
-
-                            <!-- VENTAS -->
 
                             <ng-container matColumnDef="ventas">
-
                                 <th
                                     mat-header-cell
                                     *matHeaderCellDef>
-
                                     Ventas
-
                                 </th>
-
                                 <td
                                     mat-cell
                                     *matCellDef="let item">
-
                                     {{ item.numero_ventas }}
-
                                 </td>
-
                             </ng-container>
-
-                            <!-- PRODUCTOS -->
 
                             <ng-container matColumnDef="productos">
-
                                 <th
                                     mat-header-cell
                                     *matHeaderCellDef>
-
                                     Productos
-
                                 </th>
-
                                 <td
                                     mat-cell
                                     *matCellDef="let item">
-
                                     {{ item.productos_vendidos }}
-
                                 </td>
-
                             </ng-container>
 
-                            <!-- TOTAL -->
-
                             <ng-container matColumnDef="total">
-
                                 <th
                                     mat-header-cell
                                     *matHeaderCellDef>
-
                                     Total vendido
-
                                 </th>
-
                                 <td
                                     mat-cell
                                     *matCellDef="let item">
-
                                     <strong>
                                         S/
                                         {{
@@ -674,23 +537,15 @@
                                                 | number:'1.2-2'
                                         }}
                                     </strong>
-
                                 </td>
-
                             </ng-container>
 
-                            <!-- META -->
-
                             <ng-container matColumnDef="meta">
-
                                 <th
                                     mat-header-cell
                                     *matHeaderCellDef>
-
                                     Meta diaria
-
                                 </th>
-
                                 <td
                                     mat-cell
                                     *matCellDef="let item">
@@ -721,7 +576,6 @@
                                     </span>
 
                                 </td>
-
                             </ng-container>
 
                             <tr
@@ -747,22 +601,15 @@
 
         </mat-card>
 
-        <!-- ========================= -->
-        <!-- VENTAS POR USUARIO -->
-        <!-- ========================= -->
-
         <mat-card class="tarjeta-seccion">
 
             <mat-card-header>
-
                 <mat-card-title>
                     Ventas por usuario
                 </mat-card-title>
-
                 <mat-card-subtitle>
                     Resumen semanal por cada usuario.
                 </mat-card-subtitle>
-
             </mat-card-header>
 
             <mat-card-content>
@@ -781,24 +628,19 @@
                                 <div class="usuario-info">
 
                                     <div class="usuario-avatar">
-
-                                        <mat-icon>
-                                            person
-                                        </mat-icon>
-
+                                        <mat-icon>person</mat-icon>
                                     </div>
 
                                     <div>
-
                                         <strong>
                                             {{ item.usuario }}
                                         </strong>
-
                                         <span>
-                                            {{ item.cantidad_ventas }}
+                                            {{
+                                                item.cantidad_ventas
+                                            }}
                                             ventas realizadas
                                         </span>
-
                                     </div>
 
                                 </div>
@@ -820,16 +662,11 @@
                 } @else {
 
                     <div class="contenido-sin-datos">
-
-                        <mat-icon>
-                            group_off
-                        </mat-icon>
-
+                        <mat-icon>group_off</mat-icon>
                         <span>
                             No hay ventas registradas
                             por usuarios en esta semana.
                         </span>
-
                     </div>
 
                 }
@@ -838,22 +675,16 @@
 
         </mat-card>
 
-        <!-- ========================= -->
-        <!-- ÚLTIMAS VENTAS -->
-        <!-- ========================= -->
-
         <mat-card class="tarjeta-seccion">
 
             <mat-card-header>
-
                 <mat-card-title>
                     Últimas ventas de la semana
                 </mat-card-title>
-
                 <mat-card-subtitle>
-                    Las diez ventas más recientes del periodo.
+                    Incluye ventas anuladas
+                    para conservar la secuencia.
                 </mat-card-subtitle>
-
             </mat-card-header>
 
             <mat-card-content>
@@ -866,156 +697,138 @@
                             mat-table
                             [dataSource]="ultimasVentas">
 
-                            <!-- FECHA -->
-
                             <ng-container matColumnDef="fecha">
-
                                 <th
                                     mat-header-cell
                                     *matHeaderCellDef>
-
                                     Fecha
-
                                 </th>
-
                                 <td
                                     mat-cell
                                     *matCellDef="let venta">
-
                                     {{
                                         venta.fecha
                                             | date:'dd/MM/yyyy'
                                     }}
-
                                 </td>
-
                             </ng-container>
-
-                            <!-- HORA -->
 
                             <ng-container matColumnDef="hora">
-
                                 <th
                                     mat-header-cell
                                     *matHeaderCellDef>
-
                                     Hora
-
                                 </th>
-
                                 <td
                                     mat-cell
                                     *matCellDef="let venta">
-
                                     {{ venta.hora }}
-
                                 </td>
-
                             </ng-container>
 
-                            <!-- VENTA -->
-
                             <ng-container matColumnDef="venta">
-
                                 <th
                                     mat-header-cell
                                     *matHeaderCellDef>
-
                                     Venta
-
                                 </th>
-
                                 <td
                                     mat-cell
                                     *matCellDef="let venta">
-
                                     <button
                                         type="button"
                                         class="boton-venta"
-                                        (click)="
-                                            verVenta(
-                                                venta.id_venta
-                                            )
-                                        ">
-
+                                        (click)="verVenta(venta)">
                                         {{ venta.numero_venta }}
-
                                     </button>
-
                                 </td>
-
                             </ng-container>
-
-                            <!-- PRODUCTOS -->
 
                             <ng-container matColumnDef="productos">
-
                                 <th
                                     mat-header-cell
                                     *matHeaderCellDef>
-
-                                    Productos
-
+                                    Descripción
                                 </th>
-
                                 <td
                                     mat-cell
                                     *matCellDef="let venta">
 
-                                    {{ venta.productos }}
+                                    @if (
+                                        venta.estado
+                                        === 'ANULADA'
+                                    ) {
+                                        <span class="descripcion-anulada">
+                                            {{ venta.descripcion }}
+                                        </span>
+                                    } @else {
+                                        {{ venta.productos }}
+                                    }
 
                                 </td>
-
                             </ng-container>
-
-                            <!-- USUARIO -->
 
                             <ng-container matColumnDef="usuario">
-
                                 <th
                                     mat-header-cell
                                     *matHeaderCellDef>
-
                                     Usuario
-
                                 </th>
-
                                 <td
                                     mat-cell
                                     *matCellDef="let venta">
-
                                     {{ venta.usuario }}
-
                                 </td>
-
                             </ng-container>
 
-                            <!-- TOTAL -->
-
-                            <ng-container matColumnDef="total">
-
+                            <ng-container matColumnDef="estado">
                                 <th
                                     mat-header-cell
                                     *matHeaderCellDef>
-
-                                    Total
-
+                                    Estado
                                 </th>
+                                <td
+                                    mat-cell
+                                    *matCellDef="let venta">
+                                    <span
+                                        class="estado-venta"
+                                        [class.anulada]="
+                                            venta.estado
+                                            === 'ANULADA'
+                                        ">
+                                        {{ venta.estado }}
+                                    </span>
+                                </td>
+                            </ng-container>
 
+                            <ng-container matColumnDef="total">
+                                <th
+                                    mat-header-cell
+                                    *matHeaderCellDef>
+                                    Total
+                                </th>
                                 <td
                                     mat-cell
                                     *matCellDef="let venta">
 
-                                    <strong>
-                                        S/
-                                        {{
-                                            venta.total
-                                                | number:'1.2-2'
-                                        }}
-                                    </strong>
+                                    @if (
+                                        venta.estado
+                                        === 'ANULADA'
+                                    ) {
+                                        <span class="total-anulado">
+                                            No contabilizada
+                                        </span>
+                                    } @else {
+                                        <strong>
+                                            S/
+                                            {{
+                                                venta.total
+                                                    | number:'1.2-2'
+                                            }}
+                                        </strong>
+                                    }
 
                                 </td>
-
                             </ng-container>
 
                             <tr
@@ -1028,6 +841,9 @@
                                 *matRowDef="
                                     let row;
                                     columns: columnasVentas
+                                "
+                                [class.fila-anulada]="
+                                    row.estado === 'ANULADA'
                                 ">
                             </tr>
 
@@ -1038,16 +854,11 @@
                 } @else {
 
                     <div class="contenido-sin-datos">
-
-                        <mat-icon>
-                            receipt_long
-                        </mat-icon>
-
+                        <mat-icon>receipt_long</mat-icon>
                         <span>
                             No existen ventas registradas
                             durante esta semana.
                         </span>
-
                     </div>
 
                 }
@@ -1059,3 +870,8 @@
     </div>
 
 </div>
+
+<app-detalle-venta-reporte
+    [venta]="ventaSeleccionada"
+    (cerrar)="cerrarDetalleVenta()">
+</app-detalle-venta-reporte>

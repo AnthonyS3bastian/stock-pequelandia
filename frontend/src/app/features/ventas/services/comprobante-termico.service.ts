@@ -107,7 +107,7 @@ export class ComprobanteTermicoService {
       ?? [];
 
     const altoEstimado =
-      950
+      900
       + detalles.length * 100;
 
     const canvasTemporal =
@@ -254,20 +254,19 @@ export class ComprobanteTermicoService {
       900
     );
 
+    /*
+     * El código se conserva internamente
+     * para generar el código de barras,
+     * buscar la venta y anularla.
+     *
+     * No se imprime como texto visible.
+     */
     const codigoNota =
       this.normalizarCodigoNota(
         venta.numero_comprobante
       );
 
-    y = this.dibujarTextoCentrado(
-      contexto,
-      codigoNota,
-      y + 3,
-      16,
-      850
-    );
-
-    y += 7;
+    y += 8;
 
     y = this.dibujarLinea(
       contexto,
@@ -541,8 +540,14 @@ export class ComprobanteTermicoService {
       900
     );
 
-    y += 10;
+    y += 12;
 
+    /*
+     * Código de barras Code 128.
+     *
+     * Se imprimen únicamente las barras.
+     * El código no aparece escrito debajo.
+     */
     const codigoBarras =
       this.codigoBarrasService
         .generarCode128B(
@@ -576,7 +581,7 @@ export class ComprobanteTermicoService {
           + barra.x
           * escala,
 
-          y + 12,
+          y + 10,
 
           Math.max(
             1,
@@ -590,19 +595,10 @@ export class ComprobanteTermicoService {
 
       y +=
         altoCodigo
-        + 18;
-
-      y = this
-        .dibujarTextoCentrado(
-          contexto,
-          codigoNota,
-          y,
-          14,
-          850
-        );
+        + 20;
     }
 
-    y += 24;
+    y += 18;
 
     const canvasFinal =
       document.createElement(

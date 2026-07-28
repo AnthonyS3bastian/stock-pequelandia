@@ -1,13 +1,25 @@
-import { inject, Injectable } from '@angular/core';
+import {
+    Injectable,
+    inject
+} from '@angular/core';
+
 import {
     HttpClient,
     HttpHeaders,
     HttpParams
 } from '@angular/common/http';
-import { Observable } from 'rxjs';
 
-import { environment } from '../../../../environments/environment';
-import { AuthService } from '../../../core/services/auth.service';
+import {
+    Observable
+} from 'rxjs';
+
+import {
+    environment
+} from '../../../../environments/environment';
+
+import {
+    AuthService
+} from '../../../core/services/auth.service';
 
 export interface ProductoMasVendidoReporte {
     id_producto: number;
@@ -31,6 +43,17 @@ export interface UltimaVentaReporte {
     productos: string;
     usuario: string;
     total: number;
+    estado: string;
+    descripcion: string;
+    fecha_anulacion?: string | null;
+    hora_anulacion?: string | null;
+    usuario_anulacion?: string | null;
+}
+
+export interface VentaPorHoraReporte {
+    hora: string;
+    total_vendido: number;
+    numero_ventas: number;
 }
 
 export interface VentaPorDiaReporte {
@@ -59,9 +82,14 @@ export interface ReporteDiario {
     meta_diaria: number;
     porcentaje_meta: number;
     meta_cumplida: boolean;
-    producto_mas_vendido: ProductoMasVendidoReporte | null;
-    ventas_por_usuario: VentaPorUsuarioReporte[];
-    ultimas_ventas: UltimaVentaReporte[];
+    producto_mas_vendido:
+        ProductoMasVendidoReporte | null;
+    ventas_por_usuario:
+        VentaPorUsuarioReporte[];
+    ventas_por_hora:
+        VentaPorHoraReporte[];
+    ultimas_ventas:
+        UltimaVentaReporte[];
 }
 
 export interface ReporteDiarioResponse {
@@ -85,11 +113,16 @@ export interface ReporteSemanal {
     porcentaje_meta: number;
     meta_cumplida: boolean;
     dias_meta_cumplida: number;
-    mejor_dia: MejorDiaReporte | null;
-    producto_mas_vendido: ProductoMasVendidoReporte | null;
-    ventas_por_usuario: VentaPorUsuarioReporte[];
-    ventas_por_dia: VentaPorDiaReporte[];
-    ultimas_ventas: UltimaVentaReporte[];
+    mejor_dia:
+        MejorDiaReporte | null;
+    producto_mas_vendido:
+        ProductoMasVendidoReporte | null;
+    ventas_por_usuario:
+        VentaPorUsuarioReporte[];
+    ventas_por_dia:
+        VentaPorDiaReporte[];
+    ultimas_ventas:
+        UltimaVentaReporte[];
 }
 
 export interface ReporteSemanalResponse {
@@ -117,11 +150,16 @@ export interface ReporteMensual {
     porcentaje_meta: number;
     meta_cumplida: boolean;
     dias_meta_cumplida: number;
-    mejor_dia: MejorDiaReporte | null;
-    producto_mas_vendido: ProductoMasVendidoReporte | null;
-    ventas_por_usuario: VentaPorUsuarioReporte[];
-    ventas_por_dia: VentaPorDiaReporte[];
-    ultimas_ventas: UltimaVentaReporte[];
+    mejor_dia:
+        MejorDiaReporte | null;
+    producto_mas_vendido:
+        ProductoMasVendidoReporte | null;
+    ventas_por_usuario:
+        VentaPorUsuarioReporte[];
+    ventas_por_dia:
+        VentaPorDiaReporte[];
+    ultimas_ventas:
+        UltimaVentaReporte[];
 }
 
 export interface ReporteMensualResponse {
@@ -147,7 +185,9 @@ export class ReporteService {
     obtenerReporteDiario(
         fecha: string
     ): Observable<ReporteDiarioResponse> {
-        return this.obtenerReporte<ReporteDiarioResponse>(
+        return this.obtenerReporte<
+            ReporteDiarioResponse
+        >(
             'diario',
             fecha
         );
@@ -156,7 +196,9 @@ export class ReporteService {
     obtenerReporteSemanal(
         fecha: string
     ): Observable<ReporteSemanalResponse> {
-        return this.obtenerReporte<ReporteSemanalResponse>(
+        return this.obtenerReporte<
+            ReporteSemanalResponse
+        >(
             'semanal',
             fecha
         );
@@ -165,7 +207,9 @@ export class ReporteService {
     obtenerReporteMensual(
         fecha: string
     ): Observable<ReporteMensualResponse> {
-        return this.obtenerReporte<ReporteMensualResponse>(
+        return this.obtenerReporte<
+            ReporteMensualResponse
+        >(
             'mensual',
             fecha
         );
@@ -178,8 +222,12 @@ export class ReporteService {
         const headers =
             this.obtenerHeadersAutenticacion();
 
-        const params = new HttpParams()
-            .set('fecha', fecha);
+        const params =
+            new HttpParams()
+                .set(
+                    'fecha',
+                    fecha
+                );
 
         return this.http.get<T>(
             `${this.apiUrl}/${periodo}`,
@@ -190,19 +238,24 @@ export class ReporteService {
         );
     }
 
-    private obtenerHeadersAutenticacion(): HttpHeaders {
+    private obtenerHeadersAutenticacion():
+        HttpHeaders {
         const token =
             this.authService.getToken();
 
         if (!token) {
             return new HttpHeaders({
-                Accept: 'application/json'
+                Accept:
+                    'application/json'
             });
         }
 
         return new HttpHeaders({
-            Accept: 'application/json',
-            Authorization: `Bearer ${token}`
+            Accept:
+                'application/json',
+
+            Authorization:
+                `Bearer ${token}`
         });
     }
 }

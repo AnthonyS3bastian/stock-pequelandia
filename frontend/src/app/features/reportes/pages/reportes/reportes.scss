@@ -3,32 +3,30 @@
     width: 100%;
 }
 
-/* ========================= */
-/* CONTENEDOR PRINCIPAL */
-/* ========================= */
-
 .contenedor-reportes {
     min-height: 100%;
-    padding: 22px 26px 36px;
+    padding: 20px 26px 32px;
     box-sizing: border-box;
-    background: #f4f5ff;
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(236, 72, 153, 0.05),
+            transparent 28%
+        ),
+        #f4f5ff;
 }
-
-/* ========================= */
-/* CABECERA */
-/* ========================= */
 
 .cabecera {
     width: 100%;
-    max-width: 1400px;
-    margin: 0 auto 18px;
+    margin: 0 0 18px;
 
     h1 {
         margin: 0;
         color: #17172b;
-        font-size: 28px;
-        font-weight: 700;
+        font-size: 30px;
+        font-weight: 800;
         line-height: 1.2;
+        letter-spacing: -0.03em;
     }
 
     p {
@@ -38,14 +36,8 @@
     }
 }
 
-/* ========================= */
-/* PESTAÑAS */
-/* ========================= */
-
 mat-tab-group {
     width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
 }
 
 :host ::ng-deep .mat-mdc-tab-header {
@@ -53,10 +45,12 @@ mat-tab-group {
     max-width: 100%;
     margin-bottom: 18px;
     overflow: hidden;
-    border: 0;
-    border-radius: 10px;
+    border: 1px solid #ebeaf4;
+    border-radius: 12px;
     background: #ffffff;
-    box-shadow: 0 3px 12px rgba(30, 27, 75, 0.07);
+    box-shadow:
+        0 5px 16px
+        rgba(30, 27, 75, 0.055);
 }
 
 :host ::ng-deep .mat-mdc-tab-label-container {
@@ -64,24 +58,25 @@ mat-tab-group {
 }
 
 :host ::ng-deep .mat-mdc-tab {
-    min-width: 125px;
-    height: 42px;
-    padding: 0 18px;
+    min-width: 128px;
+    height: 44px;
+    padding: 0 20px;
 }
 
 :host ::ng-deep .mat-mdc-tab .mdc-tab__text-label {
     color: #68697d;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 :host ::ng-deep .mat-mdc-tab.mdc-tab--active {
-    border-radius: 8px;
-    background: linear-gradient(
-        90deg,
-        #7c3aed,
-        #ec4899
-    );
+    border-radius: 9px;
+    background:
+        linear-gradient(
+            90deg,
+            #7c3aed,
+            #ec4899
+        );
 }
 
 :host
@@ -103,72 +98,13 @@ mat-tab-group {
     width: 100%;
 }
 
-/* ========================= */
-/* CONTENIDO PENDIENTE */
-/* ========================= */
-
-.contenido-vacio {
-    min-height: 320px;
-    padding: 30px;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 9px;
-    border: 1px solid #ebeaf6;
-    border-radius: 13px;
-    background: #ffffff;
-    text-align: center;
-    box-shadow: 0 5px 16px rgba(30, 27, 75, 0.06);
-
-    .icono-vacio {
-        width: 58px;
-        height: 58px;
-        margin-bottom: 5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 16px;
-        background: #f0eaff;
-        color: #7c3aed;
-
-        mat-icon {
-            width: 30px;
-            height: 30px;
-            font-size: 30px;
-        }
-    }
-
-    h2 {
-        margin: 0;
-        color: #29293d;
-        font-size: 19px;
-        font-weight: 700;
-    }
-
-    p {
-        max-width: 420px;
-        margin: 0;
-        color: #858698;
-        font-size: 13px;
-        line-height: 1.5;
-    }
-}
-
-/* ========================= */
-/* RESPONSIVE */
-/* ========================= */
-
 @media (max-width: 768px) {
     .contenedor-reportes {
         padding: 16px;
     }
 
-    .cabecera {
-        h1 {
-            font-size: 25px;
-        }
+    .cabecera h1 {
+        font-size: 26px;
     }
 
     :host ::ng-deep .mat-mdc-tab-header {
@@ -179,11 +115,6 @@ mat-tab-group {
         min-width: 0;
         flex: 1;
         padding: 0 10px;
-    }
-
-    .contenido-vacio {
-        min-height: 280px;
-        padding: 24px 18px;
     }
 }
 

@@ -1,22 +1,55 @@
-import { CommonModule } from '@angular/common';
+import {
+    CommonModule
+} from '@angular/common';
+
 import {
     ChangeDetectorRef,
     Component,
     OnInit,
     inject
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
 
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import {
+    FormsModule
+} from '@angular/forms';
+
+import {
+    finalize
+} from 'rxjs';
+
+import {
+    MatButtonModule
+} from '@angular/material/button';
+
+import {
+    MatCardModule
+} from '@angular/material/card';
+
+import {
+    MatIconModule
+} from '@angular/material/icon';
+
+import {
+    MatProgressSpinnerModule
+} from '@angular/material/progress-spinner';
+
 import {
     MatSnackBar,
     MatSnackBarModule
 } from '@angular/material/snack-bar';
-import { MatTableModule } from '@angular/material/table';
+
+import {
+    MatTableModule
+} from '@angular/material/table';
+
+import {
+    DetalleVentaReporteComponent
+} from '../detalle-venta-reporte/detalle-venta-reporte';
+
+import {
+    GraficoVentasComponent,
+    PuntoGraficoVentas
+} from '../grafico-ventas/grafico-ventas';
 
 import {
     ProductoMasVendidoReporte,
@@ -36,12 +69,15 @@ import {
         MatIconModule,
         MatProgressSpinnerModule,
         MatSnackBarModule,
-        MatTableModule
+        MatTableModule,
+        GraficoVentasComponent,
+        DetalleVentaReporteComponent
     ],
     templateUrl: './reporte-diario.html',
     styleUrl: './reporte-diario.scss'
 })
-export class ReporteDiarioComponent implements OnInit {
+export class ReporteDiarioComponent
+implements OnInit {
 
     private readonly reporteService =
         inject(ReporteService);
@@ -75,13 +111,21 @@ export class ReporteDiarioComponent implements OnInit {
     metaCumplida = false;
 
     productoMasVendido:
-        ProductoMasVendidoReporte | null = null;
+        ProductoMasVendidoReporte | null =
+            null;
 
     ventasPorUsuario:
         VentaPorUsuarioReporte[] = [];
 
     ultimasVentas:
         UltimaVentaReporte[] = [];
+
+    datosGrafico:
+        PuntoGraficoVentas[] = [];
+
+    ventaSeleccionada:
+        UltimaVentaReporte | null =
+            null;
 
     cargando = false;
 
@@ -90,11 +134,11 @@ export class ReporteDiarioComponent implements OnInit {
         'venta',
         'productos',
         'usuario',
+        'estado',
         'total'
     ];
 
     ngOnInit(): void {
-
         const fechaActualPeru =
             this.obtenerFechaActualPeru();
 
@@ -108,7 +152,6 @@ export class ReporteDiarioComponent implements OnInit {
     }
 
     cambiarFecha(): void {
-
         if (
             !this.fechaSeleccionada
             || this.cargando
@@ -134,7 +177,6 @@ export class ReporteDiarioComponent implements OnInit {
     }
 
     cargarReporteDiario(): void {
-
         if (
             !this.fechaSeleccionada
             || this.cargando
@@ -144,7 +186,8 @@ export class ReporteDiarioComponent implements OnInit {
 
         this.cargando = true;
 
-        this.changeDetectorRef.detectChanges();
+        this.changeDetectorRef
+            .detectChanges();
 
         this.reporteService
             .obtenerReporteDiario(
@@ -152,7 +195,6 @@ export class ReporteDiarioComponent implements OnInit {
             )
             .pipe(
                 finalize(() => {
-
                     this.cargando = false;
 
                     this.changeDetectorRef
@@ -161,7 +203,6 @@ export class ReporteDiarioComponent implements OnInit {
             )
             .subscribe({
                 next: response => {
-
                     const reporte =
                         response.reporte;
 
@@ -201,11 +242,28 @@ export class ReporteDiarioComponent implements OnInit {
                     this.ultimasVentas =
                         reporte.ultimas_ventas;
 
+                    this.datosGrafico =
+                        reporte.ventas_por_hora.map(
+                            item => ({
+                                etiqueta:
+                                    item.hora,
+
+                                valor:
+                                    item.total_vendido,
+
+                                detalle:
+                                    `${item.numero_ventas} ventas`
+                            })
+                        );
+
+                    this.ventaSeleccionada =
+                        null;
+
                     this.changeDetectorRef
                         .detectChanges();
                 },
-                error: error => {
 
+                error: error => {
                     this.limpiarReporte();
 
                     const mensaje =
@@ -222,43 +280,37 @@ export class ReporteDiarioComponent implements OnInit {
             });
     }
 
-    verVenta(idVenta: number): void {
+    verVenta(
+        venta: UltimaVentaReporte
+    ): void {
+        this.ventaSeleccionada =
+            venta;
+    }
 
-        console.log(
-            'Venta seleccionada:',
-            idVenta
-        );
+    cerrarDetalleVenta(): void {
+        this.ventaSeleccionada =
+            null;
     }
 
     private limpiarReporte(): void {
-
         this.totalVendido = 0;
-
         this.costoEstimado = 0;
-
         this.gananciaEstimada = 0;
-
         this.ventasRealizadas = 0;
-
         this.productosVendidos = 0;
-
         this.ticketPromedio = 0;
-
         this.porcentajeMeta = 0;
-
         this.metaCumplida = false;
-
         this.productoMasVendido = null;
-
         this.ventasPorUsuario = [];
-
         this.ultimasVentas = [];
+        this.datosGrafico = [];
+        this.ventaSeleccionada = null;
     }
 
     private mostrarMensaje(
         mensaje: string
     ): void {
-
         this.snackBar.open(
             mensaje,
             'Cerrar',
@@ -270,15 +322,22 @@ export class ReporteDiarioComponent implements OnInit {
         );
     }
 
-    private obtenerFechaActualPeru(): string {
-
+    private obtenerFechaActualPeru():
+        string {
         return new Intl.DateTimeFormat(
             'en-CA',
             {
-                timeZone: 'America/Lima',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
+                timeZone:
+                    'America/Lima',
+
+                year:
+                    'numeric',
+
+                month:
+                    '2-digit',
+
+                day:
+                    '2-digit'
             }
         ).format(
             new Date()

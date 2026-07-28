@@ -1,21 +1,51 @@
-import { CommonModule } from '@angular/common';
+import {
+    CommonModule
+} from '@angular/common';
+
 import {
     ChangeDetectorRef,
     Component,
     OnInit,
     inject
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
 
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import {
+    FormsModule
+} from '@angular/forms';
+
+import {
+    finalize
+} from 'rxjs';
+
+import {
+    MatCardModule
+} from '@angular/material/card';
+
+import {
+    MatIconModule
+} from '@angular/material/icon';
+
+import {
+    MatProgressSpinnerModule
+} from '@angular/material/progress-spinner';
+
 import {
     MatSnackBar,
     MatSnackBarModule
 } from '@angular/material/snack-bar';
-import { MatTableModule } from '@angular/material/table';
+
+import {
+    MatTableModule
+} from '@angular/material/table';
+
+import {
+    DetalleVentaReporteComponent
+} from '../detalle-venta-reporte/detalle-venta-reporte';
+
+import {
+    GraficoVentasComponent,
+    PuntoGraficoVentas
+} from '../grafico-ventas/grafico-ventas';
 
 import {
     MejorDiaReporte,
@@ -36,12 +66,15 @@ import {
         MatIconModule,
         MatProgressSpinnerModule,
         MatSnackBarModule,
-        MatTableModule
+        MatTableModule,
+        GraficoVentasComponent,
+        DetalleVentaReporteComponent
     ],
     templateUrl: './reporte-semanal.html',
     styleUrl: './reporte-semanal.scss'
 })
-export class ReporteSemanalComponent implements OnInit {
+export class ReporteSemanalComponent
+implements OnInit {
 
     private readonly reporteService =
         inject(ReporteService);
@@ -53,40 +86,30 @@ export class ReporteSemanalComponent implements OnInit {
         inject(ChangeDetectorRef);
 
     fechaSeleccionada = '';
-
     fechaMaxima = '';
-
     inicioSemana = '';
-
     finSemana = '';
 
     totalVendido = 0;
-
     costoEstimado = 0;
-
     gananciaEstimada = 0;
-
     ventasRealizadas = 0;
-
     productosVendidos = 0;
-
     ticketPromedio = 0;
 
     metaDiaria = 100;
-
     metaSemanal = 700;
-
     porcentajeMeta = 0;
-
     metaCumplida = false;
-
     diasMetaCumplida = 0;
 
     mejorDia:
-        MejorDiaReporte | null = null;
+        MejorDiaReporte | null =
+            null;
 
     productoMasVendido:
-        ProductoMasVendidoReporte | null = null;
+        ProductoMasVendidoReporte | null =
+            null;
 
     ventasPorUsuario:
         VentaPorUsuarioReporte[] = [];
@@ -96,6 +119,13 @@ export class ReporteSemanalComponent implements OnInit {
 
     ultimasVentas:
         UltimaVentaReporte[] = [];
+
+    datosGrafico:
+        PuntoGraficoVentas[] = [];
+
+    ventaSeleccionada:
+        UltimaVentaReporte | null =
+            null;
 
     cargando = false;
 
@@ -114,11 +144,11 @@ export class ReporteSemanalComponent implements OnInit {
         'venta',
         'productos',
         'usuario',
+        'estado',
         'total'
     ];
 
     ngOnInit(): void {
-
         const fechaActualPeru =
             this.obtenerFechaActualPeru();
 
@@ -132,7 +162,6 @@ export class ReporteSemanalComponent implements OnInit {
     }
 
     cambiarFecha(): void {
-
         if (
             !this.fechaSeleccionada
             || this.cargando
@@ -158,7 +187,6 @@ export class ReporteSemanalComponent implements OnInit {
     }
 
     cargarReporteSemanal(): void {
-
         if (
             !this.fechaSeleccionada
             || this.cargando
@@ -177,7 +205,6 @@ export class ReporteSemanalComponent implements OnInit {
             )
             .pipe(
                 finalize(() => {
-
                     this.cargando = false;
 
                     this.changeDetectorRef
@@ -186,7 +213,6 @@ export class ReporteSemanalComponent implements OnInit {
             )
             .subscribe({
                 next: response => {
-
                     const reporte =
                         response.reporte;
 
@@ -244,11 +270,31 @@ export class ReporteSemanalComponent implements OnInit {
                     this.ultimasVentas =
                         reporte.ultimas_ventas;
 
+                    this.datosGrafico =
+                        reporte.ventas_por_dia.map(
+                            item => ({
+                                etiqueta:
+                                    item.dia.substring(
+                                        0,
+                                        3
+                                    ),
+
+                                valor:
+                                    item.total_vendido,
+
+                                detalle:
+                                    `${item.numero_ventas} ventas`
+                            })
+                        );
+
+                    this.ventaSeleccionada =
+                        null;
+
                     this.changeDetectorRef
                         .detectChanges();
                 },
-                error: error => {
 
+                error: error => {
                     this.limpiarReporte();
 
                     const mensaje =
@@ -266,54 +312,41 @@ export class ReporteSemanalComponent implements OnInit {
     }
 
     verVenta(
-        idVenta: number
+        venta: UltimaVentaReporte
     ): void {
+        this.ventaSeleccionada =
+            venta;
+    }
 
-        console.log(
-            'Venta seleccionada:',
-            idVenta
-        );
+    cerrarDetalleVenta(): void {
+        this.ventaSeleccionada =
+            null;
     }
 
     private limpiarReporte(): void {
-
         this.inicioSemana = '';
-
         this.finSemana = '';
-
         this.totalVendido = 0;
-
         this.costoEstimado = 0;
-
         this.gananciaEstimada = 0;
-
         this.ventasRealizadas = 0;
-
         this.productosVendidos = 0;
-
         this.ticketPromedio = 0;
-
         this.porcentajeMeta = 0;
-
         this.metaCumplida = false;
-
         this.diasMetaCumplida = 0;
-
         this.mejorDia = null;
-
         this.productoMasVendido = null;
-
         this.ventasPorUsuario = [];
-
         this.ventasPorDia = [];
-
         this.ultimasVentas = [];
+        this.datosGrafico = [];
+        this.ventaSeleccionada = null;
     }
 
     private mostrarMensaje(
         mensaje: string
     ): void {
-
         this.snackBar.open(
             mensaje,
             'Cerrar',
@@ -325,15 +358,22 @@ export class ReporteSemanalComponent implements OnInit {
         );
     }
 
-    private obtenerFechaActualPeru(): string {
-
+    private obtenerFechaActualPeru():
+        string {
         return new Intl.DateTimeFormat(
             'en-CA',
             {
-                timeZone: 'America/Lima',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
+                timeZone:
+                    'America/Lima',
+
+                year:
+                    'numeric',
+
+                month:
+                    '2-digit',
+
+                day:
+                    '2-digit'
             }
         ).format(
             new Date()
