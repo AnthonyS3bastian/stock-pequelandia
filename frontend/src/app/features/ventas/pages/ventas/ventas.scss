@@ -225,6 +225,184 @@ input {
   width: 100%;
 }
 
+.campo-busqueda-producto {
+  position: relative;
+  min-width: 0;
+  z-index: 20;
+}
+
+.icono-busqueda-cargando {
+  color: var(--primario);
+  animation:
+    giro-busqueda-producto
+    0.8s
+    linear
+    infinite;
+}
+
+@keyframes giro-busqueda-producto {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.resultados-productos {
+  position: absolute;
+  top: calc(100% - 4px);
+  right: 0;
+  left: 0;
+  z-index: 40;
+  max-height: 360px;
+  overflow-y: auto;
+  border: 1px solid var(--borde);
+  border-radius: 13px;
+  background: #ffffff;
+  box-shadow:
+    0 18px 38px
+    rgba(31, 38, 68, 0.16);
+}
+
+.resultado-producto {
+  width: 100%;
+  min-height: 68px;
+  display: grid;
+  grid-template-columns:
+    42px
+    minmax(0, 1fr)
+    auto;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 13px;
+  border: 0;
+  border-bottom: 1px solid #efeff5;
+  color: var(--texto);
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.resultado-producto:last-child {
+  border-bottom: 0;
+}
+
+.resultado-producto:hover:not(:disabled),
+.resultado-producto:focus-visible:not(:disabled) {
+  outline: none;
+  background: var(--primario-suave);
+}
+
+.resultado-producto.no-disponible {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
+.resultado-icono {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  color: var(--color-producto, #db2777);
+  background:
+    var(
+      --color-producto-suave,
+      #fff1f7
+    );
+}
+
+.resultado-icono mat-icon {
+  width: 21px;
+  height: 21px;
+  font-size: 21px;
+}
+
+.resultado-datos {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.resultado-datos strong {
+  overflow: hidden;
+  color: var(--texto);
+  font-size: 13px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resultado-datos small {
+  overflow: hidden;
+  color: var(--texto-secundario);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resultado-precio {
+  min-width: 100px;
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 3px;
+  text-align: right;
+}
+
+.resultado-precio strong {
+  color: var(--primario-oscuro);
+  font-size: 13px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.resultado-precio small {
+  color: var(--correcto);
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.resultado-precio small.sin-stock {
+  color: var(--error);
+}
+
+.estado-resultados {
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 14px;
+  color: var(--texto-secundario);
+  background: #ffffff;
+  font-size: 12px;
+}
+
+.estado-resultados > mat-icon {
+  color: var(--primario);
+}
+
+.estado-resultados.sin-resultados {
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.estado-resultados.sin-resultados > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.estado-resultados.sin-resultados strong {
+  color: var(--texto);
+  font-size: 12px;
+}
+
+.estado-resultados.sin-resultados span {
+  font-size: 11px;
+}
+
 .boton-agregar,
 .boton-buscar-venta {
   min-height: 56px;
@@ -1392,6 +1570,25 @@ input:checked
   .barra-codigo,
   .busqueda-anulacion {
     grid-template-columns: 1fr;
+  }
+
+  .resultados-productos {
+    max-height: 310px;
+  }
+
+  .resultado-producto {
+    grid-template-columns:
+      38px
+      minmax(0, 1fr);
+  }
+
+  .resultado-precio {
+    grid-column: 2;
+    min-width: 0;
+    align-items: flex-start;
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
   }
 
   .boton-agregar,

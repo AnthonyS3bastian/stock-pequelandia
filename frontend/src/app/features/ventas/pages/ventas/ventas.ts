@@ -2,6 +2,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  HostListener,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -46,8 +47,13 @@ import {
 } from '@angular/material/snack-bar';
 
 import {
+  Subscription,
   firstValueFrom
 } from 'rxjs';
+
+import {
+  Producto
+} from '../../../inventario/interfaces/producto.interface';
 
 import {
   ProductoService
@@ -123,6 +129,9 @@ implements OnInit, OnDestroy {
   @ViewChild('campoComprobante')
   campoComprobante?: ElementRef<HTMLInputElement>;
 
+  @ViewChild('contenedorBusqueda')
+  contenedorBusqueda?: ElementRef<HTMLElement>;
+
   private readonly productoService =
     inject(ProductoService);
 
@@ -141,6 +150,13 @@ implements OnInit, OnDestroy {
   private temporizadorImpresora:
     ReturnType<typeof setInterval> | null =
       null;
+
+  private temporizadorBusquedaProducto:
+    ReturnType<typeof setTimeout> | null =
+      null;
+
+  private suscripcionBusquedaProducto:
+    Subscription | null = null;
 
   private componenteDestruido = false;
 
@@ -169,6 +185,13 @@ implements OnInit, OnDestroy {
   conectandoImpresora = false;
 
   buscandoProducto = false;
+
+  buscandoSugerencias = false;
+
+  mostrarSugerencias = false;
+
+  resultadosBusqueda:
+    Producto[] = [];
 
   consultandoDocumento = false;
 
@@ -254,6 +277,30 @@ implements OnInit, OnDestroy {
 
       this.temporizadorImpresora = null;
     }
+
+    this.cancelarBusquedaSugerencias();
+  }
+
+  @HostListener(
+    'document:click',
+    ['$event']
+  )
+  cerrarSugerenciasAlClickFuera(
+    evento: MouseEvent
+  ): void {
+    const objetivo =
+      evento.target as Node | null;
+
+    if (
+      !objetivo
+      || this.contenedorBusqueda
+        ?.nativeElement
+        .contains(objetivo)
+    ) {
+      return;
+    }
+
+    this.cerrarSugerencias();
   }
 
   get cantidadProductos(): number {
@@ -464,6 +511,8 @@ implements OnInit, OnDestroy {
 
     this.vistaActual = vista;
 
+    this.cerrarSugerencias();
+
     this.cerrarConfirmacionVenta();
     this.cerrarConfirmacionAnulacion();
 
@@ -477,6 +526,115 @@ implements OnInit, OnDestroy {
     }
   }
 
+  buscarSugerenciasProducto(): void {
+    const termino =
+      this.codigoBarras.trim();
+
+    this.cancelarBusquedaSugerencias();
+
+    if (termino.length < 2) {
+      this.resultadosBusqueda = [];
+      this.mostrarSugerencias = false;
+      this.buscandoSugerencias = false;
+
+      this.actualizarVista();
+      return;
+    }
+
+    this.mostrarSugerencias = true;
+
+    this.temporizadorBusquedaProducto =
+      setTimeout(
+        () => {
+          this.ejecutarBusquedaSugerencias(
+            termino
+          );
+        },
+        300
+      );
+  }
+
+  mostrarSugerenciasDisponibles(): void {
+    if (
+      this.codigoBarras
+        .trim()
+        .length >= 2
+    ) {
+      this.mostrarSugerencias = true;
+      this.actualizarVista();
+    }
+  }
+
+  cerrarSugerencias(): void {
+    this.mostrarSugerencias = false;
+    this.actualizarVista();
+  }
+
+  productoDisponibleParaVenta(
+    producto: Producto
+  ): boolean {
+    return (
+      Boolean(
+        producto.estado
+      )
+      && Number(
+        producto.stock_producto
+        ?? 0
+      ) > 0
+      && !this.estaVencido(
+        producto.fecha_caducidad
+      )
+    );
+  }
+
+  obtenerEstadoProductoBusqueda(
+    producto: Producto
+  ): string {
+    if (!producto.estado) {
+      return 'Inactivo';
+    }
+
+    if (
+      this.estaVencido(
+        producto.fecha_caducidad
+      )
+    ) {
+      return 'Vencido';
+    }
+
+    const stock =
+      Number(
+        producto.stock_producto
+        ?? 0
+      );
+
+    if (stock <= 0) {
+      return 'Sin stock';
+    }
+
+    return `${stock} disponibles`;
+  }
+
+  seleccionarProductoBusqueda(
+    producto: Producto
+  ): void {
+    if (
+      this.operacionEnCurso
+      || this.buscandoProducto
+    ) {
+      return;
+    }
+
+    const agregado =
+      this.agregarProductoSeleccionado(
+        producto
+      );
+
+    if (agregado) {
+      this.limpiarBusquedaProducto();
+    }
+  }
+
   agregarProducto(): void {
     if (
       this.operacionEnCurso
@@ -485,12 +643,12 @@ implements OnInit, OnDestroy {
       return;
     }
 
-    const codigo =
+    const termino =
       this.codigoBarras.trim();
 
-    if (!codigo) {
+    if (!termino) {
       this.mostrarMensaje(
-        'Ingrese o escanee un código de producto.',
+        'Escanee un código o busque un producto.',
         'advertencia'
       );
 
@@ -498,147 +656,127 @@ implements OnInit, OnDestroy {
       return;
     }
 
+    const terminoNormalizado =
+      termino.toLocaleLowerCase(
+        'es-PE'
+      );
+
+    const coincidenciaExacta =
+      this.resultadosBusqueda
+        .find(
+          producto => {
+            const codigo =
+              String(
+                producto.codigo_producto
+                ?? ''
+              )
+                .trim()
+                .toLocaleLowerCase(
+                  'es-PE'
+                );
+
+            const nombre =
+              String(
+                producto.nombre_producto
+                ?? ''
+              )
+                .trim()
+                .toLocaleLowerCase(
+                  'es-PE'
+                );
+
+            return (
+              codigo
+                === terminoNormalizado
+              || nombre
+                === terminoNormalizado
+            );
+          }
+        );
+
+    if (coincidenciaExacta) {
+      this.seleccionarProductoBusqueda(
+        coincidenciaExacta
+      );
+
+      return;
+    }
+
+    if (
+      this.mostrarSugerencias
+      && this.resultadosBusqueda.length > 0
+    ) {
+      this.mostrarMensaje(
+        'Seleccione un producto de la lista.',
+        'informacion'
+      );
+
+      return;
+    }
+
     this.buscandoProducto = true;
+    this.actualizarVista();
 
     this.productoService
-      .buscarPorCodigo(codigo)
+      .buscarPorCodigo(termino)
       .subscribe({
-        next: (respuesta: any) => {
-          const producto = respuesta?.data;
+        next: respuesta => {
+          const producto =
+            respuesta?.data;
 
           if (!producto) {
+            this.buscandoProducto = false;
+
             this.mostrarMensaje(
               'Producto no encontrado.',
               'advertencia'
             );
 
-            this.finalizarBusquedaProducto();
+            this.actualizarVista();
             return;
           }
 
-          if (!producto.estado) {
-            this.mostrarMensaje(
-              'El producto se encuentra inactivo.',
-              'advertencia'
+          const agregado =
+            this.agregarProductoSeleccionado(
+              producto
             );
 
-            this.finalizarBusquedaProducto();
-            return;
-          }
+          this.buscandoProducto = false;
 
-          if (
-            this.estaVencido(
-              producto.fecha_caducidad
-            )
-          ) {
-            this.mostrarMensaje(
-              'El producto se encuentra vencido y no puede venderse.',
-              'advertencia'
-            );
-
-            this.finalizarBusquedaProducto();
-            return;
-          }
-
-          const stockDisponible = Number(
-            producto.stock_producto ?? 0
-          );
-
-          if (stockDisponible <= 0) {
-            this.mostrarMensaje(
-              'El producto no tiene stock disponible.',
-              'advertencia'
-            );
-
-            this.finalizarBusquedaProducto();
-            return;
-          }
-
-          const existente =
-            this.ventas.find(
-              item =>
-                item.id_producto
-                === Number(
-                  producto.id_producto
-                )
-            );
-
-          if (existente) {
-            if (
-              existente.cantidad
-              >= existente.stockDisponible
-            ) {
-              this.mostrarMensaje(
-                `Stock máximo disponible: ${existente.stockDisponible} unidades.`,
-                'advertencia'
-              );
-
-              this.finalizarBusquedaProducto();
-              return;
-            }
-
-            existente.cantidad += 1;
-
-            existente.subtotal =
-              existente.cantidad
-              * existente.precio;
+          if (agregado) {
+            this.limpiarBusquedaProducto();
           } else {
-            const precio = Number(
-              producto.precio_producto ?? 0
-            );
-
-            this.ventas.push({
-              id_producto: Number(
-                producto.id_producto
-              ),
-
-              codigo: String(
-                producto.codigo_producto
-                ?? codigo
-              ),
-
-              producto: String(
-                producto.nombre_producto
-                ?? 'Producto'
-              ),
-
-              cantidad: 1,
-
-              precio,
-
-              subtotal: precio,
-
-              stockDisponible,
-
-              fechaCaducidad:
-                producto.fecha_caducidad
-                ?? null,
-
-              estado: Boolean(
-                producto.estado
-              )
-            });
+            this.actualizarVista();
+            this.enfocarCampoCodigo();
           }
-
-          this.actualizarVentaTemporal();
-          this.finalizarBusquedaProducto();
         },
 
-        error: (error: any) => {
+        error: error => {
+          this.buscandoProducto = false;
+
+          if (
+            Number(
+              error?.status ?? 0
+            ) === 404
+          ) {
+            this.ejecutarBusquedaSugerencias(
+              termino,
+              true
+            );
+
+            return;
+          }
+
           this.mostrarMensaje(
             this.obtenerMensajeError(
               error,
-              error?.status === 404
-                ? 'Producto no encontrado.'
-                : 'No se pudo consultar el producto.'
+              'No se pudo consultar el producto.'
             ),
-
-            error?.status === 404
-              ? 'advertencia'
-              : 'error'
+            'error'
           );
 
-          this.finalizarBusquedaProducto();
+          this.actualizarVista();
+          this.enfocarCampoCodigo();
         }
       });
   }
@@ -718,10 +856,10 @@ implements OnInit, OnDestroy {
     }
 
     this.ventas = [];
-    this.codigoBarras = '';
+
+    this.limpiarBusquedaProducto();
 
     this.calcularTotales();
-    this.enfocarCampoCodigo();
   }
 
   seleccionarTipoComprobante(
@@ -1623,19 +1761,274 @@ implements OnInit, OnDestroy {
     this.calcularTotales();
   }
 
-  private finalizarBusquedaProducto(): void {
+  private ejecutarBusquedaSugerencias(
+    termino: string,
+    mostrarMensaje = false
+  ): void {
+    const terminoActual =
+      this.codigoBarras.trim();
+
+    if (
+      termino.length < 2
+      || terminoActual !== termino
+    ) {
+      return;
+    }
+
+    this.cancelarBusquedaSugerencias();
+
+    this.buscandoSugerencias = true;
+    this.mostrarSugerencias = true;
+    this.actualizarVista();
+
+    this.suscripcionBusquedaProducto =
+      this.productoService
+        .buscarParaVenta(
+          termino,
+          8
+        )
+        .subscribe({
+          next: respuesta => {
+            if (
+              this.codigoBarras.trim()
+              !== termino
+            ) {
+              return;
+            }
+
+            this.resultadosBusqueda =
+              respuesta?.data
+              ?? [];
+
+            this.buscandoSugerencias =
+              false;
+
+            this.mostrarSugerencias =
+              true;
+
+            if (mostrarMensaje) {
+              this.mostrarMensaje(
+                this.resultadosBusqueda
+                  .length > 0
+                  ? 'Seleccione un producto de la lista.'
+                  : 'No se encontraron productos relacionados.',
+                this.resultadosBusqueda
+                  .length > 0
+                  ? 'informacion'
+                  : 'advertencia'
+              );
+            }
+
+            this.actualizarVista();
+          },
+
+          error: error => {
+            if (
+              this.codigoBarras.trim()
+              !== termino
+            ) {
+              return;
+            }
+
+            this.resultadosBusqueda = [];
+
+            this.buscandoSugerencias =
+              false;
+
+            this.mostrarSugerencias =
+              true;
+
+            if (mostrarMensaje) {
+              this.mostrarMensaje(
+                this.obtenerMensajeError(
+                  error,
+                  'No se pudo buscar el producto.'
+                ),
+                'error'
+              );
+            }
+
+            this.actualizarVista();
+          }
+        });
+  }
+
+  private cancelarBusquedaSugerencias(): void {
+    if (
+      this.temporizadorBusquedaProducto
+    ) {
+      clearTimeout(
+        this.temporizadorBusquedaProducto
+      );
+
+      this.temporizadorBusquedaProducto =
+        null;
+    }
+
+    if (
+      this.suscripcionBusquedaProducto
+    ) {
+      this.suscripcionBusquedaProducto
+        .unsubscribe();
+
+      this.suscripcionBusquedaProducto =
+        null;
+    }
+
+    this.buscandoSugerencias = false;
+  }
+
+  private agregarProductoSeleccionado(
+    producto: Producto
+  ): boolean {
+    if (!producto.estado) {
+      this.mostrarMensaje(
+        'El producto se encuentra inactivo.',
+        'advertencia'
+      );
+
+      return false;
+    }
+
+    if (
+      this.estaVencido(
+        producto.fecha_caducidad
+      )
+    ) {
+      this.mostrarMensaje(
+        'El producto se encuentra vencido y no puede venderse.',
+        'advertencia'
+      );
+
+      return false;
+    }
+
+    const stockDisponible =
+      Number(
+        producto.stock_producto
+        ?? 0
+      );
+
+    if (stockDisponible <= 0) {
+      this.mostrarMensaje(
+        'El producto no tiene stock disponible.',
+        'advertencia'
+      );
+
+      return false;
+    }
+
+    const idProducto =
+      Number(
+        producto.id_producto
+      );
+
+    const existente =
+      this.ventas.find(
+        item =>
+          item.id_producto
+          === idProducto
+      );
+
+    if (existente) {
+      if (
+        existente.cantidad
+        >= existente.stockDisponible
+      ) {
+        this.mostrarMensaje(
+          `Stock máximo disponible: ${existente.stockDisponible} unidades.`,
+          'advertencia'
+        );
+
+        return false;
+      }
+
+      existente.cantidad += 1;
+
+      existente.subtotal =
+        existente.cantidad
+        * existente.precio;
+    } else {
+      const precio =
+        Number(
+          producto.precio_producto
+          ?? 0
+        );
+
+      this.ventas.push({
+        id_producto:
+          idProducto,
+
+        codigo:
+          String(
+            producto.codigo_producto
+            ?? ''
+          ),
+
+        producto:
+          String(
+            producto.nombre_producto
+            ?? 'Producto'
+          ),
+
+        cantidad:
+          1,
+
+        precio,
+
+        subtotal:
+          precio,
+
+        stockDisponible,
+
+        fechaCaducidad:
+          producto.fecha_caducidad
+          ?? null,
+
+        estado:
+          Boolean(
+            producto.estado
+          )
+      });
+    }
+
+    this.actualizarVentaTemporal();
+
+    return true;
+  }
+
+  private limpiarBusquedaProducto(): void {
+    this.cancelarBusquedaSugerencias();
+
     this.buscandoProducto = false;
-
     this.codigoBarras = '';
+    this.resultadosBusqueda = [];
+    this.mostrarSugerencias = false;
 
-    this.cdr.detectChanges();
+    this.actualizarVista();
     this.enfocarCampoCodigo();
   }
 
+  private actualizarVista(): void {
+    if (this.componenteDestruido) {
+      return;
+    }
+
+    this.cdr.detectChanges();
+  }
+
   private reiniciarVentaCompleta(): void {
+    this.cancelarBusquedaSugerencias();
+
     this.ventas = [];
 
     this.codigoBarras = '';
+
+    this.resultadosBusqueda = [];
+
+    this.mostrarSugerencias = false;
+
+    this.buscandoSugerencias = false;
 
     this.total = 0;
 

@@ -23,6 +23,100 @@ class ProductoService
     }
 
     /**
+     * Buscar productos activos para ventas.
+     *
+     * Busca por codigo, nombre o categoria
+     * y limita la cantidad de resultados.
+     */
+    public function buscarParaVenta(
+        string $termino,
+        int $limite = 8
+    ): Collection {
+        $termino =
+            trim($termino);
+
+        $limite =
+            max(
+                1,
+                min(
+                    $limite,
+                    10
+                )
+            );
+
+        $terminoLike =
+            '%' . $this->escaparLike(
+                $termino
+            ) . '%';
+
+        $inicioTermino =
+            $this->escaparLike(
+                $termino
+            ) . '%';
+
+        return Producto::query()
+            ->with('categoria')
+            ->where(
+                'estado',
+                true
+            )
+            ->where(
+                function ($consulta) use (
+                    $terminoLike
+                ): void {
+                    $consulta
+                        ->where(
+                            'codigo_producto',
+                            'like',
+                            $terminoLike
+                        )
+                        ->orWhere(
+                            'nombre_producto',
+                            'like',
+                            $terminoLike
+                        )
+                        ->orWhereHas(
+                            'categoria',
+                            function (
+                                $consultaCategoria
+                            ) use (
+                                $terminoLike
+                            ): void {
+                                $consultaCategoria
+                                    ->where(
+                                        'nombre_categoria',
+                                        'like',
+                                        $terminoLike
+                                    );
+                            }
+                        );
+                }
+            )
+            ->orderByRaw(
+                '
+                    CASE
+                        WHEN codigo_producto = ? THEN 0
+                        WHEN nombre_producto = ? THEN 1
+                        WHEN nombre_producto LIKE ? THEN 2
+                        ELSE 3
+                    END
+                ',
+                [
+                    $termino,
+                    $termino,
+                    $inicioTermino,
+                ]
+            )
+            ->orderBy(
+                'nombre_producto'
+            )
+            ->limit(
+                $limite
+            )
+            ->get();
+    }
+
+    /**
      * Obtener un producto por ID.
      */
     public function obtenerPorId(
@@ -248,5 +342,18 @@ class ProductoService
             Producto::findOrFail($id);
 
         $producto->delete();
+    }
+
+    /**
+     * Escapar caracteres especiales
+     * utilizados por consultas LIKE.
+     */
+    private function escaparLike(
+        string $valor
+    ): string {
+        return addcslashes(
+            $valor,
+            '\\%_'
+        );
     }
 }

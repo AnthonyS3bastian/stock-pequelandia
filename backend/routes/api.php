@@ -112,6 +112,11 @@ Route::middleware('auth:sanctum')
         );
 
         Route::get(
+            '/productos/buscar',
+            [ProductoController::class, 'buscar']
+        );
+
+        Route::get(
             '/productos/codigo/{codigo}',
             [
                 ProductoController::class,

@@ -101,32 +101,198 @@
 
         <div class="barra-codigo">
 
-          <mat-form-field
-            appearance="outline"
-            class="campo-codigo">
+          <div
+            #contenedorBusqueda
+            class="campo-busqueda-producto">
 
-            <mat-label>
-              Código del producto
-            </mat-label>
+            <mat-form-field
+              appearance="outline"
+              class="campo-codigo">
 
-            <mat-icon matPrefix>
-              qr_code_scanner
-            </mat-icon>
+              <mat-label>
+                Código o producto
+              </mat-label>
 
-            <input
-              #campoCodigo
-              matInput
-              autofocus
-              autocomplete="off"
-              placeholder="Escanee o escriba el código"
-              [(ngModel)]="codigoBarras"
-              [disabled]="
-                operacionEnCurso
-                || buscandoProducto
-              "
-              (keyup.enter)="agregarProducto()">
+              <mat-icon matPrefix>
+                qr_code_scanner
+              </mat-icon>
 
-          </mat-form-field>
+              <input
+                #campoCodigo
+                matInput
+                autofocus
+                autocomplete="off"
+                placeholder="Escanee un código o busque por nombre"
+                [(ngModel)]="codigoBarras"
+                [disabled]="
+                  operacionEnCurso
+                  || buscandoProducto
+                "
+                (ngModelChange)="
+                  buscarSugerenciasProducto()
+                "
+                (focus)="
+                  mostrarSugerenciasDisponibles()
+                "
+                (keydown.escape)="
+                  cerrarSugerencias()
+                "
+                (keyup.enter)="
+                  agregarProducto()
+                ">
+
+              <mat-icon
+                matSuffix
+                class="icono-busqueda-cargando"
+                *ngIf="buscandoSugerencias">
+
+                hourglass_top
+
+              </mat-icon>
+
+            </mat-form-field>
+
+            <section
+              class="resultados-productos"
+              *ngIf="
+                mostrarSugerencias
+                && codigoBarras.trim().length >= 2
+              ">
+
+              <div
+                class="estado-resultados"
+                *ngIf="buscandoSugerencias">
+
+                <mat-icon>
+                  hourglass_top
+                </mat-icon>
+
+                <span>
+                  Buscando productos...
+                </span>
+
+              </div>
+
+              <ng-container
+                *ngIf="
+                  !buscandoSugerencias
+                  && resultadosBusqueda.length > 0
+                ">
+
+                <button
+                  type="button"
+                  class="resultado-producto"
+                  *ngFor="
+                    let producto
+                    of resultadosBusqueda
+                  "
+                  [class.no-disponible]="
+                    !productoDisponibleParaVenta(
+                      producto
+                    )
+                  "
+                  [disabled]="
+                    !productoDisponibleParaVenta(
+                      producto
+                    )
+                  "
+                  (click)="
+                    seleccionarProductoBusqueda(
+                      producto
+                    )
+                  ">
+
+                  <span class="resultado-icono">
+
+                    <mat-icon>
+                      inventory_2
+                    </mat-icon>
+
+                  </span>
+
+                  <span class="resultado-datos">
+
+                    <strong>
+                      {{ producto.nombre_producto }}
+                    </strong>
+
+                    <small>
+
+                      {{
+                        producto.categoria
+                          ?.nombre_categoria
+                        ?? 'Sin categoría'
+                      }}
+
+                      · Código:
+                      {{ producto.codigo_producto }}
+
+                    </small>
+
+                  </span>
+
+                  <span class="resultado-precio">
+
+                    <strong>
+
+                      S/
+                      {{
+                        producto.precio_producto
+                          | number:'1.2-2'
+                      }}
+
+                    </strong>
+
+                    <small
+                      [class.sin-stock]="
+                        !productoDisponibleParaVenta(
+                          producto
+                        )
+                      ">
+
+                      {{
+                        obtenerEstadoProductoBusqueda(
+                          producto
+                        )
+                      }}
+
+                    </small>
+
+                  </span>
+
+                </button>
+
+              </ng-container>
+
+              <div
+                class="estado-resultados sin-resultados"
+                *ngIf="
+                  !buscandoSugerencias
+                  && resultadosBusqueda.length === 0
+                ">
+
+                <mat-icon>
+                  search_off
+                </mat-icon>
+
+                <div>
+
+                  <strong>
+                    Sin coincidencias
+                  </strong>
+
+                  <span>
+                    Pruebe con otro nombre,
+                    categoría o código.
+                  </span>
+
+                </div>
+
+              </div>
+
+            </section>
+
+          </div>
 
           <button
             type="button"

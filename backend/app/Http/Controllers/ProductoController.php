@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateProductoRequest;
 use App\Services\ProductoService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ProductoController extends Controller
 {
@@ -32,6 +33,51 @@ class ProductoController extends Controller
             'data' =>
                 $this->productoService
                     ->listar(),
+        ]);
+    }
+
+    /**
+     * Buscar productos activos para ventas.
+     *
+     * Permite buscar por nombre, categoria
+     * o codigo y devuelve pocos resultados.
+     */
+    public function buscar(
+        Request $request
+    ): JsonResponse {
+        $datos =
+            $request->validate([
+                'termino' => [
+                    'required',
+                    'string',
+                    'min:2',
+                    'max:100',
+                ],
+
+                'limite' => [
+                    'nullable',
+                    'integer',
+                    'min:1',
+                    'max:10',
+                ],
+            ]);
+
+        $productos =
+            $this->productoService
+                ->buscarParaVenta(
+                    $datos['termino'],
+                    (int) (
+                        $datos['limite']
+                        ?? 8
+                    )
+                );
+
+        return response()->json([
+            'mensaje' =>
+                'Productos encontrados correctamente.',
+
+            'data' =>
+                $productos,
         ]);
     }
 

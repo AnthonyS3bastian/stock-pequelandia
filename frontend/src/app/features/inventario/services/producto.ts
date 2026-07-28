@@ -4,7 +4,8 @@ import {
 } from '@angular/core';
 
 import {
-  HttpClient
+  HttpClient,
+  HttpParams
 } from '@angular/common/http';
 
 import {
@@ -55,7 +56,7 @@ export interface RespuestaMensaje {
 })
 export class ProductoService {
 
-  private http =
+  private readonly http =
     inject(HttpClient);
 
   private readonly api =
@@ -67,6 +68,32 @@ export class ProductoService {
     return this.http
       .get<RespuestaProductos>(
         this.api
+      );
+
+  }
+
+  buscarParaVenta(
+    termino: string,
+    limite = 8
+  ): Observable<RespuestaProductos> {
+
+    const params =
+      new HttpParams()
+        .set(
+          'termino',
+          termino.trim()
+        )
+        .set(
+          'limite',
+          String(limite)
+        );
+
+    return this.http
+      .get<RespuestaProductos>(
+        `${this.api}/buscar`,
+        {
+          params
+        }
       );
 
   }
