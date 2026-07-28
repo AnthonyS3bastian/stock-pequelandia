@@ -1,0 +1,1251 @@
+/* ==========================================================
+   NORMALIZACION VISUAL DE MODULOS
+========================================================== */
+
+body {
+
+  /* ========================================================
+     CABECERAS DE PAGINA
+
+     La toolbar ya muestra el nombre del módulo.
+     Se ocultan los títulos repetidos sin modificar
+     la lógica de los componentes.
+  ======================================================== */
+
+  .dashboard-container
+  .cabecera-dashboard
+  h1,
+
+  .pagina-inventario
+  > .cabecera
+  h1,
+
+  .ventas-container
+  > .cabecera-ventas
+  h1,
+
+  .pagina-categorias
+  > .cabecera
+  h1,
+
+  .pagina-categorias
+  > .cabecera
+  .etiqueta-seccion,
+
+  .contenedor-reportes
+  > .cabecera
+  h1,
+
+  .usuarios-pagina
+  > .cabecera-pagina
+  h2,
+
+  .usuarios-pagina
+  > .cabecera-pagina
+  .etiqueta-seccion {
+    display: none !important;
+  }
+
+  .dashboard-container
+  .cabecera-dashboard,
+
+  .pagina-inventario
+  > .cabecera,
+
+  .ventas-container
+  > .cabecera-ventas,
+
+  .pagina-categorias
+  > .cabecera,
+
+  .contenedor-reportes
+  > .cabecera,
+
+  .usuarios-pagina
+  > .cabecera-pagina {
+    min-height: 44px;
+    margin-bottom: 14px;
+  }
+
+  .dashboard-container
+  .cabecera-dashboard
+  p,
+
+  .pagina-inventario
+  > .cabecera
+  p,
+
+  .ventas-container
+  > .cabecera-ventas
+  p,
+
+  .pagina-categorias
+  > .cabecera
+  p,
+
+  .contenedor-reportes
+  > .cabecera
+  p,
+
+  .usuarios-pagina
+  > .cabecera-pagina
+  p {
+    margin: 0;
+    color: var(--color-texto-secundario);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.45;
+  }
+
+  /* ========================================================
+     FONDOS DE PAGINA
+  ======================================================== */
+
+  .dashboard-container,
+  .pagina-inventario,
+  .ventas-container,
+  .pagina-categorias,
+  .contenedor-reportes,
+  .usuarios-pagina {
+    background:
+      radial-gradient(
+        circle at top right,
+        rgba(219, 39, 119, 0.04),
+        transparent 28%
+      ),
+      var(--fondo-aplicacion);
+  }
+
+  /* ========================================================
+     PANELES Y TARJETAS
+  ======================================================== */
+
+  .dashboard-container
+  .tarjeta-indicador,
+
+  .dashboard-container
+  .tarjeta-meta,
+
+  .dashboard-container
+  .tarjeta-accesos,
+
+  .dashboard-container
+  .tarjeta-grafico,
+
+  .dashboard-container
+  .tarjeta-stock,
+
+  .dashboard-container
+  .tarjeta-ultimas-ventas,
+
+  .pagina-inventario
+  .tarjeta-resumen,
+
+  .pagina-inventario
+  .panel-filtros,
+
+  .pagina-inventario
+  .tabla-tarjeta,
+
+  .pagina-inventario
+  .panel-alertas,
+
+  .ventas-container
+  .panel,
+
+  .pagina-categorias
+  .tarjeta,
+
+  .pagina-categorias
+  .panel-filtros,
+
+  .pagina-categorias
+  .panel-listado,
+
+  .contenedor-reportes
+  .tarjeta-resumen,
+
+  .contenedor-reportes
+  .tarjeta-meta,
+
+  .contenedor-reportes
+  .tarjeta-producto,
+
+  .contenedor-reportes
+  .tarjeta-destacada,
+
+  .contenedor-reportes
+  .tarjeta-seccion,
+
+  .usuarios-pagina
+  .panel-formulario,
+
+  .usuarios-pagina
+  .panel-listado,
+
+  .grafico-ventas {
+    border-color: var(--color-borde) !important;
+    border-radius: var(--radio-tarjeta) !important;
+    background: var(--superficie) !important;
+    box-shadow: var(--sombra-suave) !important;
+  }
+
+  /* ========================================================
+     DASHBOARD
+  ======================================================== */
+
+  .dashboard-container {
+    padding: 18px 24px 30px;
+
+    .cabecera-dashboard {
+      align-items: center;
+    }
+
+    .saludo {
+      margin: 0 0 3px;
+      color: var(--color-primario);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    /*
+     * Se eliminan textos inconsistentes como:
+     * RENDIMIENTO DEL DIA
+     * NAVEGACION
+     * INVENTARIO
+     */
+
+    .etiqueta-superior {
+      display: none !important;
+    }
+
+    .grid-indicadores {
+      gap: 12px;
+    }
+
+    .tarjeta-indicador {
+      mat-card-content {
+        min-height: 104px;
+        padding: 15px 16px;
+        gap: 12px;
+      }
+    }
+
+    .icono-indicador {
+      width: 44px;
+      height: 44px;
+      flex-basis: 44px;
+      border-radius: 12px;
+
+      mat-icon {
+        width: 23px;
+        height: 23px;
+        font-size: 23px;
+      }
+
+      &.ventas {
+        color: var(--color-dinero);
+        background: var(--color-dinero-suave);
+      }
+
+      &.comprobantes {
+        color: var(--color-venta);
+        background: var(--color-venta-suave);
+      }
+
+      &.productos {
+        color: var(--color-producto);
+        background: var(--color-producto-suave);
+      }
+
+      &.stock {
+        color: var(--color-advertencia);
+        background: var(--color-advertencia-suave);
+      }
+    }
+
+    .contenido-indicador {
+      span {
+        color: var(--color-texto-secundario);
+        font-size: 12px;
+      }
+
+      strong {
+        color: var(--color-texto);
+        font-size: 24px;
+      }
+
+      small {
+        color: var(--color-texto-suave);
+        font-size: 11px;
+      }
+    }
+
+    .grid-meta-accesos,
+    .grid-grafico-stock,
+    .tarjeta-ultimas-ventas {
+      margin-top: 12px;
+    }
+
+    .tarjeta-meta,
+    .tarjeta-accesos,
+    .tarjeta-grafico,
+    .tarjeta-stock,
+    .tarjeta-ultimas-ventas {
+      mat-card-content {
+        padding: 16px;
+      }
+    }
+
+    .cabecera-seccion {
+      margin-bottom: 13px;
+
+      h2 {
+        color: var(--color-texto);
+        font-size: 17px;
+      }
+
+      p {
+        color: var(--color-texto-secundario);
+        font-size: 12px;
+      }
+    }
+
+    .enlace-seccion {
+      color: var(--color-primario);
+      font-size: 11px;
+    }
+
+    .valores-meta {
+      span {
+        font-size: 11px;
+      }
+
+      strong {
+        font-size: 21px;
+      }
+    }
+
+    .acceso-rapido {
+      min-height: 62px;
+      padding: 9px 10px;
+    }
+
+    .texto-acceso {
+      strong {
+        font-size: 12px;
+      }
+
+      small {
+        font-size: 10px;
+      }
+    }
+
+    .datos-stock strong,
+    .fila-venta {
+      font-size: 12px;
+    }
+
+    .datos-stock span,
+    .cantidad-stock,
+    .fila-venta.cabecera-tabla,
+    .estado-venta,
+    .venta-no-contabilizada {
+      font-size: 10px;
+    }
+
+    .fila-venta {
+      min-height: 50px;
+
+      &.cabecera-tabla {
+        min-height: 40px;
+      }
+    }
+
+    .grafico-dashboard {
+      .contenedor-svg,
+      svg {
+        min-height: 210px !important;
+        height: 210px !important;
+      }
+    }
+  }
+
+  /* ========================================================
+     INVENTARIO
+  ======================================================== */
+
+  .pagina-inventario {
+    padding: 18px 24px 32px;
+
+    .btn-nuevo {
+      min-height: 42px;
+      background: var(--degradado-principal);
+      font-size: 13px;
+    }
+
+    .pestanas {
+      margin-bottom: 12px;
+      border-color: var(--color-borde);
+
+      button {
+        min-height: 38px;
+        color: var(--color-texto-secundario);
+        font-size: 12px;
+
+        &.activa {
+          color: #ffffff;
+          background: var(--degradado-principal);
+        }
+      }
+    }
+
+    .tarjetas-resumen {
+      gap: 9px;
+      margin-bottom: 13px;
+    }
+
+    .tarjeta-resumen {
+      min-height: 70px;
+      padding: 11px 13px;
+    }
+
+    .tarjeta-icono {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+    }
+
+    .tarjeta-contenido {
+      strong {
+        color: var(--color-texto);
+        font-size: 20px;
+      }
+
+      small {
+        color: var(--color-texto-secundario);
+        font-size: 11px;
+      }
+    }
+
+    /*
+     * Productos siempre rosados.
+     */
+
+    .tarjeta-resumen.total
+    .tarjeta-icono,
+
+    .producto-icono {
+      color: var(--color-producto) !important;
+      background: var(--color-producto-suave) !important;
+    }
+
+    /*
+     * Stock bajo siempre naranja.
+     */
+
+    .tarjeta-resumen.bajo
+    .tarjeta-icono {
+      color: var(--color-advertencia) !important;
+      background: var(--color-advertencia-suave) !important;
+    }
+
+    /*
+     * Agotados siempre rojo.
+     */
+
+    .tarjeta-resumen.agotado
+    .tarjeta-icono {
+      color: var(--color-peligro) !important;
+      background: var(--color-peligro-suave) !important;
+    }
+
+    /*
+     * Por vencer siempre amarillo.
+     */
+
+    .tarjeta-resumen.vencer
+    .tarjeta-icono {
+      color: #ca8a04 !important;
+      background: #fefce8 !important;
+    }
+
+    /*
+     * Inactivos siempre gris.
+     */
+
+    .tarjeta-resumen.inactivos
+    .tarjeta-icono {
+      color: var(--color-inactivo) !important;
+      background: var(--color-inactivo-suave) !important;
+    }
+
+    .panel-filtros {
+      padding: 11px;
+    }
+
+    .busqueda,
+    .panel-filtros select,
+    .btn-actualizar {
+      height: 42px;
+      font-size: 12px;
+    }
+
+    .busqueda > mat-icon,
+    .btn-actualizar {
+      color: var(--color-primario);
+    }
+
+    .filtros-rapidos {
+      margin: 10px 0 13px;
+
+      button {
+        min-height: 32px;
+        color: var(--color-texto-secundario);
+        font-size: 11px;
+
+        &.activo {
+          border-color: #c4b5fd;
+          color: var(--color-primario-oscuro);
+          background: var(--color-primario-suave);
+        }
+      }
+    }
+
+    .tabla-header,
+    .panel-alertas-header {
+      min-height: 60px;
+
+      h2 {
+        color: var(--color-texto);
+        font-size: 16px;
+      }
+
+      p {
+        color: var(--color-texto-secundario);
+        font-size: 11px;
+      }
+    }
+
+    table {
+      th {
+        color: var(--color-texto-secundario);
+        background: var(--superficie-alternativa);
+        font-size: 11px;
+      }
+
+      td {
+        color: #334155;
+        font-size: 13px;
+      }
+    }
+
+    .producto-info strong,
+    .alerta-encabezado h3 {
+      font-size: 13px;
+    }
+
+    .producto-info small,
+    .alerta-codigo,
+    .alerta-mensaje,
+    .alerta-datos small,
+    .alerta-datos strong {
+      font-size: 11px;
+    }
+  }
+
+  /* ========================================================
+     VENTAS
+  ======================================================== */
+
+  .ventas-container {
+    padding: 18px 24px 28px;
+
+    .resumen-cabecera {
+      min-height: 42px;
+      color: var(--color-dinero);
+
+      mat-icon {
+        color: var(--color-dinero);
+      }
+    }
+
+    .pestanas-ventas {
+      margin-top: 0;
+      margin-bottom: 12px;
+      border-color: var(--color-borde);
+
+      button {
+        min-height: 39px;
+        color: var(--color-texto-secundario);
+        font-size: 12px;
+
+        &.activa {
+          color: #ffffff;
+          background: var(--degradado-principal);
+        }
+      }
+    }
+
+    .panel {
+      padding: 15px;
+    }
+
+    .cabecera-panel {
+      h2 {
+        color: var(--color-texto);
+        font-size: 18px;
+      }
+
+      span {
+        color: var(--color-texto-secundario);
+        font-size: 12px;
+      }
+    }
+
+    /*
+     * Producto mantiene el mismo color
+     * utilizado en Inventario y Reportes.
+     */
+
+    .producto-tabla
+    .icono-producto {
+      color: var(--color-producto) !important;
+      background: var(--color-producto-suave) !important;
+    }
+
+    .datos-producto strong,
+    .precio-producto,
+    .subtotal-producto,
+    .tabla td {
+      font-size: 13px;
+    }
+
+    .datos-producto span,
+    .datos-producto small,
+    .tabla th {
+      font-size: 11px;
+    }
+
+    .tabla th {
+      color: var(--color-texto-secundario);
+      background: var(--superficie-alternativa);
+    }
+
+    .total-cobro {
+      border-color: #d9ccff;
+      background: #faf8ff;
+
+      span {
+        font-size: 12px;
+      }
+
+      strong {
+        color: var(--color-dinero);
+        font-size: 27px;
+      }
+    }
+
+    .seccion-cobro > label {
+      font-size: 12px;
+    }
+
+    .opcion-comprobante {
+      min-height: 42px;
+      font-size: 11px;
+
+      &.seleccionado {
+        border-color: #a78bfa;
+        color: var(--color-primario-oscuro);
+        background: var(--color-primario-suave);
+      }
+    }
+
+    .cliente-publico mat-icon {
+      color: var(--color-usuario);
+    }
+
+    .cliente-publico span,
+    .resultado-documento span,
+    .estado-documento,
+    .estado-impresora span,
+    .estado-impresora small {
+      font-size: 11px;
+    }
+
+    .cliente-publico strong,
+    .resultado-documento strong,
+    .estado-impresora strong {
+      font-size: 13px;
+    }
+
+    .boton-registrar,
+    .boton-agregar,
+    .boton-buscar-venta {
+      background: var(--degradado-principal) !important;
+    }
+  }
+
+  /* ========================================================
+     CATEGORIAS
+  ======================================================== */
+
+  .pagina-categorias {
+    padding: 18px 24px 32px;
+
+    .btn-principal {
+      min-height: 42px;
+      background: var(--degradado-principal);
+      font-size: 13px;
+    }
+
+    .tarjetas-resumen {
+      gap: 10px;
+      margin-bottom: 13px;
+    }
+
+    .tarjeta {
+      min-height: 70px;
+      padding: 11px 13px;
+
+      .icono {
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+      }
+
+      strong {
+        color: var(--color-texto);
+        font-size: 20px;
+      }
+
+      small {
+        color: var(--color-texto-secundario);
+        font-size: 11px;
+      }
+
+      /*
+       * Categorías siempre morado.
+       */
+
+      &.total
+      .icono {
+        color: var(--color-categoria) !important;
+        background: var(--color-categoria-suave) !important;
+      }
+
+      /*
+       * Activo siempre verde.
+       */
+
+      &.activas
+      .icono {
+        color: var(--color-correcto) !important;
+        background: var(--color-correcto-suave) !important;
+      }
+
+      /*
+       * Inactivo siempre gris.
+       */
+
+      &.inactivas
+      .icono {
+        color: var(--color-inactivo) !important;
+        background: var(--color-inactivo-suave) !important;
+      }
+
+      /*
+       * Productos siempre rosado.
+       */
+
+      &.productos
+      .icono {
+        color: var(--color-producto) !important;
+        background: var(--color-producto-suave) !important;
+      }
+    }
+
+    .categoria-icono {
+      color: var(--color-categoria) !important;
+      background: var(--color-categoria-suave) !important;
+    }
+
+    .panel-filtros {
+      padding: 11px;
+    }
+
+    .busqueda,
+    .panel-filtros select,
+    .btn-secundario {
+      height: 42px;
+      font-size: 12px;
+    }
+
+    .panel-cabecera {
+      min-height: 60px;
+
+      h2 {
+        color: var(--color-texto);
+        font-size: 16px;
+      }
+
+      p {
+        color: var(--color-texto-secundario);
+        font-size: 11px;
+      }
+    }
+
+    table {
+      th {
+        color: var(--color-texto-secundario);
+        background: var(--superficie-alternativa);
+        font-size: 11px;
+      }
+
+      td {
+        color: #334155;
+        font-size: 13px;
+      }
+    }
+
+    .categoria-identidad strong {
+      font-size: 13px;
+    }
+
+    .categoria-identidad small,
+    .descripcion,
+    .fecha {
+      font-size: 11px;
+    }
+
+    .cantidad-productos mat-icon {
+      color: var(--color-producto);
+    }
+
+    .accion {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+    }
+  }
+
+  /* ========================================================
+     REPORTES
+  ======================================================== */
+
+  .contenedor-reportes {
+    padding: 18px 24px 30px;
+
+    > .cabecera {
+      min-height: auto;
+      margin-bottom: 12px;
+    }
+
+    .mat-mdc-tab-header {
+      margin-bottom: 14px;
+    }
+
+    .mat-mdc-tab {
+      min-width: 124px;
+      height: 42px;
+
+      .mdc-tab__text-label {
+        font-size: 12px;
+      }
+    }
+
+    .cabecera-diario,
+    .cabecera-semanal,
+    .cabecera-mensual {
+      margin-bottom: 13px;
+
+      h2 {
+        color: var(--color-texto);
+        font-size: 20px;
+      }
+
+      p {
+        color: var(--color-texto-secundario);
+        font-size: 13px;
+      }
+    }
+
+    .selector-fecha,
+    .selector-mes {
+      label {
+        font-size: 12px;
+      }
+
+      input {
+        height: 42px;
+        font-size: 13px;
+      }
+    }
+
+    .grid-resumen {
+      gap: 11px;
+    }
+
+    .tarjeta-resumen {
+      mat-card-content {
+        min-height: 92px;
+        padding: 14px;
+        gap: 11px;
+      }
+
+      .icono-resumen {
+        width: 40px;
+        height: 40px;
+        flex-basis: 40px;
+        border-radius: 11px;
+      }
+
+      .etiqueta {
+        color: var(--color-texto-secundario);
+        font-size: 11px;
+      }
+
+      strong {
+        color: var(--color-texto);
+        font-size: 19px;
+      }
+    }
+
+    /*
+     * Total vendido: morado.
+     */
+
+    .grid-resumen
+    .tarjeta-resumen:nth-child(1)
+    .icono-resumen {
+      color: var(--color-dinero) !important;
+      background: var(--color-dinero-suave) !important;
+    }
+
+    /*
+     * Costo: naranja.
+     */
+
+    .grid-resumen
+    .tarjeta-resumen:nth-child(2)
+    .icono-resumen {
+      color: var(--color-advertencia) !important;
+      background: var(--color-advertencia-suave) !important;
+    }
+
+    /*
+     * Ganancia: verde.
+     */
+
+    .grid-resumen
+    .tarjeta-resumen:nth-child(3)
+    .icono-resumen {
+      color: var(--color-correcto) !important;
+      background: var(--color-correcto-suave) !important;
+    }
+
+    /*
+     * Ventas: azul.
+     */
+
+    .grid-resumen
+    .tarjeta-resumen:nth-child(4)
+    .icono-resumen {
+      color: var(--color-venta) !important;
+      background: var(--color-venta-suave) !important;
+    }
+
+    /*
+     * Productos: rosado.
+     */
+
+    .grid-resumen
+    .tarjeta-resumen:nth-child(5)
+    .icono-resumen {
+      color: var(--color-producto) !important;
+      background: var(--color-producto-suave) !important;
+    }
+
+    /*
+     * Ticket promedio: violeta.
+     */
+
+    .grid-resumen
+    .tarjeta-resumen:nth-child(6)
+    .icono-resumen {
+      color: var(--color-usuario) !important;
+      background: var(--color-usuario-suave) !important;
+    }
+
+    .tarjeta-meta,
+    .tarjeta-producto,
+    .tarjeta-destacada,
+    .tarjeta-seccion {
+      mat-card-title {
+        color: var(--color-texto);
+        font-size: 16px;
+      }
+
+      mat-card-subtitle {
+        color: var(--color-texto-secundario);
+        font-size: 11px;
+      }
+    }
+
+    .meta-cabecera span,
+    .producto-destacado span,
+    .destacado-contenido span,
+    .destacado-contenido small,
+    .usuario-info span {
+      font-size: 11px;
+    }
+
+    .producto-destacado strong,
+    .destacado-contenido strong {
+      font-size: 16px;
+    }
+
+    .producto-icono,
+    .destacado-icono.producto {
+      color: var(--color-producto) !important;
+      background: var(--color-producto-suave) !important;
+    }
+
+    .usuario-avatar {
+      color: var(--color-usuario) !important;
+      background: var(--color-usuario-suave) !important;
+    }
+
+    th.mat-mdc-header-cell {
+      font-size: 11px;
+    }
+
+    td.mat-mdc-cell {
+      font-size: 13px;
+    }
+
+    .estado-venta {
+      font-size: 10px;
+    }
+  }
+
+  /* ========================================================
+     GRAFICO COMPARTIDO
+  ======================================================== */
+
+  .grafico-ventas {
+    .cabecera-grafico {
+      h3 {
+        color: var(--color-texto);
+        font-size: 16px;
+      }
+
+      p {
+        color: var(--color-texto-secundario);
+        font-size: 11px;
+      }
+    }
+
+    .resumen-mayor {
+      span {
+        color: var(--color-texto-secundario);
+        font-size: 11px;
+      }
+
+      strong {
+        color: var(--color-primario-oscuro);
+        font-size: 13px;
+      }
+    }
+
+    .texto-guia,
+    .texto-eje-x {
+      font-size: 11px;
+    }
+  }
+
+  /* ========================================================
+     USUARIOS
+  ======================================================== */
+
+  .usuarios-pagina {
+    min-height: 100%;
+    padding: 18px 24px 32px;
+
+    .boton-principal {
+      min-height: 42px;
+      background: var(--degradado-principal) !important;
+      font-size: 13px;
+    }
+
+    .panel-formulario,
+    .panel-listado {
+      margin-top: 16px;
+    }
+
+    .panel-formulario {
+      padding: 20px;
+    }
+
+    .cabecera-formulario h3,
+    .cabecera-listado h3 {
+      color: var(--color-texto);
+      font-size: 17px;
+    }
+
+    .cabecera-formulario p,
+    .cabecera-listado p {
+      color: var(--color-texto-secundario);
+      font-size: 12px;
+    }
+
+    .campo {
+      label {
+        color: var(--color-texto);
+        font-size: 12px;
+      }
+
+      input {
+        height: 43px;
+        font-size: 13px;
+      }
+
+      small {
+        font-size: 11px;
+      }
+    }
+
+    .cabecera-listado {
+      padding: 17px 20px;
+    }
+
+    th {
+      color: var(--color-texto-secundario);
+      background: var(--superficie-alternativa);
+      font-size: 11px;
+    }
+
+    td {
+      color: #334155;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 14px 18px;
+    }
+
+    .avatar-lista {
+      width: 38px;
+      height: 38px;
+      background: var(--degradado-principal);
+    }
+
+    .persona strong,
+    .nombre-cuenta {
+      font-size: 13px;
+    }
+
+    .persona span:last-child,
+    .texto-protegido {
+      font-size: 11px;
+    }
+
+    .insignia {
+      min-height: 26px;
+      font-size: 11px;
+    }
+
+    .rol {
+      color: var(--color-usuario);
+      background: var(--color-usuario-suave);
+
+      &.administrador {
+        color: var(--color-primario-oscuro);
+        background: var(--color-primario-suave);
+      }
+    }
+
+    .estado {
+      color: var(--color-correcto);
+      background: var(--color-correcto-suave);
+
+      &.inactivo {
+        color: var(--color-peligro-oscuro);
+        background: var(--color-peligro-suave);
+      }
+    }
+
+    .accion {
+      width: 36px;
+      height: 36px;
+      margin-left: 4px;
+      border-radius: 9px;
+      color: var(--color-primario);
+      background: var(--color-primario-suave);
+
+      &.activar {
+        color: var(--color-correcto);
+        background: var(--color-correcto-suave);
+      }
+    }
+  }
+}
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media (max-width: 900px) {
+
+  body {
+
+    .dashboard-container,
+    .pagina-inventario,
+    .ventas-container,
+    .pagina-categorias,
+    .contenedor-reportes,
+    .usuarios-pagina {
+      padding: 16px;
+    }
+
+  }
+
+}
+
+@media (max-width: 680px) {
+
+  body {
+
+    .dashboard-container
+    .cabecera-dashboard,
+
+    .pagina-inventario
+    > .cabecera,
+
+    .ventas-container
+    > .cabecera-ventas,
+
+    .pagina-categorias
+    > .cabecera,
+
+    .usuarios-pagina
+    > .cabecera-pagina {
+      align-items: stretch;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .dashboard-container
+    .contenido-indicador
+    strong,
+
+    .contenedor-reportes
+    .tarjeta-resumen
+    strong {
+      font-size: 21px;
+    }
+
+  }
+
+}

@@ -1,12 +1,13 @@
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
+@use './styles/normalizacionModulos';
+
+/* ==========================================================
+   ANGULAR MATERIAL
+========================================================== */
 
 html {
   height: 100%;
+
   @include mat.theme(
     (
       color: (
@@ -19,63 +20,406 @@ html {
   );
 }
 
-body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
-  color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
-  margin: 0;
-  height: 100%;
-}
 /* ==========================================================
-   STOCK PEQUELANDIA
-   Sistema de Diseño Global
+   SISTEMA VISUAL GLOBAL
 ========================================================== */
 
 :root {
-  /* Colores Corporativos */
+  --color-primario: #7c3aed;
+  --color-primario-oscuro: #5b21b6;
+  --color-primario-claro: #8b5cf6;
+  --color-primario-suave: #f3efff;
 
-  --primary: #1e4ed8;
-  --secondary: #7c3aed;
+  --color-secundario: #db2777;
+  --color-secundario-oscuro: #be185d;
+  --color-secundario-suave: #fff1f7;
+
+  --degradado-principal:
+    linear-gradient(
+      135deg,
+      var(--color-primario),
+      var(--color-secundario)
+    );
+
+  /* Dinero y resultados financieros */
+
+  --color-dinero: #7c3aed;
+  --color-dinero-suave: #f3efff;
+
+  /* Ventas */
+
+  --color-venta: #2563eb;
+  --color-venta-suave: #eff6ff;
+
+  /* Productos */
+
+  --color-producto: #db2777;
+  --color-producto-suave: #fff1f7;
+
+  /* Categorías */
+
+  --color-categoria: #7c3aed;
+  --color-categoria-suave: #f3efff;
+
+  /* Usuarios */
+
+  --color-usuario: #6366f1;
+  --color-usuario-suave: #eef2ff;
+
+  /* Información */
+
+  --color-informacion: #0369a1;
+  --color-informacion-suave: #e0f2fe;
+
+  /* Estados correctos */
+
+  --color-correcto: #047857;
+  --color-correcto-suave: #ecfdf5;
+
+  /* Advertencias */
+
+  --color-advertencia: #d97706;
+  --color-advertencia-suave: #fff7ed;
+
+  /* Errores */
+
+  --color-peligro: #dc2626;
+  --color-peligro-oscuro: #b91c1c;
+  --color-peligro-suave: #fef2f2;
+
+  /* Elementos inactivos */
+
+  --color-inactivo: #64748b;
+  --color-inactivo-suave: #f1f5f9;
+
+  /* Superficies */
+
+  --fondo-aplicacion: #f5f5fd;
+
+  --superficie: #ffffff;
+  --superficie-suave: #fafafe;
+  --superficie-alternativa: #f8fafc;
+
+  /* Textos */
+
+  --color-texto: #172033;
+  --color-texto-secundario: #64748b;
+  --color-texto-suave: #8a94a6;
+
+  /* Bordes */
+
+  --color-borde: #e6e5ee;
+  --color-borde-suave: #efeff5;
+  --color-borde-campo: #dbe2ea;
+
+  /* Radios */
+
+  --radio-pequeno: 8px;
+  --radio-control: 10px;
+  --radio-tarjeta: 14px;
+  --radio-panel: 16px;
+  --radio-modal: 18px;
+  --radio-redondo: 999px;
+
+  /* Sombras */
+
+  --sombra-suave:
+    0 5px 16px
+    rgba(30, 27, 75, 0.055);
+
+  --sombra-panel:
+    0 7px 22px
+    rgba(34, 42, 72, 0.05);
+
+  --sombra-elevada:
+    0 18px 45px
+    rgba(15, 23, 42, 0.18);
+
+  /* ========================================================
+     COMPATIBILIDAD CON ESTILOS EXISTENTES
+  ======================================================== */
+
+  --primary: var(--color-primario);
+  --secondary: var(--color-secundario);
   --accent: #facc15;
 
-  --background: #f5f7fa;
-  --surface: #ffffff;
+  --background: var(--fondo-aplicacion);
+  --surface: var(--superficie);
 
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
+  --text-primary: var(--color-texto);
+  --text-secondary:
+    var(--color-texto-secundario);
 
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --danger: #ef4444;
+  --success: var(--color-correcto);
+  --warning: var(--color-advertencia);
+  --danger: var(--color-peligro);
 
-  --shadow: 0px 12px 30px rgba(0, 0, 0, 0.1);
+  --primario: var(--color-primario);
 
-  --radius: 16px;
+  --primario-oscuro:
+    var(--color-primario-oscuro);
+
+  --primario-suave:
+    var(--color-primario-suave);
+
+  --secundario:
+    var(--color-secundario);
+
+  --fondo:
+    var(--fondo-aplicacion);
+
+  --texto:
+    var(--color-texto);
+
+  --texto-secundario:
+    var(--color-texto-secundario);
+
+  --borde:
+    var(--color-borde);
+
+  --correcto:
+    var(--color-correcto);
+
+  --correcto-suave:
+    var(--color-correcto-suave);
+
+  --advertencia:
+    var(--color-advertencia);
+
+  --advertencia-suave:
+    var(--color-advertencia-suave);
+
+  --error:
+    var(--color-peligro);
+
+  --error-suave:
+    var(--color-peligro-suave);
+
+  --shadow:
+    var(--sombra-panel);
+
+  --radius:
+    var(--radio-panel);
+
+  /* Angular Material */
+
+  --mat-sys-primary:
+    var(--color-primario);
+
+  --mat-sys-on-primary:
+    #ffffff;
+
+  --mat-sys-primary-container:
+    var(--color-primario-suave);
+
+  --mat-sys-on-primary-container:
+    var(--color-primario-oscuro);
 }
 
-/* Reset */
+/* ==========================================================
+   RESET
+========================================================== */
 
-* {
-  margin: 0;
-  padding: 0;
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 html,
 body {
   width: 100%;
+  min-width: 320px;
   height: 100%;
-  font-family: Roboto, sans-serif;
+}
 
-  background: var(--background);
+body {
+  margin: 0;
+  overflow-x: hidden;
+
+  color-scheme: light;
+
+  color:
+    var(--color-texto);
+
+  background:
+    var(--fondo-aplicacion);
+
+  font-family:
+    Roboto,
+    Arial,
+    sans-serif;
+
+  font-size: 13px;
+  line-height: 1.45;
+
+  -webkit-font-smoothing:
+    antialiased;
+
+  text-rendering:
+    optimizeLegibility;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+mat-icon {
+  line-height: 1;
+}
+
+::selection {
+  color: #ffffff;
+
+  background:
+    var(--color-primario);
+}
+
+/* ==========================================================
+   BARRA DE DESPLAZAMIENTO
+========================================================== */
+
+* {
+  scrollbar-width: thin;
+
+  scrollbar-color:
+    #b9a3e9
+    #f2effa;
+}
+
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+*::-webkit-scrollbar-track {
+  border-radius:
+    var(--radio-redondo);
+
+  background:
+    #f2effa;
+}
+
+*::-webkit-scrollbar-thumb {
+  border:
+    2px solid
+    #f2effa;
+
+  border-radius:
+    var(--radio-redondo);
+
+  background:
+    #b9a3e9;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background:
+    #9d82dd;
+}
+
+/* ==========================================================
+   ANGULAR MATERIAL
+========================================================== */
+
+.mat-mdc-card {
+  --mdc-elevated-card-container-color:
+    var(--superficie);
+
+  --mdc-outlined-card-container-color:
+    var(--superficie);
+}
+
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-unelevated-button,
+.mat-mdc-outlined-button {
+  letter-spacing: normal;
+}
+
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-color:
+    #27233f;
+
+  --mdc-snackbar-supporting-text-color:
+    #ffffff;
+
+  --mat-snack-bar-button-color:
+    #d8c9ff;
+}
+
+/* ==========================================================
+   NOTIFICACIONES DE VENTAS
+========================================================== */
+
+.mat-mdc-snack-bar-container
+.notificacion-sistema {
+  --mdc-snackbar-container-color:
+    #ffffff;
+
+  --mdc-snackbar-supporting-text-color:
+    var(--color-texto);
+}
+
+.mat-mdc-snack-bar-container
+.notificacion-sistema {
+  margin: 16px !important;
+
+  border:
+    1px solid
+    var(--color-borde);
+
+  border-left:
+    4px solid
+    var(--color-primario);
+
+  border-radius:
+    12px !important;
+
+  box-shadow:
+    var(--sombra-elevada) !important;
+}
+
+.notificacion-sistema
+.mat-mdc-snack-bar-label {
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.notificacion-sistema
+.mat-mdc-button {
+  color:
+    var(--color-primario) !important;
+
+  font-weight: 800;
+}
+
+.notificacion-exito {
+  border-left-color:
+    var(--color-correcto) !important;
+}
+
+.notificacion-advertencia {
+  border-left-color:
+    var(--color-advertencia) !important;
+}
+
+.notificacion-error {
+  border-left-color:
+    var(--color-peligro) !important;
 }
