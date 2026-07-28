@@ -1,7 +1,777 @@
-<div class="dashboard">
+<div class="dashboard-container">
 
-    <h1>Dashboard</h1>
+  <header class="cabecera-dashboard">
 
-    <p>Bienvenido al sistema de Stock Pequelandia.</p>
+    <div>
+
+      <span class="saludo">
+        Buen día, {{ nombreUsuario }}
+      </span>
+
+      <h1>
+        Dashboard
+      </h1>
+
+      <p>
+        Resumen de las operaciones del negocio.
+      </p>
+
+    </div>
+
+    <div class="actualizacion-dashboard">
+
+      <div
+        class="texto-actualizacion"
+        *ngIf="ultimaActualizacion">
+
+        <span>
+          Actualización automática
+        </span>
+
+        <strong>
+          {{ ultimaActualizacionTexto }}
+        </strong>
+
+      </div>
+
+      <button
+        type="button"
+        mat-icon-button
+        class="boton-actualizar"
+        title="Actualizar dashboard"
+        [disabled]="
+          cargando
+          || actualizando
+        "
+        (click)="actualizarDashboard()">
+
+        <mat-icon
+          [class.icono-girando]="actualizando">
+
+          refresh
+
+        </mat-icon>
+
+      </button>
+
+    </div>
+
+  </header>
+
+  <div
+    class="estado-carga"
+    *ngIf="
+      cargando
+      && !dashboard
+    ">
+
+    <mat-spinner diameter="46">
+    </mat-spinner>
+
+    <span>
+      Cargando resumen...
+    </span>
+
+  </div>
+
+  <div
+    class="estado-error"
+    *ngIf="
+      mensajeError
+      && !dashboard
+      && !cargando
+    ">
+
+    <mat-icon>
+      cloud_off
+    </mat-icon>
+
+    <h2>
+      No se pudo cargar el Dashboard
+    </h2>
+
+    <p>
+      {{ mensajeError }}
+    </p>
+
+    <button
+      type="button"
+      mat-flat-button
+      (click)="actualizarDashboard()">
+
+      <mat-icon>refresh</mat-icon>
+      Reintentar
+
+    </button>
+
+  </div>
+
+  <ng-container *ngIf="dashboard as datos">
+
+    <section class="grid-indicadores">
+
+      <mat-card class="tarjeta-indicador">
+
+        <mat-card-content>
+
+          <div class="icono-indicador ventas">
+
+            <mat-icon>
+              trending_up
+            </mat-icon>
+
+          </div>
+
+          <div class="contenido-indicador">
+
+            <span>
+              Total vendido hoy
+            </span>
+
+            <strong>
+              S/
+              {{
+                datos.resumen
+                  .total_vendido_hoy
+                  | number:'1.2-2'
+              }}
+            </strong>
+
+            <small>
+              Sin incluir ventas anuladas
+            </small>
+
+          </div>
+
+        </mat-card-content>
+
+      </mat-card>
+
+      <mat-card class="tarjeta-indicador">
+
+        <mat-card-content>
+
+          <div class="icono-indicador comprobantes">
+
+            <mat-icon>
+              receipt_long
+            </mat-icon>
+
+          </div>
+
+          <div class="contenido-indicador">
+
+            <span>
+              Ventas realizadas
+            </span>
+
+            <strong>
+              {{
+                datos.resumen
+                  .ventas_realizadas_hoy
+              }}
+            </strong>
+
+            <small>
+              Registradas durante el día
+            </small>
+
+          </div>
+
+        </mat-card-content>
+
+      </mat-card>
+
+      <mat-card class="tarjeta-indicador">
+
+        <mat-card-content>
+
+          <div class="icono-indicador productos">
+
+            <mat-icon>
+              inventory_2
+            </mat-icon>
+
+          </div>
+
+          <div class="contenido-indicador">
+
+            <span>
+              Productos vendidos
+            </span>
+
+            <strong>
+              {{
+                datos.resumen
+                  .productos_vendidos_hoy
+              }}
+            </strong>
+
+            <small>
+              Unidades vendidas hoy
+            </small>
+
+          </div>
+
+        </mat-card-content>
+
+      </mat-card>
+
+      <mat-card
+        class="tarjeta-indicador interactiva"
+        (click)="irA('/inventario')">
+
+        <mat-card-content>
+
+          <div class="icono-indicador stock">
+
+            <mat-icon>
+              warning_amber
+            </mat-icon>
+
+          </div>
+
+          <div class="contenido-indicador">
+
+            <span>
+              Alertas de stock
+            </span>
+
+            <strong>
+              {{
+                datos.resumen
+                  .alertas_stock
+              }}
+            </strong>
+
+            <small>
+              {{
+                datos.resumen
+                  .productos_stock_bajo
+              }}
+              bajos ·
+              {{
+                datos.resumen
+                  .productos_agotados
+              }}
+              agotados
+            </small>
+
+          </div>
+
+          <mat-icon class="flecha-indicador">
+            arrow_forward
+          </mat-icon>
+
+        </mat-card-content>
+
+      </mat-card>
+
+    </section>
+
+    <section class="grid-meta-accesos">
+
+      <mat-card class="tarjeta-meta">
+
+        <mat-card-content>
+
+          <header class="cabecera-seccion">
+
+            <div>
+
+              <span class="etiqueta-superior">
+                Rendimiento del día
+              </span>
+
+              <h2>
+                Meta diaria
+              </h2>
+
+            </div>
+
+            <div
+              class="estado-meta"
+              [class.cumplida]="
+                datos.meta_diaria
+                  .cumplida
+              ">
+
+              <mat-icon>
+                {{
+                  datos.meta_diaria
+                    .cumplida
+                    ? 'check_circle'
+                    : 'schedule'
+                }}
+              </mat-icon>
+
+              <span>
+                {{
+                  datos.meta_diaria
+                    .cumplida
+                    ? 'Cumplida'
+                    : 'En progreso'
+                }}
+              </span>
+
+            </div>
+
+          </header>
+
+          <div class="valores-meta">
+
+            <div>
+
+              <span>
+                Vendido hasta ahora
+              </span>
+
+              <strong>
+                S/
+                {{
+                  datos.meta_diaria
+                    .vendido_hoy
+                    | number:'1.2-2'
+                }}
+              </strong>
+
+            </div>
+
+            <div class="meta-establecida">
+
+              <span>
+                Meta establecida
+              </span>
+
+              <strong>
+                S/
+                {{
+                  datos.meta_diaria
+                    .meta
+                    | number:'1.2-2'
+                }}
+              </strong>
+
+            </div>
+
+            <div class="porcentaje-meta">
+
+              <strong>
+                {{
+                  datos.meta_diaria
+                    .porcentaje
+                    | number:'1.0-2'
+                }}
+                %
+              </strong>
+
+              <span>
+                de cumplimiento
+              </span>
+
+            </div>
+
+          </div>
+
+          <div class="barra-meta">
+
+            <div
+              class="progreso-meta"
+              [style.width.%]="
+                porcentajeMetaVisual
+              ">
+            </div>
+
+          </div>
+
+        </mat-card-content>
+
+      </mat-card>
+
+      <mat-card class="tarjeta-accesos">
+
+        <mat-card-content>
+
+          <header class="cabecera-seccion">
+
+            <div>
+
+              <span class="etiqueta-superior">
+                Navegación
+              </span>
+
+              <h2>
+                Accesos rápidos
+              </h2>
+
+            </div>
+
+          </header>
+
+          <div class="lista-accesos">
+
+            <button
+              type="button"
+              class="acceso-rapido"
+              *ngFor="
+                let acceso
+                of accesosVisibles
+              "
+              (click)="irA(acceso.ruta)">
+
+              <span class="icono-acceso">
+
+                <mat-icon>
+                  {{ acceso.icono }}
+                </mat-icon>
+
+              </span>
+
+              <span class="texto-acceso">
+
+                <strong>
+                  {{ acceso.titulo }}
+                </strong>
+
+                <small>
+                  {{ acceso.descripcion }}
+                </small>
+
+              </span>
+
+              <mat-icon class="flecha-acceso">
+                chevron_right
+              </mat-icon>
+
+            </button>
+
+          </div>
+
+        </mat-card-content>
+
+      </mat-card>
+
+    </section>
+
+    <section class="grid-grafico-stock">
+
+      <mat-card class="tarjeta-grafico">
+
+        <mat-card-content>
+
+          <header class="cabecera-seccion">
+
+            <div>
+
+              <span class="etiqueta-superior">
+                {{ rangoSemanaTexto }}
+              </span>
+
+              <h2>
+                Rendimiento semanal
+              </h2>
+
+              <p>
+                Ventas registradas de lunes
+                a domingo.
+              </p>
+
+            </div>
+
+            <button
+              type="button"
+              class="enlace-seccion"
+              *ngIf="esAdministrador"
+              (click)="irA('/reportes')">
+
+              Ver reportes
+
+              <mat-icon>
+                arrow_forward
+              </mat-icon>
+
+            </button>
+
+          </header>
+
+          <div class="grafico-dashboard">
+
+            <app-grafico-ventas
+              titulo=""
+              subtitulo=""
+              [datos]="datosGrafico">
+            </app-grafico-ventas>
+
+          </div>
+
+        </mat-card-content>
+
+      </mat-card>
+
+      <mat-card class="tarjeta-stock">
+
+        <mat-card-content>
+
+          <header class="cabecera-seccion">
+
+            <div>
+
+              <span class="etiqueta-superior">
+                Inventario
+              </span>
+
+              <h2>
+                Stock crítico
+              </h2>
+
+              <p>
+                Productos que necesitan atención.
+              </p>
+
+            </div>
+
+            <button
+              type="button"
+              class="enlace-seccion"
+              (click)="irA('/inventario')">
+
+              Ver inventario
+
+              <mat-icon>
+                arrow_forward
+              </mat-icon>
+
+            </button>
+
+          </header>
+
+          <div
+            class="lista-stock"
+            *ngIf="
+              datos.stock_critico.length > 0;
+              else sinStockCritico
+            ">
+
+            <button
+              type="button"
+              class="producto-stock"
+              *ngFor="
+                let producto
+                of datos.stock_critico
+              "
+              (click)="irA('/inventario')">
+
+              <div class="datos-stock">
+
+                <strong>
+                  {{ producto.nombre_producto }}
+                </strong>
+
+                <span>
+                  {{ producto.codigo_producto }}
+                </span>
+
+              </div>
+
+              <div
+                class="cantidad-stock"
+                [ngClass]="
+                  obtenerClaseStock(
+                    producto
+                  )
+                ">
+
+                {{
+                  obtenerTextoStock(
+                    producto
+                  )
+                }}
+
+              </div>
+
+              <div class="barra-stock">
+
+                <div
+                  class="progreso-stock"
+                  [class.agotado]="
+                    producto.estado_stock
+                    === 'AGOTADO'
+                  "
+                  [style.width.%]="
+                    producto.porcentaje_stock
+                  ">
+                </div>
+
+              </div>
+
+            </button>
+
+          </div>
+
+          <ng-template #sinStockCritico>
+
+            <div class="estado-vacio compacto">
+
+              <mat-icon>
+                check_circle
+              </mat-icon>
+
+              <strong>
+                Inventario estable
+              </strong>
+
+              <span>
+                No hay productos con stock crítico.
+              </span>
+
+            </div>
+
+          </ng-template>
+
+        </mat-card-content>
+
+      </mat-card>
+
+    </section>
+
+    <mat-card class="tarjeta-ultimas-ventas">
+
+      <mat-card-content>
+
+        <header class="cabecera-seccion">
+
+          <div>
+
+            <span class="etiqueta-superior">
+              {{
+                esAdministrador
+                  ? 'Movimientos del negocio'
+                  : 'Movimientos registrados por ti'
+              }}
+            </span>
+
+            <h2>
+              Últimas ventas
+            </h2>
+
+          </div>
+
+          <button
+            type="button"
+            class="enlace-seccion"
+            (click)="irA('/ventas')">
+
+            Ir a ventas
+
+            <mat-icon>
+              arrow_forward
+            </mat-icon>
+
+          </button>
+
+        </header>
+
+        <div
+          class="tabla-ventas"
+          *ngIf="
+            datos.ultimas_ventas.length > 0;
+            else sinUltimasVentas
+          ">
+
+          <div class="fila-venta cabecera-tabla">
+
+            <span>Hora</span>
+            <span>Venta</span>
+            <span>Productos</span>
+            <span>Usuario</span>
+            <span>Estado</span>
+            <span>Total</span>
+
+          </div>
+
+          <div
+            class="fila-venta"
+            [class.anulada]="venta.anulada"
+            *ngFor="
+              let venta
+              of datos.ultimas_ventas
+            ">
+
+            <span class="hora-venta">
+              {{ venta.hora }}
+            </span>
+
+            <strong class="numero-venta">
+              {{ venta.numero_venta }}
+            </strong>
+
+            <span class="productos-venta">
+              {{ venta.productos }}
+            </span>
+
+            <span class="usuario-venta">
+              {{ venta.usuario }}
+            </span>
+
+            <span
+              class="estado-venta"
+              [class.estado-anulado]="
+                venta.anulada
+              ">
+
+              {{ venta.estado }}
+
+            </span>
+
+            <strong
+              class="total-venta"
+              *ngIf="!venta.anulada">
+
+              S/
+              {{
+                venta.total
+                  | number:'1.2-2'
+              }}
+
+            </strong>
+
+            <span
+              class="venta-no-contabilizada"
+              *ngIf="venta.anulada">
+
+              No contabilizada
+
+            </span>
+
+          </div>
+
+        </div>
+
+        <ng-template #sinUltimasVentas>
+
+          <div class="estado-vacio">
+
+            <mat-icon>
+              receipt_long
+            </mat-icon>
+
+            <strong>
+              Sin ventas registradas
+            </strong>
+
+            <span>
+              Las ventas realizadas hoy
+              aparecerán en esta sección.
+            </span>
+
+          </div>
+
+        </ng-template>
+
+      </mat-card-content>
+
+    </mat-card>
+
+  </ng-container>
 
 </div>

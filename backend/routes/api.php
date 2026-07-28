@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ConsultaDocumentoController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\UsuarioController;
@@ -48,6 +49,17 @@ Route::middleware('auth:sanctum')
         Route::put(
             '/perfil/password',
             [AuthController::class, 'cambiarPassword']
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Dashboard
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/dashboard',
+            [DashboardController::class, 'index']
         );
 
         /*
