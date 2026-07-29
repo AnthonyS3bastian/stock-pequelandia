@@ -1,5 +1,4 @@
 import {
-  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
@@ -18,12 +17,12 @@ import {
 } from '@angular/forms';
 
 import {
-  MatButtonModule
-} from '@angular/material/button';
-
-import {
   MatIconModule
 } from '@angular/material/icon';
+
+import {
+  MatButtonModule
+} from '@angular/material/button';
 
 import {
   Producto
@@ -38,15 +37,10 @@ import {
   ImpresoraBluetoothService
 } from '../../services/impresora-bluetooth';
 
-type TamanoEtiqueta =
-  | '50x30'
-  | '60x40';
-
 type TipoMensaje =
   | 'exito'
   | 'error'
-  | 'informacion'
-  | null;
+  | 'informacion';
 
 @Component({
   selector: 'app-etiqueta-producto',
@@ -54,8 +48,8 @@ type TipoMensaje =
   imports: [
     CommonModule,
     FormsModule,
-    MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    MatButtonModule
   ],
   templateUrl: './etiqueta-producto.html',
   styleUrl: './etiqueta-producto.scss'
@@ -69,9 +63,6 @@ implements OnChanges {
   private readonly impresoraBluetooth =
     inject(ImpresoraBluetoothService);
 
-  private readonly cdr =
-    inject(ChangeDetectorRef);
-
   @Input({
     required: true
   })
@@ -84,10 +75,17 @@ implements OnChanges {
   readonly nombreNegocio =
     'Pequelandia A & A';
 
-  tamanoEtiqueta:
-    TamanoEtiqueta = '50x30';
+  readonly anchoRolloMm =
+    57;
 
-  numeroCopias = 1;
+  readonly altoEtiquetaAproximadoMm =
+    30;
+
+  readonly maximoEtiquetas =
+    10;
+
+  numeroCopias =
+    1;
 
   codigoBarras:
     CodigoBarrasGenerado = {
@@ -98,23 +96,34 @@ implements OnChanges {
       mensaje: null
     };
 
-  conectandoBluetooth = false;
-
-  imprimiendoBluetooth = false;
-
-  mensajeEstado = '';
+  mensajeEstado =
+    '';
 
   tipoMensaje:
-    TipoMensaje = null;
+    TipoMensaje =
+      'informacion';
+
+  conectandoBluetooth =
+    false;
+
+  imprimiendoBluetooth =
+    false;
 
   ngOnChanges(
     cambios: SimpleChanges
   ): void {
-
     if (
       cambios['producto']
       && this.producto
     ) {
+      this.numeroCopias =
+        1;
+
+      this.mensajeEstado =
+        '';
+
+      this.tipoMensaje =
+        'informacion';
 
       this.codigoBarras =
         this.codigoBarrasService
@@ -122,102 +131,82 @@ implements OnChanges {
             this.producto
               .codigo_producto
           );
-
-      this.limpiarMensaje();
-
     }
-
   }
 
-  get anchoEtiquetaMm(): number {
-
-    return this.tamanoEtiqueta
-      === '60x40'
-      ? 60
-      : 50;
-
-  }
-
-  get altoEtiquetaMm(): number {
-
-    return this.tamanoEtiqueta
-      === '60x40'
-      ? 40
-      : 30;
-
-  }
-
-  get bluetoothCompatible(): boolean {
-
+  get bluetoothCompatible():
+    boolean {
     return this.impresoraBluetooth
       .esCompatible();
-
   }
 
-  get bluetoothConectado(): boolean {
-
+  get bluetoothConectado():
+    boolean {
     return this.impresoraBluetooth
       .estaConectada();
-
   }
 
   get nombreImpresoraBluetooth():
     string {
-
     return this.impresoraBluetooth
       .obtenerNombre();
-
   }
 
-  get textoBotonImprimir(): string {
-
-    if (
-      this.conectandoBluetooth
-    ) {
-
-      return 'Conectando...';
-
-    }
-
-    if (
-      this.imprimiendoBluetooth
-    ) {
-
-      return 'Imprimiendo...';
-
-    }
-
-    return this.bluetoothConectado
-      ? 'Imprimir etiqueta'
-      : 'Conectar e imprimir';
-
-  }
-
-  get operacionEnCurso(): boolean {
-
+  get operacionEnCurso():
+    boolean {
     return (
       this.conectandoBluetooth
       || this.imprimiendoBluetooth
     );
+  }
 
+  get textoBotonImprimir():
+    string {
+    if (this.imprimiendoBluetooth) {
+      return 'Imprimiendo...';
+    }
+
+    if (this.numeroCopias === 1) {
+      return 'Imprimir etiqueta';
+    }
+
+    return `Imprimir ${this.numeroCopias} etiquetas`;
   }
 
   cerrarVista(): void {
-
-    if (
-      this.operacionEnCurso
-    ) {
-
+    if (this.operacionEnCurso) {
       return;
-
     }
 
     this.cerrar.emit();
+  }
 
+  aumentarCopias(): void {
+    if (
+      this.operacionEnCurso
+      || this.numeroCopias
+        >= this.maximoEtiquetas
+    ) {
+      return;
+    }
+
+    this.numeroCopias +=
+      1;
+  }
+
+  disminuirCopias(): void {
+    if (
+      this.operacionEnCurso
+      || this.numeroCopias <= 1
+    ) {
+      return;
+    }
+
+    this.numeroCopias -=
+      1;
   }
 
   limitarCopias(): void {
-
     const cantidad =
       Math.trunc(
         Number(
@@ -226,15 +215,13 @@ implements OnChanges {
       );
 
     if (
-      Number.isNaN(
-        cantidad
-      )
+      Number.isNaN(cantidad)
+      || !Number.isFinite(cantidad)
     ) {
-
-      this.numeroCopias = 1;
+      this.numeroCopias =
+        1;
 
       return;
-
     }
 
     this.numeroCopias =
@@ -243,235 +230,214 @@ implements OnChanges {
           cantidad,
           1
         ),
-        100
+        this.maximoEtiquetas
       );
-
   }
 
   async conectarBluetooth():
     Promise<void> {
-
     if (
-      this.operacionEnCurso
-      || this.bluetoothConectado
+      this.conectandoBluetooth
+      || this.imprimiendoBluetooth
     ) {
-
       return;
-
     }
 
-    this.limpiarMensaje();
+    if (!this.bluetoothCompatible) {
+      this.establecerMensaje(
+        'Este navegador no permite Web Bluetooth. Utilice Google Chrome o Microsoft Edge.',
+        'error'
+      );
+
+      return;
+    }
+
+    this.mensajeEstado =
+      '';
 
     this.conectandoBluetooth =
       true;
 
-    this.forzarActualizacion();
-
     try {
-
       const nombre =
         await this
           .impresoraBluetooth
           .conectar();
 
-      this.mostrarMensaje(
+      this.establecerMensaje(
         `${nombre} conectada correctamente.`,
         'exito'
       );
-
     } catch (error) {
-
-      this.mostrarMensaje(
+      this.establecerMensaje(
         this.obtenerMensajeError(
           error,
-          'No se pudo conectar la impresora.'
+          'No se pudo conectar la impresora Bluetooth.'
         ),
         'error'
       );
-
     } finally {
-
       this.conectandoBluetooth =
         false;
-
-      this.forzarActualizacion();
-
     }
-
   }
 
-  desconectarBluetooth(): void {
-
-    if (
-      this.operacionEnCurso
-    ) {
-
+  desconectarBluetooth():
+    void {
+    if (this.operacionEnCurso) {
       return;
-
     }
 
     this.impresoraBluetooth
       .desconectar();
 
-    this.mostrarMensaje(
-      'Impresora desconectada.',
+    this.establecerMensaje(
+      'Impresora Bluetooth desconectada.',
       'informacion'
     );
-
-    this.forzarActualizacion();
-
   }
 
   async imprimirBluetoothDirecto():
     Promise<void> {
-
     if (
-      this.operacionEnCurso
-      || !this.codigoBarras.valido
-      || !this.bluetoothCompatible
+      this.imprimiendoBluetooth
+      || this.conectandoBluetooth
     ) {
-
       return;
-
     }
 
     this.limitarCopias();
 
-    this.limpiarMensaje();
+    if (!this.codigoBarras.valido) {
+      this.establecerMensaje(
+        this.codigoBarras.mensaje
+        ?? 'No se pudo generar el código de barras.',
+        'error'
+      );
+
+      return;
+    }
+
+    if (!this.bluetoothCompatible) {
+      this.establecerMensaje(
+        'Este navegador no permite Web Bluetooth. Utilice Google Chrome o Microsoft Edge.',
+        'error'
+      );
+
+      return;
+    }
+
+    this.imprimiendoBluetooth =
+      true;
+
+    this.establecerMensaje(
+      this.numeroCopias === 1
+        ? 'Preparando etiqueta...'
+        : `Preparando ${this.numeroCopias} etiquetas...`,
+      'informacion'
+    );
 
     try {
-
-      if (
-        !this.bluetoothConectado
-      ) {
-
-        this.conectandoBluetooth =
-          true;
-
-        this.forzarActualizacion();
-
+      if (!this.bluetoothConectado) {
         await this
           .impresoraBluetooth
           .conectar();
-
-        this.conectandoBluetooth =
-          false;
-
-        this.forzarActualizacion();
-
       }
 
-      this.imprimiendoBluetooth =
-        true;
-
-      this.mostrarMensaje(
-        this.numeroCopias === 1
-          ? 'Preparando la etiqueta...'
-          : `Preparando ${this.numeroCopias} etiquetas...`,
-        'informacion'
-      );
-
-      this.forzarActualizacion();
-
-      await this
-        .esperarRenderizado();
-
+      /*
+       * Se crea un único lienzo vertical
+       * con todas las etiquetas.
+       *
+       * Esto evita enviar el mismo trabajo
+       * varias veces y evita que las
+       * impresiones se superpongan.
+       */
       const canvas =
-        this
-          .crearCanvasEtiquetaCompacta();
+        this.crearCanvasEtiquetas(
+          this.numeroCopias
+        );
 
       await this
         .impresoraBluetooth
         .imprimirCanvas(
           canvas,
-          this.numeroCopias
+          1,
+          porcentaje => {
+            this.establecerMensaje(
+              `Enviando etiquetas... ${porcentaje}%`,
+              'informacion'
+            );
+          }
         );
 
-      this.mostrarMensaje(
+      this.establecerMensaje(
         this.numeroCopias === 1
           ? 'Etiqueta impresa correctamente.'
           : `${this.numeroCopias} etiquetas impresas correctamente.`,
         'exito'
       );
-
     } catch (error) {
-
-      this.mostrarMensaje(
+      this.establecerMensaje(
         this.obtenerMensajeError(
           error,
           'No se pudo imprimir la etiqueta.'
         ),
         'error'
       );
-
     } finally {
-
-      this.conectandoBluetooth =
-        false;
-
       this.imprimiendoBluetooth =
         false;
-
-      this.forzarActualizacion();
-
     }
-
   }
 
   formatearPrecio(
     valor: number
   ): string {
-
-    return new Intl.NumberFormat(
-      'es-PE',
-      {
-        style: 'currency',
-        currency: 'PEN',
-        minimumFractionDigits: 2
-      }
-    ).format(
+    return `S/ ${
       Number(
         valor ?? 0
-      )
-    );
-
+      ).toFixed(2)
+    }`;
   }
 
-  private crearCanvasEtiquetaCompacta():
-    HTMLCanvasElement {
-
-    const anchoPapel = 384;
-
-    const esEtiquetaGrande =
-      this.tamanoEtiqueta
-      === '60x40';
-
+  private crearCanvasEtiquetas(
+    cantidad: number
+  ): HTMLCanvasElement {
     /*
-     * Altura enviada a la
-     * impresora térmica.
+     * La impresora utiliza un ancho
+     * imprimible de 384 píxeles.
+     *
+     * Cada etiqueta ocupa una sección
+     * vertical completa del papel.
+     *
+     * Entre etiquetas se deja un espacio
+     * en blanco para facilitar el corte.
      */
-    const altoPapel =
-      esEtiquetaGrande
-        ? 238
-        : 178;
+    const anchoPapel =
+      384;
 
-    /*
-     * Ancho del contenido interno.
-     * Se mantiene más pequeño que
-     * el ancho completo del papel.
-     */
-    const anchoContenido =
-      esEtiquetaGrande
-        ? 326
-        : 292;
+    const altoEtiqueta =
+      206;
 
-    const margenHorizontal =
-      Math.floor(
-        (
-          anchoPapel
-          - anchoContenido
-        ) / 2
-      );
+    const espacioEntreEtiquetas =
+      20;
+
+    const margenSuperior =
+      4;
+
+    const margenInferior =
+      8;
+
+    const altoCanvas =
+      margenSuperior
+      + cantidad
+        * altoEtiqueta
+      + Math.max(
+          cantidad - 1,
+          0
+        )
+        * espacioEntreEtiquetas
+      + margenInferior;
 
     const canvas =
       document.createElement(
@@ -482,29 +448,19 @@ implements OnChanges {
       anchoPapel;
 
     canvas.height =
-      altoPapel;
+      altoCanvas;
 
     const contexto =
       canvas.getContext(
         '2d'
       );
 
-    if (
-      !contexto
-    ) {
-
+    if (!contexto) {
       throw new Error(
-        'No se pudo preparar la etiqueta.'
+        'No se pudo preparar la impresión de etiquetas.'
       );
-
     }
 
-    contexto.imageSmoothingEnabled =
-      false;
-
-    /*
-     * Fondo blanco.
-     */
     contexto.fillStyle =
       '#ffffff';
 
@@ -513,6 +469,87 @@ implements OnChanges {
       0,
       canvas.width,
       canvas.height
+    );
+
+    contexto.imageSmoothingEnabled =
+      false;
+
+    for (
+      let indice = 0;
+      indice < cantidad;
+      indice += 1
+    ) {
+      const posicionY =
+        margenSuperior
+        + indice
+          * (
+            altoEtiqueta
+            + espacioEntreEtiquetas
+          );
+
+      this.dibujarEtiqueta(
+        contexto,
+        posicionY,
+        altoEtiqueta
+      );
+    }
+
+    return canvas;
+  }
+
+  private dibujarEtiqueta(
+    contexto:
+      CanvasRenderingContext2D,
+
+    posicionY: number,
+
+    altoEtiqueta: number
+  ): void {
+    const margenHorizontal =
+      8;
+
+    const anchoEtiqueta =
+      368;
+
+    const centroX =
+      192;
+
+    const margenCodigo =
+      24;
+
+    const anchoCodigo =
+      anchoEtiqueta
+      - margenCodigo * 2;
+
+    contexto.save();
+
+    contexto.fillStyle =
+      '#ffffff';
+
+    contexto.fillRect(
+      margenHorizontal,
+      posicionY,
+      anchoEtiqueta,
+      altoEtiqueta
+    );
+
+    /*
+     * Borde negro que servirá como guía
+     * cuando se utilice papel continuo.
+     */
+    contexto.strokeStyle =
+      '#000000';
+
+    contexto.lineWidth =
+      2;
+
+    contexto.setLineDash([]);
+
+    contexto.strokeRect(
+      margenHorizontal + 1,
+      posicionY + 1,
+      anchoEtiqueta - 2,
+      altoEtiqueta - 2
     );
 
     contexto.fillStyle =
@@ -524,120 +561,41 @@ implements OnChanges {
     contexto.textBaseline =
       'middle';
 
-    const centroX =
-      anchoPapel / 2;
-
-    /*
-     * Medidas del recuadro impreso.
-     * El espacio exterior permite
-     * que la dueña pueda recortarlo.
-     */
-    const anchoMarco =
-      esEtiquetaGrande
-        ? 346
-        : 318;
-
-    const altoMarco =
-      esEtiquetaGrande
-        ? 220
-        : 164;
-
-    const marcoX =
-      Math.floor(
-        (
-          anchoPapel
-          - anchoMarco
-        ) / 2
-      );
-
-    const marcoY =
-      Math.floor(
-        (
-          altoPapel
-          - altoMarco
-        ) / 2
-      );
-
-    /*
-     * Posiciones verticales
-     * del contenido.
-     */
-    const yNegocio =
-      esEtiquetaGrande
-        ? 21
-        : 16;
-
-    const yProducto =
-      esEtiquetaGrande
-        ? 45
-        : 34;
-
-    const inicioBarras =
-      esEtiquetaGrande
-        ? 64
-        : 49;
-
-    const altoBarras =
-      esEtiquetaGrande
-        ? 82
-        : 57;
-
-    const yCodigo =
-      inicioBarras
-      + altoBarras
-      + (
-        esEtiquetaGrande
-          ? 14
-          : 11
-      );
-
-    const yPrecio =
-      altoPapel
-      - (
-        esEtiquetaGrande
-          ? 28
-          : 22
-      );
-
-    /*
-     * Nombre del negocio.
-     */
     this.dibujarTextoAjustado(
       contexto,
       this.nombreNegocio
         .toUpperCase(),
       centroX,
-      yNegocio,
-      anchoContenido,
-      esEtiquetaGrande
-        ? 17
-        : 13,
-      10,
-      800
+      posicionY + 18,
+      anchoEtiqueta - 28,
+      15,
+      11,
+      900
     );
 
-    /*
-     * Nombre del producto.
-     */
     this.dibujarTextoAjustado(
       contexto,
-      this.producto
-        .nombre_producto,
+      String(
+        this.producto
+          .nombre_producto
+        ?? 'Producto'
+      ),
       centroX,
-      yProducto,
-      anchoContenido,
-      esEtiquetaGrande
-        ? 20
-        : 16,
-      11,
-      800
+      posicionY + 43,
+      anchoEtiqueta - 30,
+      19,
+      12,
+      850
     );
 
-    /*
-     * Código de barras.
-     */
+    const inicioBarras =
+      posicionY + 62;
+
+    const altoBarras =
+      84;
+
     const escala =
-      anchoContenido
+      anchoCodigo
       / this.codigoBarras
         .anchoTotal;
 
@@ -645,42 +603,37 @@ implements OnChanges {
       const barra
       of this.codigoBarras.barras
     ) {
-
       contexto.fillRect(
         margenHorizontal
-        + barra.x * escala,
+        + margenCodigo
+        + barra.x
+          * escala,
+
         inicioBarras,
+
         Math.max(
           1,
-          barra.ancho * escala
+          barra.ancho
+            * escala
         ),
+
         altoBarras
       );
-
     }
 
-    /*
-     * Número debajo del
-     * código de barras.
-     */
     this.dibujarTextoAjustado(
       contexto,
       this.producto
         .codigo_producto,
       centroX,
-      yCodigo,
-      anchoContenido,
-      esEtiquetaGrande
-        ? 15
-        : 12,
-      9,
-      700,
+      posicionY + 158,
+      anchoEtiqueta - 34,
+      14,
+      10,
+      750,
       'monospace'
     );
 
-    /*
-     * Precio del producto.
-     */
     this.dibujarTextoAjustado(
       contexto,
       this.formatearPrecio(
@@ -688,49 +641,42 @@ implements OnChanges {
           .precio_producto
       ),
       centroX,
-      yPrecio,
-      anchoContenido,
-      esEtiquetaGrande
-        ? 28
-        : 22,
-      17,
+      posicionY + 185,
+      anchoEtiqueta - 34,
+      26,
+      20,
       900
     );
 
-    /*
-     * Recuadro exterior impreso.
-     * Se dibuja al final para que
-     * quede encima del contenido
-     * y completamente visible.
-     */
-    contexto.strokeStyle =
-      '#000000';
-
-    contexto.lineWidth = 2;
-
-    contexto.strokeRect(
-      marcoX,
-      marcoY,
-      anchoMarco,
-      altoMarco
-    );
-
-    return canvas;
-
+    contexto.restore();
   }
 
   private dibujarTextoAjustado(
     contexto:
       CanvasRenderingContext2D,
+
     texto: string,
+
     x: number,
+
     y: number,
+
     anchoMaximo: number,
+
     tamanoInicial: number,
+
     tamanoMinimo: number,
+
     peso: number,
-    familia = 'Arial'
+
+    familia =
+      'Arial'
   ): void {
+    const textoOriginal =
+      String(
+        texto ?? ''
+      )
+        .trim();
 
     let tamano =
       tamanoInicial;
@@ -742,20 +688,20 @@ implements OnChanges {
       tamano > tamanoMinimo
       && contexto
         .measureText(
-          texto
+          textoOriginal
         )
-        .width > anchoMaximo
+        .width
+        > anchoMaximo
     ) {
-
-      tamano -= 1;
+      tamano -=
+        1;
 
       contexto.font =
         `${peso} ${tamano}px ${familia}`;
-
     }
 
     let textoFinal =
-      texto;
+      textoOriginal;
 
     while (
       textoFinal.length > 1
@@ -763,111 +709,53 @@ implements OnChanges {
         .measureText(
           textoFinal
         )
-        .width > anchoMaximo
+        .width
+        > anchoMaximo
     ) {
-
       textoFinal =
         `${textoFinal.slice(
           0,
           -2
         )}…`;
-
     }
 
     contexto.fillText(
-      textoFinal,
+      textoFinal || '-',
       x,
       y
     );
-
   }
 
-  private mostrarMensaje(
+  private establecerMensaje(
     mensaje: string,
-    tipo:
-      Exclude<
-        TipoMensaje,
-        null
-      >
+    tipo: TipoMensaje
   ): void {
-
     this.mensajeEstado =
       mensaje;
 
     this.tipoMensaje =
       tipo;
-
-    this.forzarActualizacion();
-
-  }
-
-  private limpiarMensaje(): void {
-
-    this.mensajeEstado = '';
-
-    this.tipoMensaje = null;
-
   }
 
   private obtenerMensajeError(
     error: unknown,
     mensajeDefecto: string
   ): string {
-
     if (
       error instanceof Error
       && error.message
     ) {
-
       if (
         error.name
         === 'NotFoundError'
       ) {
-
-        return (
-          'No se selecciono una impresora.'
-        );
-
+        return 'No se seleccionó una impresora Bluetooth.';
       }
 
       return error.message;
-
     }
 
     return mensajeDefecto;
-
-  }
-
-  private forzarActualizacion(): void {
-
-    try {
-
-      this.cdr.detectChanges();
-
-    } catch {
-
-      /*
-       * El componente pudo cerrarse
-       * mientras terminaba una operación.
-       */
-
-    }
-
-  }
-
-  private esperarRenderizado():
-    Promise<void> {
-
-    return new Promise(
-      resolver => {
-
-        window.requestAnimationFrame(
-          () => resolver()
-        );
-
-      }
-    );
-
   }
 
 }

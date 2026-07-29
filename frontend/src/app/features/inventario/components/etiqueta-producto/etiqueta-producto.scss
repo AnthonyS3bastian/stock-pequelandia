@@ -15,6 +15,10 @@
   background: #f7f7fb;
 }
 
+/* ==========================================================
+   ENCABEZADO
+========================================================== */
+
 .encabezado {
   min-height: 72px;
   display: flex;
@@ -56,6 +60,7 @@
 .encabezado h2 {
   margin: 0;
   overflow: hidden;
+  color: #172033;
   font-size: 18px;
   font-weight: 850;
   line-height: 1.15;
@@ -65,9 +70,13 @@
 
 .encabezado p {
   margin: 4px 0 0;
-  font-size: 11px;
   color: #778198;
+  font-size: 11px;
 }
+
+/* ==========================================================
+   CONTENIDO
+========================================================== */
 
 .contenido {
   flex: 1;
@@ -98,29 +107,33 @@
 
 .titulo-seccion h3 {
   margin: 0;
+  color: #22283a;
   font-size: 13px;
   font-weight: 850;
-  color: #22283a;
 }
 
 .titulo-seccion p {
   margin: 3px 0 0;
-  font-size: 10px;
   color: #7b8497;
+  font-size: 10px;
 }
 
 .medida {
   flex-shrink: 0;
   padding: 6px 9px;
   border-radius: 999px;
-  font-size: 10px;
-  font-weight: 800;
   color: #6d28d9;
   background: #f3efff;
+  font-size: 10px;
+  font-weight: 800;
 }
 
+/* ==========================================================
+   VISTA PREVIA
+========================================================== */
+
 .zona-preview {
-  min-height: 215px;
+  min-height: 220px;
   display: grid;
   place-items: center;
   padding: 20px;
@@ -141,27 +154,24 @@
 }
 
 .etiqueta-preview {
-  width: min(100%, 350px);
-  aspect-ratio: 50 / 30;
+  width: min(
+    100%,
+    350px
+  );
+  aspect-ratio: 57 / 30;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
   overflow: hidden;
-  padding: 13px 21px 12px;
+  padding: 13px 20px 12px;
   border: 2px solid #121826;
-  border-radius: 5px;
+  border-radius: 3px;
   color: #000000;
   background: #ffffff;
   box-shadow:
     0 15px 34px
     rgba(15, 23, 42, 0.14);
-}
-
-.etiqueta-preview.etiqueta-grande {
-  width: min(100%, 365px);
-  aspect-ratio: 60 / 40;
-  padding: 15px 20px 13px;
 }
 
 .preview-negocio {
@@ -197,7 +207,9 @@
 
 .preview-codigo-texto {
   overflow: hidden;
-  font-family: Consolas, monospace;
+  font-family:
+    Consolas,
+    monospace;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.7px;
@@ -231,11 +243,38 @@
   text-align: center;
 }
 
+.informacion-papel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 11px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  color: #5f6678;
+  background: #f8fafc;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.informacion-papel mat-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: #7c3aed;
+  font-size: 18px;
+}
+
+/* ==========================================================
+   CONFIGURACIÓN DE CANTIDAD
+========================================================== */
+
 .configuracion-grid {
   display: grid;
   grid-template-columns:
-    minmax(0, 1.2fr)
-    minmax(160px, 0.8fr);
+    minmax(
+      220px,
+      320px
+    );
   gap: 11px;
 }
 
@@ -247,48 +286,20 @@
 }
 
 .campo > span {
+  color: #434a5d;
   font-size: 10px;
   font-weight: 800;
-  color: #434a5d;
-}
-
-.campo select,
-.campo input {
-  width: 100%;
-  height: 42px;
-  border: 1px solid #dddbe6;
-  outline: 0;
-  color: #23293a;
-  background: #ffffff;
-  font-family: inherit;
-  font-size: 11px;
-}
-
-.campo select {
-  padding: 0 11px;
-  border-radius: 10px;
-}
-
-.campo select:focus,
-.campo input:focus {
-  border-color: #8b5cf6;
-  box-shadow:
-    0 0 0 3px
-    rgba(124, 58, 237, 0.1);
-}
-
-.campo select:disabled,
-.campo input:disabled {
-  opacity: 0.65;
-  background: #f8fafc;
 }
 
 .campo-copias {
   display: grid;
   grid-template-columns:
-    39px
-    minmax(55px, 1fr)
-    39px;
+    44px
+    minmax(
+      70px,
+      1fr
+    )
+    44px;
   overflow: hidden;
   border: 1px solid #dddbe6;
   border-radius: 10px;
@@ -296,18 +307,35 @@
 }
 
 .campo-copias input {
-  height: 40px;
+  width: 100%;
+  height: 42px;
   padding: 0 5px;
   border: 0;
   border-right: 1px solid #eceaf1;
   border-left: 1px solid #eceaf1;
-  border-radius: 0;
+  outline: 0;
+  color: #23293a;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 850;
   text-align: center;
-  font-weight: 800;
+  appearance: textfield;
+}
+
+.campo-copias input::-webkit-inner-spin-button,
+.campo-copias input::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
 }
 
 .campo-copias input:focus {
-  box-shadow: none;
+  background: #faf8ff;
+}
+
+.campo-copias input:disabled {
+  opacity: 0.65;
+  background: #f8fafc;
 }
 
 .campo-copias button {
@@ -329,8 +357,20 @@
 }
 
 .campo-copias mat-icon {
-  font-size: 19px;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
 }
+
+.ayuda-copias {
+  color: #7b8497;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+/* ==========================================================
+   CONEXIÓN
+========================================================== */
 
 .conexion {
   display: flex;
@@ -374,14 +414,14 @@
 
 .conexion-identidad strong {
   margin-bottom: 3px;
-  font-size: 11px;
   color: #252b3b;
+  font-size: 11px;
 }
 
 .conexion-identidad span {
   overflow: hidden;
-  font-size: 10px;
   color: #7b8497;
+  font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -415,6 +455,10 @@
   opacity: 0.55;
   cursor: wait;
 }
+
+/* ==========================================================
+   MENSAJES
+========================================================== */
 
 .mensaje {
   display: flex;
@@ -450,9 +494,15 @@
 }
 
 .mensaje mat-icon {
+  width: 19px;
+  height: 19px;
   flex-shrink: 0;
   font-size: 19px;
 }
+
+/* ==========================================================
+   ACCIONES
+========================================================== */
 
 .acciones {
   position: absolute;
@@ -463,13 +513,22 @@
   display: grid;
   grid-template-columns:
     110px
-    minmax(190px, 1fr);
+    minmax(
+      190px,
+      1fr
+    );
   gap: 10px;
   padding: 12px 18px;
   border-top: 1px solid #e8e6ef;
   background:
-    rgba(255, 255, 255, 0.97);
-  backdrop-filter: blur(12px);
+    rgba(
+      255,
+      255,
+      255,
+      0.97
+    );
+  backdrop-filter:
+    blur(12px);
 }
 
 .acciones button {
@@ -502,16 +561,24 @@
 
 .girando {
   animation:
-    girar 0.85s linear infinite;
+    girar
+    0.85s
+    linear
+    infinite;
 }
 
 @keyframes girar {
 
   to {
-    transform: rotate(360deg);
+    transform:
+      rotate(360deg);
   }
 
 }
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
 
 @media (max-width: 650px) {
 
@@ -537,7 +604,7 @@
   }
 
   .zona-preview {
-    min-height: 190px;
+    min-height: 195px;
     padding: 14px;
   }
 
@@ -558,7 +625,7 @@
   }
 
   .zona-preview {
-    min-height: 175px;
+    min-height: 178px;
     padding: 10px;
   }
 

@@ -54,14 +54,14 @@
           </h3>
 
           <p>
-            Una etiqueta por cada copia.
+            Diseño para papel térmico continuo.
           </p>
 
         </div>
 
         <span class="medida">
 
-          {{ anchoEtiquetaMm }} × {{ altoEtiquetaMm }} mm
+          Rollo de {{ anchoRolloMm }} mm
 
         </span>
 
@@ -69,11 +69,7 @@
 
       <div class="zona-preview">
 
-        <article
-          class="etiqueta-preview"
-          [class.etiqueta-grande]="
-            tamanoEtiqueta === '60x40'
-          ">
+        <article class="etiqueta-preview">
 
           <div class="preview-negocio">
 
@@ -99,7 +95,7 @@
               preserveAspectRatio="none"
               role="img"
               [attr.aria-label]="
-                'Codigo de barras '
+                'Código de barras '
                 + producto.codigo_producto
               ">
 
@@ -143,11 +139,28 @@
 
           <div class="preview-precio">
 
-            {{ formatearPrecio(producto.precio_producto) }}
+            {{
+              formatearPrecio(
+                producto.precio_producto
+              )
+            }}
 
           </div>
 
         </article>
+
+      </div>
+
+      <div class="informacion-papel">
+
+        <mat-icon>
+          content_cut
+        </mat-icon>
+
+        <span>
+          El borde negro indica por dónde cortar
+          cuando utilices papel continuo.
+        </span>
 
       </div>
 
@@ -160,11 +173,11 @@
         <div>
 
           <h3>
-            Configuración
+            Impresión
           </h3>
 
           <p>
-            Define el tamaño y la cantidad.
+            Selecciona cuántas etiquetas necesitas.
           </p>
 
         </div>
@@ -176,43 +189,19 @@
         <label class="campo">
 
           <span>
-            Tamaño de etiqueta
-          </span>
-
-          <select
-            [(ngModel)]="tamanoEtiqueta"
-            [disabled]="operacionEnCurso">
-
-            <option value="50x30">
-              50 × 30 mm · compacta
-            </option>
-
-            <option value="60x40">
-              60 × 40 mm
-            </option>
-
-          </select>
-
-        </label>
-
-        <label class="campo">
-
-          <span>
-            Número de copias
+            Cantidad de etiquetas
           </span>
 
           <div class="campo-copias">
 
             <button
               type="button"
-              aria-label="Disminuir copias"
+              aria-label="Disminuir etiquetas"
               [disabled]="
                 operacionEnCurso
                 || numeroCopias <= 1
               "
-              (click)="
-                numeroCopias = numeroCopias - 1
-              ">
+              (click)="disminuirCopias()">
 
               <mat-icon>
                 remove
@@ -223,7 +212,7 @@
             <input
               type="number"
               min="1"
-              max="100"
+              [max]="maximoEtiquetas"
               step="1"
               [(ngModel)]="numeroCopias"
               [disabled]="operacionEnCurso"
@@ -231,14 +220,13 @@
 
             <button
               type="button"
-              aria-label="Aumentar copias"
+              aria-label="Aumentar etiquetas"
               [disabled]="
                 operacionEnCurso
-                || numeroCopias >= 100
+                || numeroCopias
+                  >= maximoEtiquetas
               "
-              (click)="
-                numeroCopias = numeroCopias + 1
-              ">
+              (click)="aumentarCopias()">
 
               <mat-icon>
                 add
@@ -247,6 +235,13 @@
             </button>
 
           </div>
+
+          <small class="ayuda-copias">
+
+            Máximo {{ maximoEtiquetas }} por impresión.
+            Se imprimen juntas con espacio para cortar.
+
+          </small>
 
         </label>
 
@@ -258,7 +253,9 @@
 
           <span
             class="conexion-icono"
-            [class.conectado]="bluetoothConectado">
+            [class.conectado]="
+              bluetoothConectado
+            ">
 
             <mat-icon>
 
@@ -285,7 +282,10 @@
 
               @if (bluetoothConectado) {
 
-                {{ nombreImpresoraBluetooth }} conectada
+                {{
+                  nombreImpresoraBluetooth
+                }}
+                conectada
 
               } @else {
 
@@ -347,7 +347,8 @@
           </mat-icon>
 
           <span>
-            Abre el sistema en Google Chrome desde localhost o HTTPS.
+            Abre el sistema en Google Chrome
+            desde localhost o HTTPS.
           </span>
 
         </div>
@@ -358,9 +359,15 @@
 
         <div
           class="mensaje"
-          [class.exito]="tipoMensaje === 'exito'"
-          [class.error]="tipoMensaje === 'error'"
-          [class.informacion]="tipoMensaje === 'informacion'">
+          [class.exito]="
+            tipoMensaje === 'exito'
+          "
+          [class.error]="
+            tipoMensaje === 'error'
+          "
+          [class.informacion]="
+            tipoMensaje === 'informacion'
+          ">
 
           <mat-icon>
 
@@ -368,7 +375,9 @@
 
               error_outline
 
-            } @else if (tipoMensaje === 'exito') {
+            } @else if (
+              tipoMensaje === 'exito'
+            ) {
 
               check_circle
 
@@ -417,7 +426,9 @@
       (click)="imprimirBluetoothDirecto()">
 
       <mat-icon
-        [class.girando]="operacionEnCurso">
+        [class.girando]="
+          operacionEnCurso
+        ">
 
         {{
           operacionEnCurso
