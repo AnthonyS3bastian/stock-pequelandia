@@ -13,15 +13,8 @@ export const DATOS_NEGOCIO:
   nombreComercial:
     'MULTISERVICIOS PEQUELANDIA A & A',
 
-  /*
-   * Este número fue proporcionado
-   * temporalmente con 10 dígitos.
-   *
-   * Reemplazarlo cuando la dueña
-   * confirme el RUC completo.
-   */
   ruc:
-    '1042849400',
+    '10428494003',
 
   direccion:
     'AV. MANCO CAPAC 214',

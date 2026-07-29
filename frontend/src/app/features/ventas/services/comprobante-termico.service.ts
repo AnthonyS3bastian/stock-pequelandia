@@ -151,37 +151,46 @@ export class ComprobanteTermicoService {
     contexto.imageSmoothingEnabled =
       true;
 
-    let y = 12;
+    let y = 0;
 
     const logo =
       await this.cargarLogo();
 
     if (logo) {
+      const areaLogo =
+        this.obtenerAreaVisibleLogo(
+          logo
+        );
+
       const anchoMaximo =
-        230;
+        300;
 
       const altoMaximo =
-        115;
+        125;
 
       const escala =
         Math.min(
           anchoMaximo
-            / logo.width,
+            / areaLogo.ancho,
 
           altoMaximo
-            / logo.height
+            / areaLogo.alto
         );
 
       const anchoLogo =
-        logo.width
+        areaLogo.ancho
         * escala;
 
       const altoLogo =
-        logo.height
+        areaLogo.alto
         * escala;
 
       contexto.drawImage(
         logo,
+        areaLogo.x,
+        areaLogo.y,
+        areaLogo.ancho,
+        areaLogo.alto,
         (
           this.anchoPapel
           - anchoLogo
@@ -193,22 +202,66 @@ export class ComprobanteTermicoService {
 
       y +=
         altoLogo
-        + 10;
+        + 3;
+    }
+
+    /*
+     * Nombre del negocio dividido
+     * intencionalmente en dos líneas:
+     *
+     * MULTISERVICIOS PEQUELANDIA
+     * A & A
+     */
+    const nombreComercial =
+      String(
+        DATOS_NEGOCIO
+          .nombreComercial
+        ?? ''
+      )
+        .trim()
+        .toUpperCase();
+
+    const nombrePrincipal =
+      nombreComercial
+        .replace(
+          /\s+A\s*&\s*A\s*$/i,
+          ''
+        )
+        .trim()
+      || nombreComercial;
+
+    const coincidenciaComplemento =
+      nombreComercial.match(
+        /A\s*&\s*A\s*$/i
+      );
+
+    const nombreComplementario =
+      coincidenciaComplemento
+        ? 'A & A'
+        : '';
+
+    y = this.dibujarTextoCentrado(
+      contexto,
+      nombrePrincipal,
+      y,
+      18,
+      900
+    );
+
+    if (nombreComplementario) {
+      y = this.dibujarTextoCentrado(
+        contexto,
+        nombreComplementario,
+        y,
+        17,
+        900
+      );
     }
 
     y = this.dibujarTextoCentrado(
       contexto,
-      DATOS_NEGOCIO
-        .nombreComercial,
-      y,
-      19,
-      900
-    );
-
-    y = this.dibujarTextoCentrado(
-      contexto,
       `RUC: ${DATOS_NEGOCIO.ruc}`,
-      y + 2,
+      y + 1,
       13,
       700
     );
@@ -217,8 +270,8 @@ export class ComprobanteTermicoService {
       contexto,
       DATOS_NEGOCIO
         .direccion,
-      y + 2,
-      13,
+      y + 1,
+      12,
       650
     );
 
@@ -226,20 +279,20 @@ export class ComprobanteTermicoService {
       contexto,
       DATOS_NEGOCIO
         .ubicacion,
-      y + 2,
-      12,
+      y + 1,
+      11,
       650
     );
 
     y = this.dibujarTextoCentrado(
       contexto,
       `CEL.: ${DATOS_NEGOCIO.telefono}`,
-      y + 2,
-      13,
+      y + 1,
+      12,
       650
     );
 
-    y += 8;
+    y += 4;
 
     y = this.dibujarLinea(
       contexto,
@@ -249,8 +302,8 @@ export class ComprobanteTermicoService {
     y = this.dibujarTextoCentrado(
       contexto,
       'NOTA DE VENTA',
-      y + 9,
-      20,
+      y + 5,
+      19,
       900
     );
 
@@ -266,7 +319,7 @@ export class ComprobanteTermicoService {
         venta.numero_comprobante
       );
 
-    y += 8;
+    y += 4;
 
     y = this.dibujarLinea(
       contexto,
@@ -279,7 +332,7 @@ export class ComprobanteTermicoService {
       this.formatearFecha(
         venta.fecha_venta
       ),
-      y + 8
+      y + 6
     );
 
     y = this.dibujarPar(
@@ -288,10 +341,10 @@ export class ComprobanteTermicoService {
       this.formatearHora(
         venta.fecha_venta
       ),
-      y + 3
+      y + 2
     );
 
-    y += 6;
+    y += 4;
 
     y = this.dibujarLinea(
       contexto,
@@ -333,14 +386,13 @@ export class ComprobanteTermicoService {
           ? 'RUC'
           : 'DNI';
 
-      y = this
-        .dibujarTextoIzquierda(
-          contexto,
-          `${tipoDocumento}: ${documentoCliente}`,
-          y + 2,
-          13,
-          650
-        );
+      y = this.dibujarTextoIzquierda(
+        contexto,
+        `${tipoDocumento}: ${documentoCliente}`,
+        y + 2,
+        13,
+        650
+      );
     }
 
     const direccionCliente =
@@ -349,16 +401,15 @@ export class ComprobanteTermicoService {
       );
 
     if (direccionCliente) {
-      y = this
-        .dibujarTextoEnvuelto(
-          contexto,
-          `DIRECCION: ${direccionCliente}`,
-          10,
-          y + 2,
-          364,
-          12,
-          600
-        );
+      y = this.dibujarTextoEnvuelto(
+        contexto,
+        `DIRECCION: ${direccionCliente}`,
+        10,
+        y + 2,
+        364,
+        12,
+        600
+      );
     }
 
     y += 7;
@@ -525,7 +576,7 @@ export class ComprobanteTermicoService {
       700
     );
 
-    y += 8;
+    y += 5;
 
     y = this.dibujarLinea(
       contexto,
@@ -535,12 +586,12 @@ export class ComprobanteTermicoService {
     y = this.dibujarTextoCentrado(
       contexto,
       'GRACIAS POR SU COMPRA',
-      y + 10,
+      y + 7,
       16,
       900
     );
 
-    y += 12;
+    y += 7;
 
     /*
      * Código de barras Code 128.
@@ -581,7 +632,7 @@ export class ComprobanteTermicoService {
           + barra.x
           * escala,
 
-          y + 10,
+          y + 6,
 
           Math.max(
             1,
@@ -595,10 +646,10 @@ export class ComprobanteTermicoService {
 
       y +=
         altoCodigo
-        + 20;
+        + 12;
     }
 
-    y += 18;
+    y += 8;
 
     const canvasFinal =
       document.createElement(
@@ -994,6 +1045,211 @@ export class ComprobanteTermicoService {
     } catch {
       return null;
     }
+  }
+
+  private obtenerAreaVisibleLogo(
+    logo: HTMLImageElement
+  ): {
+    x: number;
+    y: number;
+    ancho: number;
+    alto: number;
+  } {
+    const anchoOriginal =
+      logo.naturalWidth
+      || logo.width;
+
+    const altoOriginal =
+      logo.naturalHeight
+      || logo.height;
+
+    const canvas =
+      document.createElement(
+        'canvas'
+      );
+
+    canvas.width =
+      anchoOriginal;
+
+    canvas.height =
+      altoOriginal;
+
+    const contexto =
+      canvas.getContext(
+        '2d',
+        {
+          willReadFrequently: true
+        }
+      );
+
+    if (!contexto) {
+      return {
+        x: 0,
+        y: 0,
+        ancho: anchoOriginal,
+        alto: altoOriginal
+      };
+    }
+
+    contexto.clearRect(
+      0,
+      0,
+      anchoOriginal,
+      altoOriginal
+    );
+
+    contexto.drawImage(
+      logo,
+      0,
+      0
+    );
+
+    const imagen =
+      contexto.getImageData(
+        0,
+        0,
+        anchoOriginal,
+        altoOriginal
+      );
+
+    let minimoX =
+      anchoOriginal;
+
+    let minimoY =
+      altoOriginal;
+
+    let maximoX =
+      -1;
+
+    let maximoY =
+      -1;
+
+    for (
+      let posicionY = 0;
+      posicionY < altoOriginal;
+      posicionY += 1
+    ) {
+      for (
+        let posicionX = 0;
+        posicionX < anchoOriginal;
+        posicionX += 1
+      ) {
+        const indice =
+          (
+            posicionY
+            * anchoOriginal
+            + posicionX
+          ) * 4;
+
+        const rojo =
+          imagen.data[indice];
+
+        const verde =
+          imagen.data[
+            indice + 1
+          ];
+
+        const azul =
+          imagen.data[
+            indice + 2
+          ];
+
+        const alfa =
+          imagen.data[
+            indice + 3
+          ];
+
+        const pixelVisible =
+          alfa > 20
+          && (
+            rojo < 248
+            || verde < 248
+            || azul < 248
+          );
+
+        if (!pixelVisible) {
+          continue;
+        }
+
+        minimoX =
+          Math.min(
+            minimoX,
+            posicionX
+          );
+
+        minimoY =
+          Math.min(
+            minimoY,
+            posicionY
+          );
+
+        maximoX =
+          Math.max(
+            maximoX,
+            posicionX
+          );
+
+        maximoY =
+          Math.max(
+            maximoY,
+            posicionY
+          );
+      }
+    }
+
+    if (
+      maximoX < minimoX
+      || maximoY < minimoY
+    ) {
+      return {
+        x: 0,
+        y: 0,
+        ancho: anchoOriginal,
+        alto: altoOriginal
+      };
+    }
+
+    const margen =
+      2;
+
+    const x =
+      Math.max(
+        0,
+        minimoX - margen
+      );
+
+    const y =
+      Math.max(
+        0,
+        minimoY - margen
+      );
+
+    const limiteX =
+      Math.min(
+        anchoOriginal - 1,
+        maximoX + margen
+      );
+
+    const limiteY =
+      Math.min(
+        altoOriginal - 1,
+        maximoY + margen
+      );
+
+    return {
+      x,
+      y,
+
+      ancho:
+        limiteX
+        - x
+        + 1,
+
+      alto:
+        limiteY
+        - y
+        + 1
+    };
   }
 
   private cargarImagen(
