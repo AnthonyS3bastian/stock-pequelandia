@@ -14,40 +14,31 @@ class SerieComprobanteSeeder extends Seeder
     {
         SerieComprobante::updateOrCreate(
             [
-                'tipo_documento_serie' =>
-                    'VENTA RAPIDA',
+                'tipo_documento_serie' => 'VENTA RAPIDA',
             ],
             [
-                'serie_documento' =>
-                    'NV001',
-                'numero_correlativo' =>
-                    1,
+                'serie_documento' => 'NV001',
+                'numero_correlativo' => 1,
             ]
         );
 
         SerieComprobante::updateOrCreate(
             [
-                'tipo_documento_serie' =>
-                    'BOLETA',
+                'tipo_documento_serie' => 'BOLETA',
             ],
             [
-                'serie_documento' =>
-                    'B001',
-                'numero_correlativo' =>
-                    1,
+                'serie_documento' => 'B001',
+                'numero_correlativo' => 1,
             ]
         );
 
         SerieComprobante::updateOrCreate(
             [
-                'tipo_documento_serie' =>
-                    'FACTURA',
+                'tipo_documento_serie' => 'FACTURA',
             ],
             [
-                'serie_documento' =>
-                    'F001',
-                'numero_correlativo' =>
-                    1,
+                'serie_documento' => 'F001',
+                'numero_correlativo' => 1,
             ]
         );
     }

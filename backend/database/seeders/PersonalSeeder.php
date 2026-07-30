@@ -2,21 +2,35 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Personal;
+use Illuminate\Database\Seeder;
 
 class PersonalSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Registrar los datos personales de la dueña.
      */
     public function run(): void
     {
-        Personal::create([
-            'dni_personal' => '00000000',
-            'nombre_personal' => 'Administrador',
-            'apellido_personal' => 'Sistema',
-            'tel_personal' => '999999999',
-        ]);
+        Personal::updateOrCreate(
+            [
+                'dni_personal' => '42849400',
+            ],
+            [
+                'nombre_personal' => 'Jessica Jessenia',
+                'apellido_personal' => 'Arone Rodriguez',
+
+                /*
+                |----------------------------------------------------------
+                | Teléfono temporal
+                |----------------------------------------------------------
+                |
+                | Después podrá actualizarse desde el perfil o directamente
+                | desde la base de datos.
+                |
+                */
+                'tel_personal' => '000000000',
+            ]
+        );
     }
 }

@@ -2,28 +2,47 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Categoria;
+use Illuminate\Database\Seeder;
 
 class CategoriaSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Registrar las categorías iniciales del negocio.
      */
     public function run(): void
     {
         $categorias = [
-            'Abarrotes',
-            'Bebidas',
-            'Lacteos',
-            'Limpieza'
+            'Librería',
+            'Juguetería',
+            'Joyería',
+            'Perfumería',
+            'Peluches',
+            'Regalos',
+            'Ropa',
+            'Cargadores y audífonos',
+            'Bolsas y papel de regalo',
+            'Plastiquería',
+            'Ferretería',
+            'Pasamanería',
+            'Ganchos',
+            'Accesorios deportivos',
+            'Piñatería',
+            'Licorería',
+            'Golosinas',
+            'Accesorios de limpieza',
+            'Accesorios temporada',
         ];
 
-        foreach ($categorias as $categoria) {
-            Categoria::create([
-                'nombre_categoria' => $categoria,
-                'estado' => true,
-            ]);
+        foreach ($categorias as $nombreCategoria) {
+            Categoria::updateOrCreate(
+                [
+                    'nombre_categoria' => $nombreCategoria,
+                ],
+                [
+                    'estado' => true,
+                ]
+            );
         }
     }
 }

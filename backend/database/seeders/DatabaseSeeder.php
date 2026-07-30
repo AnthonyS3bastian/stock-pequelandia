@@ -10,7 +10,7 @@ class DatabaseSeeder extends Seeder
     use WithoutModelEvents;
 
     /**
-     * Seed the application's database.
+     * Ejecutar los datos iniciales del sistema.
      */
     public function run(): void
     {
@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             PersonalSeeder::class,
             UsuarioSeeder::class,
             CategoriaSeeder::class,
+            ClienteSeeder::class,
             SerieComprobanteSeeder::class,
         ]);
     }

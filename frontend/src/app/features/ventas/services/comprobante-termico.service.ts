@@ -205,13 +205,6 @@ export class ComprobanteTermicoService {
         + 3;
     }
 
-    /*
-     * Nombre del negocio dividido
-     * intencionalmente en dos líneas:
-     *
-     * MULTISERVICIOS PEQUELANDIA
-     * A & A
-     */
     const nombreComercial =
       String(
         DATOS_NEGOCIO
@@ -230,13 +223,11 @@ export class ComprobanteTermicoService {
         .trim()
       || nombreComercial;
 
-    const coincidenciaComplemento =
-      nombreComercial.match(
-        /A\s*&\s*A\s*$/i
-      );
-
     const nombreComplementario =
-      coincidenciaComplemento
+      /A\s*&\s*A\s*$/i
+        .test(
+          nombreComercial
+        )
         ? 'A & A'
         : '';
 
@@ -649,6 +640,21 @@ export class ComprobanteTermicoService {
         + 12;
     }
 
+    y = this.dibujarTextoCentrado(
+      contexto,
+      'NO SE ACEPTAN CAMBIOS NI DEVOLUCIONES',
+      y + 4,
+      13,
+      900
+    );
+
+    y = this.dibujarEmojiCentrado(
+      contexto,
+      '😠',
+      y + 1,
+      24
+    );
+
     y += 8;
 
     const canvasFinal =
@@ -833,6 +839,33 @@ export class ComprobanteTermicoService {
       * (
         tamano + 3
       );
+  }
+
+  private dibujarEmojiCentrado(
+    contexto:
+      CanvasRenderingContext2D,
+
+    emoji: string,
+
+    y: number,
+
+    tamano: number
+  ): number {
+    contexto.font =
+      `${tamano}px "Segoe UI Emoji", "Apple Color Emoji", Arial`;
+
+    contexto.textAlign =
+      'center';
+
+    contexto.fillText(
+      emoji,
+      this.anchoPapel / 2,
+      y
+    );
+
+    return y
+      + tamano
+      + 4;
   }
 
   private dibujarTextoIzquierda(
