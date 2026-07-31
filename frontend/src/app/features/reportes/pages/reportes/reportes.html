@@ -1,58 +1,303 @@
 <div class="contenedor-reportes">
 
-    <div class="cabecera">
+  <div class="cabecera">
 
-        <div>
+    <div>
 
-            <h1>
-                Reportes
-            </h1>
+      <h1>
+        Reportes
+      </h1>
 
-            <p>
-                Consulta las ventas y resultados del negocio.
-            </p>
-
-        </div>
+      <p>
+        Consulta las ventas y resultados del negocio.
+      </p>
 
     </div>
 
-    <mat-tab-group
-        animationDuration="250ms"
-        mat-stretch-tabs="false">
+  </div>
 
-        <mat-tab label="Diario">
+  <section class="resumen-inventario">
 
-            <div class="contenido-pestana">
+    <header class="resumen-inventario-header">
 
-                <app-reporte-diario>
-                </app-reporte-diario>
+      <div class="resumen-inventario-titulo">
 
-            </div>
+        <span class="icono-resumen">
 
-        </mat-tab>
+          <mat-icon>
+            store
+          </mat-icon>
 
-        <mat-tab label="Semanal">
+        </span>
 
-            <div class="contenido-pestana">
+        <div>
 
-                <app-reporte-semanal>
-                </app-reporte-semanal>
+          <h2>
+            Valor actual del inventario
+          </h2>
 
-            </div>
+          <p>
+            Estimación basada en el stock actual
+            multiplicado por el precio de venta.
+          </p>
 
-        </mat-tab>
+        </div>
 
-        <mat-tab label="Mensual">
+      </div>
 
-            <div class="contenido-pestana">
+      <button
+        type="button"
+        class="btn-refrescar-resumen"
+        [disabled]="cargandoInventario"
+        title="Actualizar valor del inventario"
+        (click)="cargarResumenInventario()">
 
-                <app-reporte-mensual>
-                </app-reporte-mensual>
+        @if (cargandoInventario) {
 
-            </div>
+          <mat-spinner
+            diameter="18">
+          </mat-spinner>
 
-        </mat-tab>
+        } @else {
 
-    </mat-tab-group>
+          <mat-icon>
+            refresh
+          </mat-icon>
+
+        }
+
+      </button>
+
+    </header>
+
+    @if (cargandoInventario) {
+
+      <div class="estado-resumen">
+
+        <mat-spinner
+          diameter="30">
+        </mat-spinner>
+
+        <span>
+          Calculando el valor del inventario...
+        </span>
+
+      </div>
+
+    } @else if (
+      errorInventario
+    ) {
+
+      <div class="estado-resumen error">
+
+        <mat-icon>
+          cloud_off
+        </mat-icon>
+
+        <div>
+
+          <strong>
+            No se pudo calcular el inventario
+          </strong>
+
+          <span>
+            Verifica que Laravel esté encendido.
+          </span>
+
+        </div>
+
+        <button
+          type="button"
+          (click)="cargarResumenInventario()">
+
+          Reintentar
+
+        </button>
+
+      </div>
+
+    } @else if (
+      resumenInventario
+    ) {
+
+      <div class="tarjetas-inventario">
+
+        <article class="tarjeta-valor">
+
+          <span class="tarjeta-valor-icono">
+
+            <mat-icon>
+              paid
+            </mat-icon>
+
+          </span>
+
+          <div>
+
+            <small>
+              Valor comercial del inventario
+            </small>
+
+            <strong>
+
+              {{
+                formatearMoneda(
+                  resumenInventario
+                    .valor_comercial_inventario
+                )
+              }}
+
+            </strong>
+
+            <p>
+              Es el ingreso estimado si se vendiera
+              todo el stock al precio público actual.
+            </p>
+
+          </div>
+
+        </article>
+
+        <article class="tarjeta-dato">
+
+          <span class="dato-icono unidades">
+
+            <mat-icon>
+              inventory
+            </mat-icon>
+
+          </span>
+
+          <div>
+
+            <small>
+              Unidades disponibles
+            </small>
+
+            <strong>
+
+              {{
+                resumenInventario
+                  .total_unidades
+              }}
+
+            </strong>
+
+          </div>
+
+        </article>
+
+        <article class="tarjeta-dato">
+
+          <span class="dato-icono productos">
+
+            <mat-icon>
+              category
+            </mat-icon>
+
+          </span>
+
+          <div>
+
+            <small>
+              Productos con stock
+            </small>
+
+            <strong>
+
+              {{
+                resumenInventario
+                  .productos_con_stock
+              }}
+
+            </strong>
+
+          </div>
+
+        </article>
+
+        <article class="tarjeta-dato">
+
+          <span class="dato-icono catalogo">
+
+            <mat-icon>
+              list_alt
+            </mat-icon>
+
+          </span>
+
+          <div>
+
+            <small>
+              Productos registrados
+            </small>
+
+            <strong>
+
+              {{
+                resumenInventario
+                  .total_productos
+              }}
+
+            </strong>
+
+          </div>
+
+        </article>
+
+      </div>
+
+      <p class="nota-inventario">
+
+        <mat-icon>info</mat-icon>
+
+        El cálculo considera todos los productos que
+        tienen stock mayor a cero, incluyendo productos
+        inactivos que todavía conservan existencias.
+
+      </p>
+
+    }
+
+  </section>
+
+  <mat-tab-group
+    animationDuration="250ms"
+    mat-stretch-tabs="false">
+
+    <mat-tab label="Diario">
+
+      <div class="contenido-pestana">
+
+        <app-reporte-diario>
+        </app-reporte-diario>
+
+      </div>
+
+    </mat-tab>
+
+    <mat-tab label="Semanal">
+
+      <div class="contenido-pestana">
+
+        <app-reporte-semanal>
+        </app-reporte-semanal>
+
+      </div>
+
+    </mat-tab>
+
+    <mat-tab label="Mensual">
+
+      <div class="contenido-pestana">
+
+        <app-reporte-mensual>
+        </app-reporte-mensual>
+
+      </div>
+
+    </mat-tab>
+
+  </mat-tab-group>
 
 </div>

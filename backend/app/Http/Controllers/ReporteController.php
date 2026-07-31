@@ -15,6 +15,16 @@ class ReporteController extends Controller
     ) {
     }
 
+    public function inventario(): JsonResponse
+    {
+        return $this->responderReporte(
+            fn (): array =>
+                $this->reporteService
+                    ->obtenerResumenInventario(),
+            'de inventario'
+        );
+    }
+
     public function diario(
         Request $request
     ): JsonResponse {

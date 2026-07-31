@@ -247,6 +247,11 @@ Route::middleware('auth:sanctum')
                 */
 
                 Route::get(
+                    '/reportes/inventario',
+                    [ReporteController::class, 'inventario']
+                );
+
+                Route::get(
                     '/reportes/diario',
                     [ReporteController::class, 'diario']
                 );

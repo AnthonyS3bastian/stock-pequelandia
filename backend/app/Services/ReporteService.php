@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\DetalleVenta;
+use App\Models\Producto;
 use App\Models\Venta;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -15,6 +16,76 @@ class ReporteService
 
     private const ESTADO_ANULADA =
         'ANULADA';
+
+    /**
+     * Obtener el valor comercial actual
+     * de todos los productos con existencias.
+     */
+    public function obtenerResumenInventario(): array
+    {
+        $productos =
+            Producto::query()
+                ->select([
+                    'id_producto',
+                    'precio_producto',
+                    'stock_producto',
+                    'estado',
+                ])
+                ->get();
+
+        $productosConStock =
+            $productos
+                ->filter(
+                    fn (Producto $producto): bool =>
+                        (int) $producto
+                            ->stock_producto > 0
+                )
+                ->values();
+
+        $valorComercial =
+            round(
+                (float) $productosConStock
+                    ->sum(
+                        function (
+                            Producto $producto
+                        ): float {
+                            return
+                                (int) $producto
+                                    ->stock_producto
+                                * (float) $producto
+                                    ->precio_producto;
+                        }
+                    ),
+                2
+            );
+
+        $totalUnidades =
+            (int) $productosConStock
+                ->sum(
+                    'stock_producto'
+                );
+
+        return [
+            'fecha_calculo' =>
+                CarbonImmutable::now(
+                    'America/Lima'
+                )->toDateTimeString(),
+
+            'valor_comercial_inventario' =>
+                $valorComercial,
+
+            'total_unidades' =>
+                $totalUnidades,
+
+            'productos_con_stock' =>
+                $productosConStock
+                    ->count(),
+
+            'total_productos' =>
+                $productos
+                    ->count(),
+        ];
+    }
 
     /**
      * Obtener el reporte completo de un día.
@@ -499,12 +570,6 @@ class ReporteService
         ];
     }
 
-    /**
-     * Consultar todas las ventas del periodo.
-     *
-     * Se incluyen anuladas para mostrarlas
-     * en el historial reciente.
-     */
     private function consultarVentas(
         CarbonImmutable $inicio,
         CarbonImmutable $fin
@@ -534,10 +599,6 @@ class ReporteService
             ->get();
     }
 
-    /**
-     * Excluir ventas anuladas
-     * de todos los cálculos financieros.
-     */
     private function obtenerVentasContabilizables(
         Collection $ventas
     ): Collection {
@@ -551,9 +612,6 @@ class ReporteService
             ->values();
     }
 
-    /**
-     * Saber si una venta está anulada.
-     */
     private function esVentaAnulada(
         Venta $venta
     ): bool {
@@ -565,9 +623,6 @@ class ReporteService
         ) === self::ESTADO_ANULADA;
     }
 
-    /**
-     * Obtener detalles de ventas válidas.
-     */
     private function obtenerDetalles(
         Collection $ventas
     ): Collection {
@@ -577,9 +632,6 @@ class ReporteService
         );
     }
 
-    /**
-     * Calcular valores principales.
-     */
     private function calcularResumen(
         Collection $ventas,
         Collection $detalles
@@ -653,9 +705,6 @@ class ReporteService
         ];
     }
 
-    /**
-     * Obtener totales por cada hora del día.
-     */
     private function obtenerVentasPorHora(
         Collection $ventas
     ): array {
@@ -711,9 +760,6 @@ class ReporteService
         return $resultado;
     }
 
-    /**
-     * Resolver y validar una fecha.
-     */
     private function resolverFecha(
         ?string $fecha
     ): CarbonImmutable {
@@ -777,9 +823,6 @@ class ReporteService
         return $fechaReporte;
     }
 
-    /**
-     * Obtener ventas agrupadas por día.
-     */
     private function obtenerVentasPorDia(
         Collection $ventas,
         CarbonImmutable $inicioPeriodo,
@@ -872,9 +915,6 @@ class ReporteService
         return $resultado;
     }
 
-    /**
-     * Obtener el mejor día.
-     */
     private function obtenerMejorDia(
         array $ventasPorDia
     ): ?array {
@@ -902,9 +942,6 @@ class ReporteService
             ->first();
     }
 
-    /**
-     * Obtener el producto más vendido.
-     */
     private function obtenerProductoMasVendido(
         Collection $detalles
     ): ?array {
@@ -953,9 +990,6 @@ class ReporteService
             ->first();
     }
 
-    /**
-     * Agrupar ventas válidas por usuario.
-     */
     private function obtenerVentasPorUsuario(
         Collection $ventas
     ): array {
@@ -1005,12 +1039,6 @@ class ReporteService
             ->all();
     }
 
-    /**
-     * Obtener movimientos recientes.
-     *
-     * Las anuladas se muestran,
-     * pero no forman parte de los cálculos.
-     */
     private function obtenerUltimasVentas(
         Collection $ventas
     ): array {
@@ -1153,9 +1181,6 @@ class ReporteService
             ->all();
     }
 
-    /**
-     * Obtener nombre español del día.
-     */
     private function obtenerNombreDia(
         int $numeroDia
     ): string {
@@ -1171,9 +1196,6 @@ class ReporteService
         };
     }
 
-    /**
-     * Obtener nombre español del mes.
-     */
     private function obtenerNombreMes(
         int $numeroMes
     ): string {

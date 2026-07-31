@@ -111,19 +111,19 @@ type ContenidoDrawer =
 export class InventarioComponent
 implements OnInit {
 
-  private categoriaService =
+  private readonly categoriaService =
     inject(CategoriaService);
 
-  private productoService =
+  private readonly productoService =
     inject(ProductoService);
 
-  private authService =
+  private readonly authService =
     inject(AuthService);
 
-  private snackBar =
+  private readonly snackBar =
     inject(MatSnackBar);
 
-  private cdr =
+  private readonly cdr =
     inject(ChangeDetectorRef);
 
   categorias: Categoria[] = [];
@@ -138,6 +138,8 @@ implements OnInit {
   cargandoCategorias = false;
 
   cargandoDetalle = false;
+
+  buscandoCodigo = false;
 
   cambiandoEstadoId:
     number | null = null;
@@ -385,7 +387,7 @@ implements OnInit {
   get totalStockBajo(): number {
 
     return this.productos.filter(
-      (producto) =>
+      producto =>
         this.esStockBajo(producto)
     ).length;
 
@@ -394,7 +396,7 @@ implements OnInit {
   get totalAgotados(): number {
 
     return this.productos.filter(
-      (producto) =>
+      producto =>
         this.esAgotado(producto)
     ).length;
 
@@ -403,7 +405,7 @@ implements OnInit {
   get totalPorVencer(): number {
 
     return this.productos.filter(
-      (producto) =>
+      producto =>
         this.estaProximoAVencer(
           producto
         )
@@ -414,7 +416,7 @@ implements OnInit {
   get totalVencidos(): number {
 
     return this.productos.filter(
-      (producto) =>
+      producto =>
         this.estaVencido(producto)
     ).length;
 
@@ -423,7 +425,7 @@ implements OnInit {
   get totalInactivos(): number {
 
     return this.productos.filter(
-      (producto) =>
+      producto =>
         !producto.estado
     ).length;
 
@@ -432,7 +434,7 @@ implements OnInit {
   get totalAlertas(): number {
 
     return this.productos.filter(
-      (producto) =>
+      producto =>
         this.tieneAlerta(producto)
     ).length;
 
@@ -450,6 +452,115 @@ implements OnInit {
         'todos';
 
     }
+
+  }
+
+  buscarProductoPorCodigoExacto(
+    event: Event
+  ): void {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+    const codigo =
+      this.textoBusqueda.trim();
+
+    if (
+      codigo.length === 0
+      || this.buscandoCodigo
+      || this.cargandoDetalle
+    ) {
+
+      return;
+
+    }
+
+    this.buscandoCodigo = true;
+
+    this.productoService
+      .buscarPorCodigo(codigo)
+      .pipe(
+        finalize(() => {
+
+          this.buscandoCodigo =
+            false;
+
+          this.cdr.detectChanges();
+
+        })
+      )
+      .subscribe({
+
+        next: (response) => {
+
+          const producto =
+            response.data;
+
+          if (!producto) {
+
+            this.mostrarMensaje(
+              'No se encontró un producto con ese código.'
+            );
+
+            return;
+
+          }
+
+          this.textoBusqueda =
+            producto.codigo_producto;
+
+          this.vistaActual =
+            'productos';
+
+          this.filtroDisponibilidad =
+            'todos';
+
+          this.categoriaSeleccionada =
+            0;
+
+          this.estadoSeleccionado =
+            'todos';
+
+          this.productoSeleccionado =
+            producto;
+
+          this.contenidoDrawer =
+            'detalle';
+
+          this.drawerAbierto = true;
+
+          this.cdr.detectChanges();
+
+        },
+
+        error: (error) => {
+
+          console.error(
+            'Error al buscar producto por código:',
+            error
+          );
+
+          if (error?.status === 404) {
+
+            this.mostrarMensaje(
+              'No se encontró un producto con ese código.'
+            );
+
+            return;
+
+          }
+
+          this.mostrarMensaje(
+            this.obtenerMensajeError(
+              error,
+              'No se pudo buscar el producto.'
+            )
+          );
+
+        }
+
+      });
 
   }
 
@@ -1384,7 +1495,7 @@ implements OnInit {
 
     this.productos =
       this.productos.map(
-        (producto) => {
+        producto => {
 
           if (
             producto.id_producto

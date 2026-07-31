@@ -349,15 +349,32 @@
 
         <div class="busqueda">
 
-          <mat-icon>search</mat-icon>
+          @if (buscandoCodigo) {
+
+            <mat-spinner
+              diameter="20">
+            </mat-spinner>
+
+          } @else {
+
+            <mat-icon>search</mat-icon>
+
+          }
 
           <input
             type="text"
+            autocomplete="off"
             placeholder="Buscar por nombre, categoría o código..."
             [(ngModel)]="textoBusqueda"
-            (input)="buscarProducto()">
+            (input)="buscarProducto()"
+            (keydown.enter)="
+              buscarProductoPorCodigoExacto($event)
+            ">
 
-          @if (textoBusqueda) {
+          @if (
+            textoBusqueda
+            && !buscandoCodigo
+          ) {
 
             <button
               type="button"

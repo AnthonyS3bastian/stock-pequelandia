@@ -93,8 +93,12 @@
           <input
             matInput
             type="text"
+            autocomplete="off"
             placeholder="Ingrese o genere un código"
-            formControlName="codigo_producto">
+            formControlName="codigo_producto"
+            (keydown.enter)="
+              manejarEnterCodigo($event)
+            ">
 
           <mat-icon matSuffix>
             qr_code_2
@@ -154,6 +158,7 @@
         </mat-label>
 
         <input
+          #nombreProductoInput
           matInput
           type="text"
           placeholder="Ejemplo: Oso de peluche grande"
@@ -512,7 +517,9 @@
 
     </section>
 
-    <footer class="acciones">
+    <footer
+      class="acciones"
+      [class.edicion]="esEdicion">
 
       <button
         mat-stroked-button
@@ -524,6 +531,24 @@
         Cancelar
 
       </button>
+
+      @if (!esEdicion) {
+
+        <button
+          mat-stroked-button
+          class="btn-repetir"
+          type="button"
+          title="Repetir último producto"
+          aria-label="Repetir último producto"
+          [class.animando]="repitiendoUltimo"
+          [disabled]="!puedeRepetirUltimo"
+          (click)="repetirUltimoProducto()">
+
+          <mat-icon>sync</mat-icon>
+
+        </button>
+
+      }
 
       <button
         mat-flat-button

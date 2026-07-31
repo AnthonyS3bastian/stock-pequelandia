@@ -36,7 +36,11 @@
 
   </header>
 
-  <div class="detalle-contenido">
+  <div
+    class="detalle-contenido"
+    [class.sin-acciones]="
+      !esAdministrador
+    ">
 
     <section class="producto-principal">
 
@@ -50,9 +54,13 @@
 
         <span
           class="estado-stock"
-          [ngClass]="obtenerClaseEstadoStock()">
+          [ngClass]="
+            obtenerClaseEstadoStock()
+          ">
 
-          {{ obtenerTextoEstadoStock() }}
+          {{
+            obtenerTextoEstadoStock()
+          }}
 
         </span>
 
@@ -178,7 +186,9 @@
 
       <div
         class="datos-grid tres-columnas"
-        [class.una-columna]="!esAdministrador">
+        [class.una-columna]="
+          !esAdministrador
+        ">
 
         @if (esAdministrador) {
 
@@ -306,9 +316,13 @@
           </span>
 
           <strong
-            [ngClass]="obtenerClaseEstadoStock()">
+            [ngClass]="
+              obtenerClaseEstadoStock()
+            ">
 
-            {{ obtenerTextoEstadoStock() }}
+            {{
+              obtenerTextoEstadoStock()
+            }}
 
           </strong>
 
@@ -378,21 +392,9 @@
 
   </div>
 
-  <footer
-    class="acciones"
-    [class.solo-cerrar]="!esAdministrador">
+  @if (esAdministrador) {
 
-    <button
-      mat-stroked-button
-      type="button"
-      class="btn-cerrar"
-      (click)="cerrarDetalle()">
-
-      Cerrar
-
-    </button>
-
-    @if (esAdministrador) {
+    <footer class="acciones">
 
       <button
         mat-stroked-button
@@ -409,12 +411,56 @@
       <button
         mat-stroked-button
         type="button"
-        class="btn-acciones"
-        [matMenuTriggerFor]="menuAcciones">
+        class="btn-estado"
+        [class.desactivar]="
+          producto.estado
+        "
+        [class.activar]="
+          !producto.estado
+        "
+        [attr.aria-label]="
+          producto.estado
+            ? 'Desactivar producto'
+            : 'Activar producto'
+        "
+        [title]="
+          producto.estado
+            ? 'Desactivar producto'
+            : 'Activar producto'
+        "
+        (click)="
+          solicitarCambioEstado()
+        ">
 
-        <mat-icon>more_vert</mat-icon>
+        <mat-icon>
 
-        Acciones
+          {{
+            producto.estado
+              ? 'block'
+              : 'check_circle'
+          }}
+
+        </mat-icon>
+
+        {{
+          producto.estado
+            ? 'Desactivar'
+            : 'Activar'
+        }}
+
+      </button>
+
+      <button
+        mat-flat-button
+        type="button"
+        class="btn-stock"
+        (click)="
+          solicitarActualizacionStock()
+        ">
+
+        <mat-icon>inventory</mat-icon>
+
+        Actualizar stock
 
       </button>
 
@@ -430,54 +476,8 @@
 
       </button>
 
-    }
+    </footer>
 
-  </footer>
-
-  <mat-menu
-    #menuAcciones="matMenu"
-    xPosition="before">
-
-    <button
-      mat-menu-item
-      type="button"
-      (click)="solicitarActualizacionStock()">
-
-      <mat-icon>inventory</mat-icon>
-
-      <span>
-        Actualizar stock
-      </span>
-
-    </button>
-
-    <button
-      mat-menu-item
-      type="button"
-      (click)="solicitarCambioEstado()">
-
-      <mat-icon>
-
-        {{
-          producto.estado
-            ? 'block'
-            : 'check_circle'
-        }}
-
-      </mat-icon>
-
-      <span>
-
-        {{
-          producto.estado
-            ? 'Desactivar producto'
-            : 'Activar producto'
-        }}
-
-      </span>
-
-    </button>
-
-  </mat-menu>
+  }
 
 </div>

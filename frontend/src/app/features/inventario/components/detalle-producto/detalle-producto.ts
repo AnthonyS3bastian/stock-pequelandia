@@ -18,10 +18,6 @@ import {
 } from '@angular/material/button';
 
 import {
-  MatMenuModule
-} from '@angular/material/menu';
-
-import {
   Producto
 } from '../../interfaces/producto.interface';
 
@@ -31,8 +27,7 @@ import {
   imports: [
     CommonModule,
     MatIconModule,
-    MatButtonModule,
-    MatMenuModule
+    MatButtonModule
   ],
   templateUrl: './detalle-producto.html',
   styleUrl: './detalle-producto.scss'
@@ -48,10 +43,12 @@ export class DetalleProductoComponent {
   esAdministrador = false;
 
   @Output()
-  cerrar = new EventEmitter<void>();
+  cerrar =
+    new EventEmitter<void>();
 
   @Output()
-  editar = new EventEmitter<Producto>();
+  editar =
+    new EventEmitter<Producto>();
 
   @Output()
   actualizarStock =
@@ -79,7 +76,8 @@ export class DetalleProductoComponent {
 
   }
 
-  solicitarActualizacionStock(): void {
+  solicitarActualizacionStock():
+    void {
 
     this.actualizarStock.emit(
       this.producto
@@ -107,13 +105,15 @@ export class DetalleProductoComponent {
 
     const precioVenta =
       Number(
-        this.producto.precio_producto
+        this.producto
+          .precio_producto
         ?? 0
       );
 
     const precioCompra =
       Number(
-        this.producto.costo_producto
+        this.producto
+          .costo_producto
         ?? 0
       );
 
@@ -133,8 +133,8 @@ export class DetalleProductoComponent {
     }
 
     if (
-      this.producto.stock_producto
-      === 0
+      this.producto
+        .stock_producto === 0
     ) {
 
       return 'Agotado';
@@ -167,8 +167,8 @@ export class DetalleProductoComponent {
     }
 
     if (
-      this.producto.stock_producto
-      === 0
+      this.producto
+        .stock_producto === 0
     ) {
 
       return 'agotado';

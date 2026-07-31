@@ -1,14 +1,19 @@
 import {
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnChanges,
+  OnInit,
   Output,
   SimpleChanges,
+  ViewChild,
   inject
 } from '@angular/core';
 
-import { CommonModule } from '@angular/common';
+import {
+  CommonModule
+} from '@angular/common';
 
 import {
   FormBuilder,
@@ -17,19 +22,42 @@ import {
   Validators
 } from '@angular/forms';
 
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import {
+  MatButtonModule
+} from '@angular/material/button';
+
+import {
+  MatIconModule
+} from '@angular/material/icon';
+
+import {
+  MatFormFieldModule
+} from '@angular/material/form-field';
+
+import {
+  MatInputModule
+} from '@angular/material/input';
+
+import {
+  MatSelectModule
+} from '@angular/material/select';
+
+import {
+  MatDatepickerModule
+} from '@angular/material/datepicker';
+
+import {
+  MatNativeDateModule
+} from '@angular/material/core';
+
 import {
   MatSnackBar,
   MatSnackBarModule
 } from '@angular/material/snack-bar';
 
-import { finalize } from 'rxjs';
+import {
+  finalize
+} from 'rxjs';
 
 import {
   Producto
@@ -62,30 +90,47 @@ import {
   styleUrl: './drawer-producto.scss'
 })
 export class DrawerProductoComponent
-implements OnChanges {
+implements OnInit, OnChanges {
+
+  private static readonly CLAVE_ULTIMO_PRODUCTO =
+    'pequelandia_ultimo_producto';
+
+  @ViewChild(
+    'nombreProductoInput'
+  )
+  nombreProductoInput?:
+    ElementRef<HTMLInputElement>;
 
   @Input()
   categorias: Categoria[] = [];
 
   @Input()
-  productoEditar: Producto | null = null;
+  productoEditar: Producto | null =
+    null;
 
   @Output()
-  cerrar = new EventEmitter<void>();
+  cerrar =
+    new EventEmitter<void>();
 
   @Output()
-  guardado = new EventEmitter<void>();
+  guardado =
+    new EventEmitter<void>();
 
-  private fb =
+  private readonly fb =
     inject(FormBuilder);
 
-  private productoService =
+  private readonly productoService =
     inject(ProductoService);
 
-  private snackBar =
+  private readonly snackBar =
     inject(MatSnackBar);
 
   guardando = false;
+
+  repitiendoUltimo = false;
+
+  ultimoProductoRegistrado:
+    Producto | null = null;
 
   formulario: FormGroup =
     this.fb.group({
@@ -168,6 +213,23 @@ implements OnChanges {
 
   }
 
+  get puedeRepetirUltimo(): boolean {
+
+    return (
+      !this.esEdicion
+      && !this.guardando
+      && this.ultimoProductoRegistrado
+        !== null
+    );
+
+  }
+
+  ngOnInit(): void {
+
+    this.cargarUltimoProductoGuardado();
+
+  }
+
   ngOnChanges(
     changes: SimpleChanges
   ): void {
@@ -194,6 +256,20 @@ implements OnChanges {
 
   }
 
+  manejarEnterCodigo(
+    event: Event
+  ): void {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+    this.nombreProductoInput
+      ?.nativeElement
+      .focus();
+
+  }
+
   generarCodigo(): void {
 
     if (this.guardando) {
@@ -210,10 +286,95 @@ implements OnChanges {
       ).toString();
 
     this.formulario.patchValue({
-
       codigo_producto: codigo
+    });
+
+  }
+
+  repetirUltimoProducto(): void {
+
+    if (
+      !this.puedeRepetirUltimo
+      || !this.ultimoProductoRegistrado
+    ) {
+
+      return;
+
+    }
+
+    const producto =
+      this.ultimoProductoRegistrado;
+
+    this.repitiendoUltimo = true;
+
+    this.formulario.reset({
+
+      codigo_producto: '',
+
+      nombre_producto:
+        producto.nombre_producto,
+
+      descripcion_producto:
+        producto.descripcion_producto
+        ?? '',
+
+      id_categoria:
+        producto.id_categoria,
+
+      costo_producto:
+        Number(
+          producto.costo_producto
+          ?? 0
+        ),
+
+      precio_producto:
+        Number(
+          producto.precio_producto
+          ?? 0
+        ),
+
+      stock_producto:
+        Number(
+          producto.stock_producto
+          ?? 0
+        ),
+
+      stock_minimo_producto:
+        Number(
+          producto
+            .stock_minimo_producto
+          ?? 0
+        ),
+
+      fecha_caducidad_producto:
+        producto.fecha_caducidad
+          ? this.crearFechaLocal(
+              producto.fecha_caducidad
+            )
+          : null,
+
+      estado:
+        Boolean(
+          producto.estado
+        )
 
     });
+
+    this.formulario
+      .markAsPristine();
+
+    this.formulario
+      .markAsUntouched();
+
+    setTimeout(
+      () => {
+
+        this.repitiendoUltimo =
+          false;
+
+      },
+      500
+    );
 
   }
 
@@ -242,7 +403,8 @@ implements OnChanges {
       this.formulario.getRawValue();
 
     const fechaCaducidad =
-      valores.fecha_caducidad_producto;
+      valores
+        .fecha_caducidad_producto;
 
     const producto: Producto = {
 
@@ -276,12 +438,6 @@ implements OnChanges {
           valores.precio_producto
         ),
 
-      /*
-       * En edición se conserva el
-       * stock actual del producto.
-       * El cambio real de stock se
-       * realizará desde otra opción.
-       */
       stock_producto:
         this.esEdicion
           ? Number(
@@ -295,7 +451,8 @@ implements OnChanges {
 
       stock_minimo_producto:
         Number(
-          valores.stock_minimo_producto
+          valores
+            .stock_minimo_producto
         ),
 
       fecha_caducidad:
@@ -316,11 +473,13 @@ implements OnChanges {
 
     if (
       this.esEdicion
-      && this.productoEditar?.id_producto
+      && this.productoEditar
+        ?.id_producto
     ) {
 
       this.actualizarProducto(
-        this.productoEditar.id_producto,
+        this.productoEditar
+          .id_producto,
         producto
       );
 
@@ -350,6 +509,16 @@ implements OnChanges {
       .subscribe({
 
         next: (response) => {
+
+          const productoGuardado =
+            response.data
+            ?? producto;
+
+          this.guardarUltimoProducto(
+            productoGuardado
+          );
+
+          this.limpiarFormularioNuevo();
 
           this.mostrarMensaje(
             response.mensaje
@@ -434,30 +603,7 @@ implements OnChanges {
 
     if (!this.productoEditar) {
 
-      this.formulario.reset({
-
-        codigo_producto: '',
-
-        nombre_producto: '',
-
-        descripcion_producto: '',
-
-        id_categoria: null,
-
-        costo_producto: 0,
-
-        precio_producto: 0,
-
-        stock_producto: 0,
-
-        stock_minimo_producto: 0,
-
-        fecha_caducidad_producto:
-          null,
-
-        estado: true
-
-      });
+      this.limpiarFormularioNuevo();
 
       return;
 
@@ -472,7 +618,7 @@ implements OnChanges {
         )
       : null;
 
-    this.formulario.patchValue({
+    this.formulario.reset({
 
       codigo_producto:
         this.productoEditar
@@ -525,6 +671,171 @@ implements OnChanges {
         )
 
     });
+
+  }
+
+  private limpiarFormularioNuevo():
+    void {
+
+    this.formulario.reset({
+
+      codigo_producto: '',
+
+      nombre_producto: '',
+
+      descripcion_producto: '',
+
+      id_categoria: null,
+
+      costo_producto: 0,
+
+      precio_producto: 0,
+
+      stock_producto: 0,
+
+      stock_minimo_producto: 0,
+
+      fecha_caducidad_producto:
+        null,
+
+      estado: true
+
+    });
+
+    this.formulario
+      .markAsPristine();
+
+    this.formulario
+      .markAsUntouched();
+
+  }
+
+  private guardarUltimoProducto(
+    producto: Producto
+  ): void {
+
+    const productoTemporal:
+      Producto = {
+
+      codigo_producto: '',
+
+      nombre_producto:
+        producto.nombre_producto,
+
+      descripcion_producto:
+        producto.descripcion_producto
+        ?? null,
+
+      id_categoria:
+        Number(
+          producto.id_categoria
+        ),
+
+      costo_producto:
+        Number(
+          producto.costo_producto
+          ?? 0
+        ),
+
+      precio_producto:
+        Number(
+          producto.precio_producto
+          ?? 0
+        ),
+
+      stock_producto:
+        Number(
+          producto.stock_producto
+          ?? 0
+        ),
+
+      stock_minimo_producto:
+        Number(
+          producto
+            .stock_minimo_producto
+          ?? 0
+        ),
+
+      fecha_caducidad:
+        producto.fecha_caducidad
+        ?? null,
+
+      estado:
+        Boolean(
+          producto.estado
+        )
+
+    };
+
+    this.ultimoProductoRegistrado =
+      productoTemporal;
+
+    try {
+
+      sessionStorage.setItem(
+        DrawerProductoComponent
+          .CLAVE_ULTIMO_PRODUCTO,
+        JSON.stringify(
+          productoTemporal
+        )
+      );
+
+    } catch (error) {
+
+      console.warn(
+        'No se pudo guardar temporalmente el último producto:',
+        error
+      );
+
+    }
+
+  }
+
+  private cargarUltimoProductoGuardado():
+    void {
+
+    try {
+
+      const contenido =
+        sessionStorage.getItem(
+          DrawerProductoComponent
+            .CLAVE_ULTIMO_PRODUCTO
+        );
+
+      if (!contenido) {
+
+        return;
+
+      }
+
+      const producto =
+        JSON.parse(
+          contenido
+        ) as Producto;
+
+      if (
+        !producto.nombre_producto
+        || !producto.id_categoria
+      ) {
+
+        return;
+
+      }
+
+      this.ultimoProductoRegistrado =
+        producto;
+
+    } catch (error) {
+
+      console.warn(
+        'No se pudo recuperar el último producto:',
+        error
+      );
+
+      this.ultimoProductoRegistrado =
+        null;
+
+    }
 
   }
 
@@ -603,7 +914,9 @@ implements OnChanges {
         )[0];
 
       if (
-        Array.isArray(primerError)
+        Array.isArray(
+          primerError
+        )
         && primerError.length > 0
       ) {
 
