@@ -1,7 +1,6 @@
 import {
   ChangeDetectorRef,
   Component,
-  OnInit,
   inject
 } from '@angular/core';
 
@@ -60,8 +59,7 @@ type VistaReportes =
   templateUrl: './reportes.html',
   styleUrl: './reportes.scss'
 })
-export class ReportesComponent
-implements OnInit {
+export class ReportesComponent {
 
   private readonly reporteService =
     inject(ReporteService);
@@ -73,22 +71,21 @@ implements OnInit {
     VistaReportes =
       'ventas';
 
+  inventarioInicializado =
+    false;
+
   resumenInventario:
     ResumenInventarioReporte | null =
       null;
 
-  cargandoInventario = false;
+  cargandoInventario =
+    false;
 
-  errorInventario = false;
+  errorInventario =
+    false;
 
   mensajeErrorInventario =
     'No se pudo cargar la valorización del inventario.';
-
-  ngOnInit(): void {
-
-    this.cargarResumenInventario();
-
-  }
 
   seleccionarVista(
     vista: VistaReportes
@@ -98,8 +95,18 @@ implements OnInit {
       vista;
 
     if (
-      vista === 'inventario'
-      && !this.resumenInventario
+      vista !== 'inventario'
+    ) {
+
+      return;
+
+    }
+
+    this.inventarioInicializado =
+      true;
+
+    if (
+      !this.resumenInventario
       && !this.cargandoInventario
     ) {
 
@@ -116,6 +123,9 @@ implements OnInit {
       return;
 
     }
+
+    this.inventarioInicializado =
+      true;
 
     this.cargandoInventario =
       true;

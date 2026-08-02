@@ -53,42 +53,43 @@
 
   </nav>
 
-  @if (
-    vistaActiva === 'ventas'
-  ) {
+  <section
+    class="vista-ventas"
+    [hidden]="vistaActiva !== 'ventas'">
 
-    <section class="vista-ventas">
+    <div class="descripcion-vista">
 
-      <div class="descripcion-vista">
+      <span class="descripcion-icono ventas">
 
-        <span class="descripcion-icono ventas">
+        <mat-icon>
+          monitoring
+        </mat-icon>
 
-          <mat-icon>
-            monitoring
-          </mat-icon>
+      </span>
 
-        </span>
+      <div>
 
-        <div>
+        <h2>
+          Reportes de ventas
+        </h2>
 
-          <h2>
-            Reportes de ventas
-          </h2>
-
-          <p>
-            Revisa ingresos, costos, ganancias,
-            metas y movimientos por periodo.
-          </p>
-
-        </div>
+        <p>
+          Revisa ingresos, costos, ganancias,
+          metas y movimientos por periodo.
+        </p>
 
       </div>
 
-      <mat-tab-group
-        animationDuration="250ms"
-        mat-stretch-tabs="false">
+    </div>
 
-        <mat-tab label="Diario">
+    <mat-tab-group
+      animationDuration="250ms"
+      mat-stretch-tabs="false"
+      [preserveContent]="true">
+
+      <mat-tab label="Diario">
+
+        <ng-template matTabContent>
 
           <div class="contenido-pestana">
 
@@ -97,9 +98,13 @@
 
           </div>
 
-        </mat-tab>
+        </ng-template>
 
-        <mat-tab label="Semanal">
+      </mat-tab>
+
+      <mat-tab label="Semanal">
+
+        <ng-template matTabContent>
 
           <div class="contenido-pestana">
 
@@ -108,9 +113,13 @@
 
           </div>
 
-        </mat-tab>
+        </ng-template>
 
-        <mat-tab label="Mensual">
+      </mat-tab>
+
+      <mat-tab label="Mensual">
+
+        <ng-template matTabContent>
 
           <div class="contenido-pestana">
 
@@ -119,15 +128,19 @@
 
           </div>
 
-        </mat-tab>
+        </ng-template>
 
-      </mat-tab-group>
+      </mat-tab>
 
-    </section>
+    </mat-tab-group>
 
-  } @else {
+  </section>
 
-    <section class="vista-inventario">
+  @if (inventarioInicializado) {
+
+    <section
+      class="vista-inventario"
+      [hidden]="vistaActiva !== 'inventario'">
 
       <header class="cabecera-inventario">
 
