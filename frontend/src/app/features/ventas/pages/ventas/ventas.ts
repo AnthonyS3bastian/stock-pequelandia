@@ -905,10 +905,7 @@ implements OnInit, OnDestroy {
       );
 
     const longitudMaxima =
-      this.tipoComprobante
-      === 'FACTURA'
-        ? 11
-        : 8;
+      this.obtenerLongitudDocumento();
 
     this.numeroDocumento =
       this.numeroDocumento.substring(
@@ -916,15 +913,131 @@ implements OnInit, OnDestroy {
         longitudMaxima
       );
 
-    this.nombreCliente = '';
-    this.direccionCliente = '';
+    this.reiniciarConsultaDocumentoPorEdicion();
+  }
 
-    this.documentoConsultado = false;
+  manejarTeclaDocumento(
+    evento: Event
+  ): void {
+    const eventoTeclado =
+      evento as KeyboardEvent;
 
-    this.estadoConsultaDocumento =
-      'inicial';
+    if (
+      eventoTeclado.ctrlKey
+      || eventoTeclado.metaKey
+      || eventoTeclado.altKey
+    ) {
+      return;
+    }
 
-    this.mensajeConsultaDocumento = '';
+    const teclasPermitidas = [
+      'Backspace',
+      'Delete',
+      'Tab',
+      'ArrowLeft',
+      'ArrowRight',
+      'Home',
+      'End',
+      'Enter'
+    ];
+
+    if (
+      teclasPermitidas.includes(
+        eventoTeclado.key
+      )
+    ) {
+      return;
+    }
+
+    if (
+      !/^\d$/.test(
+        eventoTeclado.key
+      )
+    ) {
+      eventoTeclado.preventDefault();
+    }
+  }
+
+  manejarPegadoDocumento(
+    evento: Event
+  ): void {
+    const eventoPegado =
+      evento as ClipboardEvent;
+
+    eventoPegado.preventDefault();
+
+    const campo =
+      eventoPegado.target as
+        HTMLInputElement | null;
+
+    const textoPegado =
+      eventoPegado.clipboardData
+        ?.getData('text')
+      ?? '';
+
+    const soloDigitos =
+      textoPegado.replace(
+        /\D/g,
+        ''
+      );
+
+    const longitudMaxima =
+      this.obtenerLongitudDocumento();
+
+    const inicioSeleccion =
+      campo?.selectionStart
+      ?? this.numeroDocumento.length;
+
+    const finSeleccion =
+      campo?.selectionEnd
+      ?? inicioSeleccion;
+
+    const valorAnterior =
+      this.numeroDocumento;
+
+    const valorCombinado =
+      (
+        valorAnterior.substring(
+          0,
+          inicioSeleccion
+        )
+        + soloDigitos
+        + valorAnterior.substring(
+          finSeleccion
+        )
+      )
+        .replace(
+          /\D/g,
+          ''
+        )
+        .substring(
+          0,
+          longitudMaxima
+        );
+
+    this.numeroDocumento =
+      valorCombinado;
+
+    this.reiniciarConsultaDocumentoPorEdicion();
+
+    const nuevaPosicion =
+      Math.min(
+        inicioSeleccion
+        + soloDigitos.length,
+        valorCombinado.length
+      );
+
+    this.cdr.detectChanges();
+
+    setTimeout(
+      () => {
+        campo?.setSelectionRange(
+          nuevaPosicion,
+          nuevaPosicion
+        );
+      },
+      0
+    );
   }
 
   consultarDocumento(): void {
@@ -1673,6 +1786,25 @@ implements OnInit, OnDestroy {
     }
 
     this.cdr.detectChanges();
+  }
+
+  private obtenerLongitudDocumento(): number {
+    return this.tipoComprobante
+      === 'FACTURA'
+        ? 11
+        : 8;
+  }
+
+  private reiniciarConsultaDocumentoPorEdicion(): void {
+    this.nombreCliente = '';
+    this.direccionCliente = '';
+
+    this.documentoConsultado = false;
+
+    this.estadoConsultaDocumento =
+      'inicial';
+
+    this.mensajeConsultaDocumento = '';
   }
 
   private validarVentaAntesDeConfirmar(): void {

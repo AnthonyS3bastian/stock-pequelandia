@@ -706,6 +706,7 @@
               <input
                 matInput
                 inputmode="numeric"
+                pattern="[0-9]*"
                 autocomplete="off"
                 [placeholder]="
                   tipoComprobante === 'BOLETA'
@@ -721,6 +722,12 @@
                 [disabled]="
                   operacionEnCurso
                   || consultandoDocumento
+                "
+                (keydown)="
+                  manejarTeclaDocumento($event)
+                "
+                (paste)="
+                  manejarPegadoDocumento($event)
                 "
                 (ngModelChange)="
                   limpiarNumeroDocumento()
