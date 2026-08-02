@@ -3,26 +3,38 @@
   width: 100%;
 }
 
+/* ==========================================================
+   CONTENEDOR
+========================================================== */
+
 .contenedor-reportes {
   min-height: 100%;
   padding: 20px 26px 32px;
   box-sizing: border-box;
+
   background:
     radial-gradient(
       circle at top right,
-      rgba(236, 72, 153, 0.05),
+      rgba(219, 39, 119, 0.04),
       transparent 28%
     ),
-    #f4f5ff;
+    var(--fondo-aplicacion);
 }
+
+/* ==========================================================
+   CABECERA
+========================================================== */
 
 .cabecera {
   width: 100%;
-  margin: 0 0 18px;
+  margin-bottom: 18px;
 
   h1 {
     margin: 0;
-    color: #17172b;
+
+    color:
+      var(--color-texto);
+
     font-size: 30px;
     font-weight: 800;
     line-height: 1.2;
@@ -31,315 +43,1312 @@
 
   p {
     margin: 5px 0 0;
-    color: #74758b;
+
+    color:
+      var(--color-texto-secundario);
+
     font-size: 14px;
   }
 }
 
-.resumen-inventario {
-  margin-bottom: 20px;
-  overflow: hidden;
-  border: 1px solid #e4e2f2;
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow:
-    0 7px 22px
-    rgba(30, 27, 75, 0.06);
-}
+/* ==========================================================
+   SELECTOR DE VISTA
+========================================================== */
 
-.resumen-inventario-header {
-  min-height: 72px;
+.selector-vista {
+  width: fit-content;
+  max-width: 100%;
+
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 18px;
-  border-bottom: 1px solid #eeedf6;
+  gap: 5px;
+
+  margin-bottom: 22px;
+  padding: 5px;
+
+  border:
+    1px solid
+    var(--color-borde);
+
+  border-radius:
+    var(--radio-control);
+
   background:
-    linear-gradient(
-      135deg,
-      #faf5ff,
-      #fdf2f8
-    );
+    var(--superficie);
+
+  box-shadow:
+    var(--sombra-suave);
+
+  button {
+    min-height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 0 17px;
+
+    border: 0;
+
+    border-radius:
+      var(--radio-control);
+
+    color:
+      var(--color-texto-secundario);
+
+    background:
+      transparent;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+      background 150ms ease,
+      color 150ms ease,
+      transform 150ms ease;
+
+    mat-icon {
+      width: 19px;
+      height: 19px;
+
+      font-size: 19px;
+    }
+
+    &:hover:not(.activo) {
+      color:
+        var(--color-primario);
+
+      background:
+        var(--color-primario-suave);
+    }
+
+    &.activo {
+      color: #ffffff;
+
+      background:
+        var(--degradado-principal);
+
+      box-shadow:
+        0 6px 15px
+        rgba(124, 58, 237, 0.18);
+    }
+
+    &:active {
+      transform:
+        scale(0.98);
+    }
+  }
 }
 
-.resumen-inventario-titulo {
+/* ==========================================================
+   VISTAS
+========================================================== */
+
+.vista-ventas,
+.vista-inventario {
+  width: 100%;
+}
+
+.descripcion-vista {
   min-width: 0;
+
   display: flex;
   align-items: center;
   gap: 12px;
+
+  h2 {
+    margin: 0;
+
+    color:
+      var(--color-texto);
+
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 4px 0 0;
+
+    color:
+      var(--color-texto-secundario);
+
+    font-size: 12px;
+    line-height: 1.45;
+  }
 }
 
-.icono-resumen {
-  width: 42px;
-  height: 42px;
+.vista-ventas
+> .descripcion-vista {
+  margin-bottom: 18px;
+}
+
+.descripcion-icono {
+  width: 44px;
+  height: 44px;
+
   display: grid;
   place-items: center;
+
   flex-shrink: 0;
+
   border-radius: 12px;
+
   color: #ffffff;
+
   background:
-    linear-gradient(
-      135deg,
-      #7c3aed,
-      #db2777
-    );
+    var(--degradado-principal);
+
   box-shadow:
     0 7px 16px
     rgba(124, 58, 237, 0.18);
+
+  mat-icon {
+    width: 23px;
+    height: 23px;
+
+    font-size: 23px;
+  }
 }
 
-.resumen-inventario-titulo h2 {
-  margin: 0;
-  color: #1e293b;
-  font-size: 15px;
-  font-weight: 800;
+/* ==========================================================
+   PANEL DE VALORIZACION
+========================================================== */
+
+.vista-inventario {
+  overflow: hidden;
+
+  border:
+    1px solid
+    var(--color-borde);
+
+  border-radius:
+    var(--radio-panel);
+
+  background:
+    var(--superficie);
+
+  box-shadow:
+    var(--sombra-panel);
 }
 
-.resumen-inventario-titulo p {
-  margin: 3px 0 0;
-  color: #64748b;
-  font-size: 11px;
-  line-height: 1.4;
-}
+.cabecera-inventario {
+  min-height: 76px;
 
-.btn-refrescar-resumen {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  padding: 0;
-  border: 1px solid #ddd6fe;
-  border-radius: 10px;
-  color: #6d28d9;
-  background: #ffffff;
-  cursor: pointer;
-}
-
-.btn-refrescar-resumen:disabled {
-  cursor: default;
-  opacity: 0.7;
-}
-
-.estado-resumen {
-  min-height: 130px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 11px;
-  padding: 20px;
-  color: #64748b;
-  font-size: 12px;
-}
+  justify-content: space-between;
+  gap: 18px;
 
-.estado-resumen.error {
-  flex-wrap: wrap;
-  color: #b91c1c;
-  background: #fef2f2;
-}
+  padding: 16px 18px;
 
-.estado-resumen.error > mat-icon {
-  width: 30px;
-  height: 30px;
-  font-size: 30px;
-}
+  border-bottom:
+    1px solid
+    var(--color-borde-suave);
 
-.estado-resumen.error div {
-  display: flex;
-  flex-direction: column;
-}
-
-.estado-resumen.error strong {
-  font-size: 12px;
-}
-
-.estado-resumen.error span {
-  margin-top: 2px;
-  color: #7f1d1d;
-  font-size: 11px;
-}
-
-.estado-resumen.error button {
-  min-height: 34px;
-  margin-left: 8px;
-  padding: 0 13px;
-  border: 0;
-  border-radius: 8px;
-  color: #ffffff;
-  background: #b91c1c;
-  font-size: 11px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.tarjetas-inventario {
-  display: grid;
-  grid-template-columns:
-    minmax(280px, 1.6fr)
-    repeat(3, minmax(145px, 1fr));
-  gap: 12px;
-  padding: 15px 16px;
-}
-
-.tarjeta-valor,
-.tarjeta-dato {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 15px;
-  border: 1px solid #e5e7eb;
-  border-radius: 13px;
-  background: #ffffff;
-}
-
-.tarjeta-valor {
-  border-color: #ddd6fe;
   background:
     linear-gradient(
       135deg,
-      #faf5ff,
-      #fdf2f8
+      var(--color-primario-suave),
+      var(--color-secundario-suave)
     );
 }
 
-.tarjeta-valor-icono,
-.dato-icono {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
+.btn-actualizar {
+  min-height: 39px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
   flex-shrink: 0;
-  border-radius: 11px;
+
+  padding: 0 13px;
+
+  border:
+    1px solid
+    #d8ccff;
+
+  border-radius:
+    var(--radio-control);
+
+  color:
+    var(--color-primario);
+
+  background:
+    var(--superficie);
+
+  font-size: 11px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  mat-icon {
+    width: 19px;
+    height: 19px;
+
+    font-size: 19px;
+  }
+
+  &:hover:not(:disabled) {
+    border-color:
+      #bca7ff;
+
+    background:
+      var(--color-primario-suave);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.75;
+  }
 }
 
-.tarjeta-valor-icono {
-  color: #047857;
-  background: #ecfdf5;
-}
+/* ==========================================================
+   ESTADOS DE CARGA Y ERROR
+========================================================== */
 
-.dato-icono.unidades {
-  color: #2563eb;
-  background: #eff6ff;
-}
+.barra-actualizando {
+  min-height: 35px;
 
-.dato-icono.productos {
-  color: #7c3aed;
-  background: #f5f3ff;
-}
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 
-.dato-icono.catalogo {
-  color: #db2777;
-  background: #fdf2f8;
-}
+  padding: 0 14px;
 
-.tarjeta-valor small,
-.tarjeta-dato small {
-  display: block;
-  margin-bottom: 5px;
-  color: #64748b;
-  font-size: 10px;
+  border-bottom:
+    1px solid
+    #d8ccff;
+
+  color:
+    var(--color-primario-oscuro);
+
+  background:
+    var(--color-primario-suave);
+
+  font-size: 11px;
   font-weight: 700;
 }
 
-.tarjeta-valor strong {
-  display: block;
-  color: #047857;
-  font-size: 25px;
-  font-weight: 900;
-  line-height: 1.1;
+.aviso-error {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  padding: 12px 18px;
+
+  border-bottom:
+    1px solid
+    #fecaca;
+
+  color:
+    var(--color-peligro-oscuro);
+
+  background:
+    var(--color-peligro-suave);
+
+  > mat-icon {
+    width: 25px;
+    height: 25px;
+
+    flex-shrink: 0;
+
+    font-size: 25px;
+  }
+
+  div {
+    min-width: 0;
+
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  strong {
+    font-size: 12px;
+  }
+
+  span {
+    margin-top: 2px;
+
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  button {
+    min-height: 34px;
+
+    flex-shrink: 0;
+
+    padding: 0 12px;
+
+    border: 0;
+
+    border-radius:
+      var(--radio-pequeno);
+
+    color: #ffffff;
+
+    background:
+      var(--color-peligro-oscuro);
+
+    font-size: 10px;
+    font-weight: 800;
+
+    cursor: pointer;
+  }
 }
 
-.tarjeta-valor p {
-  max-width: 370px;
-  margin: 5px 0 0;
-  color: #64748b;
+.estado-inventario {
+  min-height: 360px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 9px;
+
+  padding: 30px;
+
+  text-align: center;
+
+  strong {
+    margin-top: 5px;
+
+    color:
+      var(--color-texto);
+
+    font-size: 15px;
+  }
+
+  > span {
+    max-width: 430px;
+
+    color:
+      var(--color-texto-secundario);
+
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  &.error {
+
+    .estado-icono {
+      width: 56px;
+      height: 56px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 16px;
+
+      color:
+        var(--color-peligro-oscuro);
+
+      background:
+        var(--color-peligro-suave);
+
+      mat-icon {
+        width: 32px;
+        height: 32px;
+
+        font-size: 32px;
+      }
+    }
+
+    button {
+      min-height: 39px;
+
+      display: flex;
+      align-items: center;
+      gap: 7px;
+
+      margin-top: 8px;
+      padding: 0 15px;
+
+      border: 0;
+
+      border-radius:
+        var(--radio-control);
+
+      color: #ffffff;
+
+      background:
+        var(--degradado-principal);
+
+      font-size: 11px;
+      font-weight: 800;
+
+      cursor: pointer;
+
+      mat-icon {
+        width: 18px;
+        height: 18px;
+
+        font-size: 18px;
+      }
+    }
+  }
+}
+
+/* ==========================================================
+   TARJETAS FINANCIERAS
+========================================================== */
+
+.tarjetas-valorizacion {
+  display: grid;
+
+  grid-template-columns:
+    1.25fr
+    1fr
+    1fr;
+
+  gap: 12px;
+
+  padding:
+    16px
+    16px
+    13px;
+}
+
+.tarjeta-principal,
+.tarjeta-valorizacion {
+  min-width: 0;
+  min-height: 104px;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 15px 16px;
+
+  border:
+    1px solid
+    var(--color-borde);
+
+  border-radius:
+    var(--radio-tarjeta);
+
+  background:
+    var(--superficie);
+
+  small {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color:
+      var(--color-texto-secundario);
+
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  strong {
+    display: block;
+
+    color:
+      var(--color-texto);
+
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1.12;
+  }
+
+  p {
+    max-width: 370px;
+
+    margin: 6px 0 0;
+
+    color:
+      var(--color-texto-suave);
+
+    font-size: 10px;
+    line-height: 1.45;
+  }
+}
+
+.tarjeta-principal {
+  border-color:
+    #d8ccff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #faf8ff,
+      var(--color-secundario-suave)
+    );
+
+  box-shadow:
+    0 7px 18px
+    rgba(124, 58, 237, 0.07);
+
+  strong {
+    color:
+      var(--color-dinero);
+
+    font-size: 27px;
+  }
+}
+
+.tarjeta-icono {
+  width: 44px;
+  height: 44px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 12px;
+
+  mat-icon {
+    width: 23px;
+    height: 23px;
+
+    font-size: 23px;
+  }
+
+  /*
+   * Valor potencial de venta:
+   * mismo color utilizado para dinero.
+   */
+
+  &.venta {
+    color:
+      var(--color-dinero);
+
+    background:
+      var(--color-dinero-suave);
+  }
+
+  /*
+   * Valor al costo:
+   * naranja de advertencia/costos.
+   */
+
+  &.costo {
+    color:
+      var(--color-advertencia);
+
+    background:
+      var(--color-advertencia-suave);
+  }
+
+  /*
+   * Ganancia potencial:
+   * verde de resultado correcto.
+   */
+
+  &.ganancia {
+    color:
+      var(--color-correcto);
+
+    background:
+      var(--color-correcto-suave);
+  }
+}
+
+/* ==========================================================
+   RESUMEN DE CANTIDADES
+========================================================== */
+
+.resumen-cantidades {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(145px, 1fr)
+    )
+    minmax(220px, 1.4fr);
+
+  gap: 10px;
+
+  padding:
+    0
+    16px
+    16px;
+
+  article {
+    min-width: 0;
+    min-height: 68px;
+
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    padding: 11px 13px;
+
+    border:
+      1px solid
+      var(--color-borde);
+
+    border-radius:
+      var(--radio-tarjeta);
+
+    background:
+      var(--superficie);
+  }
+
+  small {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color:
+      var(--color-texto-secundario);
+
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  strong {
+    display: block;
+
+    color:
+      var(--color-texto);
+
+    font-size: 19px;
+    font-weight: 900;
+  }
+
+  .fecha-calculo strong {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  /*
+   * Unidades disponibles:
+   * productos en rosado.
+   */
+
+  article:nth-child(1)
+  .cantidad-icono {
+    color:
+      var(--color-producto);
+
+    background:
+      var(--color-producto-suave);
+  }
+
+  /*
+   * Productos con stock:
+   * verde de disponibilidad.
+   */
+
+  article:nth-child(2)
+  .cantidad-icono {
+    color:
+      var(--color-correcto);
+
+    background:
+      var(--color-correcto-suave);
+  }
+
+  /*
+   * Productos registrados:
+   * morado de categorías/inventario.
+   */
+
+  article:nth-child(3)
+  .cantidad-icono {
+    color:
+      var(--color-categoria);
+
+    background:
+      var(--color-categoria-suave);
+  }
+
+  /*
+   * Última actualización:
+   * azul de información.
+   */
+
+  article:nth-child(4)
+  .cantidad-icono {
+    color:
+      var(--color-informacion);
+
+    background:
+      var(--color-informacion-suave);
+  }
+}
+
+.cantidad-icono {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 11px;
+
+  mat-icon {
+    width: 20px;
+    height: 20px;
+
+    font-size: 20px;
+  }
+}
+
+/* ==========================================================
+   RANKING
+========================================================== */
+
+.ranking {
+  margin:
+    0
+    16px
+    16px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    var(--color-borde);
+
+  border-radius:
+    var(--radio-tarjeta);
+
+  background:
+    var(--superficie);
+}
+
+.ranking-header {
+  min-height: 62px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+
+  padding: 13px 15px;
+
+  border-bottom:
+    1px solid
+    var(--color-borde-suave);
+
+  background:
+    var(--superficie-suave);
+
+  h3 {
+    margin: 0;
+
+    color:
+      var(--color-texto);
+
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 4px 0 0;
+
+    color:
+      var(--color-texto-secundario);
+
+    font-size: 11px;
+    line-height: 1.45;
+  }
+}
+
+.criterio-ranking {
+  min-height: 30px;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  flex-shrink: 0;
+
+  padding: 0 10px;
+
+  border-radius:
+    var(--radio-control);
+
+  color:
+    var(--color-primario-oscuro);
+
+  background:
+    var(--color-primario-suave);
+
   font-size: 10px;
-  line-height: 1.4;
+  font-weight: 800;
+
+  mat-icon {
+    width: 16px;
+    height: 16px;
+
+    font-size: 16px;
+  }
 }
 
-.tarjeta-dato strong {
-  display: block;
-  color: #1e293b;
-  font-size: 21px;
+/* ==========================================================
+   TABLA DE VALORIZACION
+========================================================== */
+
+.tabla-contenedor {
+  width: 100%;
+
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  min-width: 1180px;
+
+  table-layout: fixed;
+  border-collapse: collapse;
+
+  th,
+  td {
+    box-sizing: border-box;
+
+    padding: 12px;
+
+    border-bottom:
+      1px solid
+      var(--color-borde-suave);
+
+    vertical-align: middle;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  th {
+    height: 42px;
+
+    color:
+      var(--color-texto-secundario);
+
+    background:
+      var(--superficie-alternativa);
+
+    font-size: 11px;
+    font-weight: 800;
+
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+
+  td {
+    height: 58px;
+
+    color:
+      #334155;
+
+    font-size: 13px;
+  }
+
+  tbody tr {
+    transition:
+      background 120ms ease;
+
+    &:hover {
+      background:
+        var(--superficie-suave);
+    }
+
+    &:last-child td {
+      border-bottom: 0;
+    }
+  }
+
+  .numero {
+    text-align: right;
+  }
+
+  /*
+   * La columna de valor de venta
+   * es el dato financiero principal.
+   */
+
+  th.destacado {
+    color:
+      var(--color-dinero);
+
+    background:
+      var(--color-dinero-suave);
+  }
+}
+
+.columna-puesto {
+  width: 68px;
+
+  text-align: center !important;
+}
+
+.columna-producto {
+  width: 280px;
+}
+
+.columna-estado {
+  width: 115px;
+
+  text-align: center !important;
+}
+
+.columna-stock {
+  width: 75px;
+}
+
+/* ==========================================================
+   PUESTOS
+========================================================== */
+
+.puesto {
+  width: 28px;
+  height: 28px;
+
+  display: inline-grid;
+  place-items: center;
+
+  border-radius:
+    var(--radio-redondo);
+
+  color:
+    var(--color-primario-oscuro);
+
+  background:
+    var(--color-primario-suave);
+
+  font-size: 11px;
+  font-weight: 900;
+
+  &.primer-puesto {
+    color: #ffffff;
+
+    background:
+      var(--degradado-principal);
+  }
+
+  &.segundo-puesto {
+    color: #475569;
+
+    background:
+      #e2e8f0;
+  }
+
+  &.tercer-puesto {
+    color: #9a3412;
+
+    background:
+      #ffedd5;
+  }
+}
+
+/* ==========================================================
+   PRODUCTO
+========================================================== */
+
+.producto-info {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  strong {
+    display: block;
+
+    max-width: 250px;
+
+    overflow: hidden;
+
+    color:
+      var(--color-texto);
+
+    font-size: 13px;
+    font-weight: 800;
+
+    text-overflow: ellipsis;
+  }
+
+  span {
+    display: block;
+
+    max-width: 250px;
+
+    margin-top: 4px;
+
+    overflow: hidden;
+
+    color:
+      var(--color-texto-suave);
+
+    font-size: 11px;
+
+    text-overflow: ellipsis;
+  }
+}
+
+/* ==========================================================
+   ESTADOS
+========================================================== */
+
+.estado-producto {
+  min-width: 78px;
+  min-height: 27px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+
+  box-sizing: border-box;
+
+  padding: 0 9px;
+
+  border:
+    1px solid
+    #a7f3d0;
+
+  border-radius:
+    var(--radio-redondo);
+
+  color:
+    var(--color-correcto);
+
+  background:
+    var(--color-correcto-suave);
+
+  font-size: 10px;
+  font-weight: 800;
+
+  mat-icon {
+    width: 14px;
+    height: 14px;
+
+    font-size: 14px;
+  }
+
+  /*
+   * Igual que Inventario:
+   * inactivo se representa en gris.
+   */
+
+  &.inactivo {
+    border-color:
+      #cbd5e1;
+
+    color:
+      var(--color-inactivo);
+
+    background:
+      var(--color-inactivo-suave);
+  }
+}
+
+/* ==========================================================
+   VALORES DE LA TABLA
+========================================================== */
+
+td.stock {
+  color:
+    var(--color-texto);
+
+  font-weight: 800;
+}
+
+td.valor-venta {
+  color:
+    var(--color-dinero);
+
+  background:
+    #faf8ff;
+
   font-weight: 900;
 }
+
+td.ganancia {
+  color:
+    var(--color-correcto);
+
+  font-weight: 800;
+
+  &.negativa {
+    color:
+      var(--color-peligro);
+
+    background:
+      var(--color-peligro-suave);
+  }
+}
+
+/* ==========================================================
+   TABLA VACIA
+========================================================== */
+
+.ranking-vacio {
+  min-height: 220px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 7px;
+
+  padding: 25px;
+
+  text-align: center;
+
+  mat-icon {
+    width: 42px;
+    height: 42px;
+
+    color:
+      var(--color-inactivo);
+
+    font-size: 42px;
+  }
+
+  strong {
+    color:
+      var(--color-texto);
+
+    font-size: 13px;
+  }
+
+  span {
+    max-width: 400px;
+
+    color:
+      var(--color-texto-secundario);
+
+    font-size: 11px;
+    line-height: 1.45;
+  }
+}
+
+/* ==========================================================
+   NOTA INFORMATIVA
+========================================================== */
 
 .nota-inventario {
   display: flex;
   align-items: flex-start;
   gap: 7px;
-  padding: 0 17px 15px;
+
+  padding: 12px 15px;
   margin: 0;
-  color: #64748b;
+
+  border-top:
+    1px solid
+    var(--color-borde-suave);
+
+  color:
+    var(--color-texto-secundario);
+
+  background:
+    var(--superficie-suave);
+
   font-size: 10px;
-  line-height: 1.45;
+  line-height: 1.5;
+
+  mat-icon {
+    width: 16px;
+    height: 16px;
+
+    flex-shrink: 0;
+
+    color:
+      var(--color-informacion);
+
+    font-size: 16px;
+  }
 }
 
-.nota-inventario mat-icon {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  font-size: 16px;
-  color: #7c3aed;
-}
+/* ==========================================================
+   TABS DE REPORTES
+========================================================== */
 
 mat-tab-group {
   width: 100%;
 }
 
-:host ::ng-deep .mat-mdc-tab-header {
+:host
+::ng-deep
+.mat-mdc-tab-header {
   width: fit-content;
   max-width: 100%;
+
   margin-bottom: 18px;
+
   overflow: hidden;
-  border: 1px solid #ebeaf4;
-  border-radius: 12px;
-  background: #ffffff;
-  box-shadow:
-    0 5px 16px
-    rgba(30, 27, 75, 0.055);
-}
 
-:host ::ng-deep .mat-mdc-tab-label-container {
-  border: 0;
-}
+  border:
+    1px solid
+    var(--color-borde);
 
-:host ::ng-deep .mat-mdc-tab {
-  min-width: 128px;
-  height: 44px;
-  padding: 0 20px;
-}
+  border-radius:
+    var(--radio-control);
 
-:host ::ng-deep .mat-mdc-tab .mdc-tab__text-label {
-  color: #68697d;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-:host ::ng-deep .mat-mdc-tab.mdc-tab--active {
-  border-radius: 9px;
   background:
-    linear-gradient(
-      90deg,
-      #7c3aed,
-      #ec4899
-    );
+    var(--superficie);
+
+  box-shadow:
+    var(--sombra-suave);
 }
 
 :host
-  ::ng-deep
-  .mat-mdc-tab.mdc-tab--active
-  .mdc-tab__text-label {
+::ng-deep
+.mat-mdc-tab-label-container {
+  border: 0;
+}
+
+:host
+::ng-deep
+.mat-mdc-tab {
+  min-width: 128px;
+  height: 44px;
+
+  padding: 0 20px;
+}
+
+:host
+::ng-deep
+.mat-mdc-tab
+.mdc-tab__text-label {
+  color:
+    var(--color-texto-secundario);
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+:host
+::ng-deep
+.mat-mdc-tab.mdc-tab--active {
+  border-radius:
+    var(--radio-control);
+
+  background:
+    var(--degradado-principal);
+}
+
+:host
+::ng-deep
+.mat-mdc-tab.mdc-tab--active
+.mdc-tab__text-label {
   color: #ffffff;
 }
 
-:host ::ng-deep .mdc-tab-indicator {
+:host
+::ng-deep
+.mdc-tab-indicator {
   display: none;
 }
 
-:host ::ng-deep .mat-mdc-tab-body-content {
+:host
+::ng-deep
+.mat-mdc-tab-body-content {
   overflow: visible;
 }
 
@@ -347,15 +1356,31 @@ mat-tab-group {
   width: 100%;
 }
 
-@media (max-width: 1050px) {
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
 
-  .tarjetas-inventario {
+@media (max-width: 1150px) {
+
+  .tarjetas-valorizacion {
     grid-template-columns:
-      repeat(3, minmax(0, 1fr));
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
   }
 
-  .tarjeta-valor {
-    grid-column: 1 / -1;
+  .tarjeta-principal {
+    grid-column:
+      1 / -1;
+  }
+
+  .resumen-cantidades {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
   }
 
 }
@@ -370,22 +1395,77 @@ mat-tab-group {
     font-size: 26px;
   }
 
-  .tarjetas-inventario {
+  .selector-vista {
+    width: 100%;
+
+    button {
+      min-width: 0;
+
+      flex: 1;
+
+      padding: 0 10px;
+    }
+  }
+
+  .cabecera-inventario {
+    align-items: flex-start;
+  }
+
+  .btn-actualizar {
+    width: 40px;
+
+    padding: 0;
+
+    span {
+      display: none;
+    }
+  }
+
+  .tarjetas-valorizacion {
     grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+      1fr;
   }
 
-  .tarjeta-valor {
-    grid-column: 1 / -1;
+  .tarjeta-principal {
+    grid-column:
+      auto;
   }
 
-  :host ::ng-deep .mat-mdc-tab-header {
+  .resumen-cantidades {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .ranking-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .aviso-error {
+    align-items: flex-start;
+    flex-wrap: wrap;
+
+    button {
+      margin-left: 36px;
+    }
+  }
+
+  :host
+  ::ng-deep
+  .mat-mdc-tab-header {
     width: 100%;
   }
 
-  :host ::ng-deep .mat-mdc-tab {
+  :host
+  ::ng-deep
+  .mat-mdc-tab {
     min-width: 0;
+
     flex: 1;
+
     padding: 0 10px;
   }
 
@@ -393,39 +1473,83 @@ mat-tab-group {
 
 @media (max-width: 520px) {
 
-  .resumen-inventario-header {
+  .contenedor-reportes {
+    padding: 12px;
+  }
+
+  .selector-vista {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+
+      justify-content: flex-start;
+    }
+  }
+
+  .cabecera-inventario {
+    padding: 14px;
+  }
+
+  .descripcion-vista {
     align-items: flex-start;
   }
 
-  .resumen-inventario-titulo {
+  .tarjetas-valorizacion {
+    padding:
+      14px
+      14px
+      11px;
+  }
+
+  .tarjeta-principal,
+  .tarjeta-valorizacion {
     align-items: flex-start;
+
+    padding: 15px;
+
+    strong {
+      font-size: 22px;
+    }
   }
 
-  .tarjetas-inventario {
-    grid-template-columns: 1fr;
+  .resumen-cantidades {
+    grid-template-columns:
+      1fr;
+
+    padding:
+      0
+      14px
+      14px;
   }
 
-  .tarjeta-valor {
-    grid-column: auto;
+  .ranking {
+    margin:
+      0
+      14px
+      14px;
   }
 
-  .tarjeta-valor strong {
-    font-size: 22px;
+  .aviso-error button {
+    width: 100%;
+
+    margin-left: 0;
   }
 
 }
 
 @media (max-width: 480px) {
 
-  .contenedor-reportes {
-    padding: 12px;
-  }
-
-  :host ::ng-deep .mat-mdc-tab {
+  :host
+  ::ng-deep
+  .mat-mdc-tab {
     padding: 0 6px;
   }
 
-  :host ::ng-deep .mat-mdc-tab .mdc-tab__text-label {
+  :host
+  ::ng-deep
+  .mat-mdc-tab
+  .mdc-tab__text-label {
     font-size: 12px;
   }
 

@@ -1,0 +1,129 @@
+﻿ESTRUCTURA DE: .\backend
+GENERADO: 02/08/2026 00:11
+
+[CARPETA] app
+[CARPETA] bootstrap
+[CARPETA] config
+[CARPETA] database
+[CARPETA] public
+[CARPETA] resources
+[CARPETA] routes
+[CARPETA] storage
+[CARPETA] tests
+[ARCHIVO] .editorconfig
+[ARCHIVO] .env.example
+[ARCHIVO] .gitattributes
+[ARCHIVO] .gitignore
+[ARCHIVO] .npmrc
+[ARCHIVO] artisan
+[ARCHIVO] composer.json
+[ARCHIVO] composer.lock
+[ARCHIVO] package.json
+[ARCHIVO] phpunit.xml
+[ARCHIVO] README.md
+[ARCHIVO] vite.config.js
+    [CARPETA] Http
+    [CARPETA] Models
+    [CARPETA] Providers
+    [CARPETA] Services
+        [CARPETA] Controllers
+        [CARPETA] Middleware
+        [CARPETA] Requests
+            [ARCHIVO] AuthController.php
+            [ARCHIVO] CategoriaController.php
+            [ARCHIVO] ConsultaDocumentoController.php
+            [ARCHIVO] Controller.php
+            [ARCHIVO] DashboardController.php
+            [ARCHIVO] ProductoController.php
+            [ARCHIVO] ReporteController.php
+            [ARCHIVO] UsuarioController.php
+            [ARCHIVO] VentaController.php
+            [ARCHIVO] AdministradorMiddleware.php
+            [ARCHIVO] ActualizarStockProductoRequest.php
+            [ARCHIVO] CambiarPasswordRequest.php
+            [ARCHIVO] StoreCategoriaRequest.php
+            [ARCHIVO] StoreProductoRequest.php
+            [ARCHIVO] StoreUsuarioRequest.php
+            [ARCHIVO] StoreVentaRequest.php
+            [ARCHIVO] UpdateCategoriaRequest.php
+            [ARCHIVO] UpdateProductoRequest.php
+        [ARCHIVO] Categoria.php
+        [ARCHIVO] Cliente.php
+        [ARCHIVO] Comprobante.php
+        [ARCHIVO] DetalleVenta.php
+        [ARCHIVO] Personal.php
+        [ARCHIVO] Producto.php
+        [ARCHIVO] SerieComprobante.php
+        [ARCHIVO] Usuario.php
+        [ARCHIVO] Venta.php
+        [ARCHIVO] AppServiceProvider.php
+        [ARCHIVO] CategoriaService.php
+        [ARCHIVO] ClienteService.php
+        [ARCHIVO] ConsultaDocumentoService.php
+        [ARCHIVO] DashboardService.php
+        [ARCHIVO] ProductoService.php
+        [ARCHIVO] ReporteService.php
+        [ARCHIVO] UsuarioService.php
+        [ARCHIVO] VentaService.php
+    [ARCHIVO] app.php
+    [ARCHIVO] providers.php
+    [ARCHIVO] app.php
+    [ARCHIVO] auth.php
+    [ARCHIVO] cache.php
+    [ARCHIVO] database.php
+    [ARCHIVO] filesystems.php
+    [ARCHIVO] logging.php
+    [ARCHIVO] mail.php
+    [ARCHIVO] queue.php
+    [ARCHIVO] services.php
+    [ARCHIVO] session.php
+    [CARPETA] factories
+    [CARPETA] migrations
+    [CARPETA] seeders
+    [ARCHIVO] .gitignore
+    [ARCHIVO] database.sqlite
+        [ARCHIVO] UserFactory.php
+        [ARCHIVO] 0001_01_01_000001_create_cache_table.php
+        [ARCHIVO] 0001_01_01_000002_create_jobs_table.php
+        [ARCHIVO] 2026_07_15_034708_create_personal_table.php
+        [ARCHIVO] 2026_07_15_040323_create_usuario_table.php
+        [ARCHIVO] 2026_07_15_044950_create_cliente_table.php
+        [ARCHIVO] 2026_07_15_045600_create_categoria_table.php
+        [ARCHIVO] 2026_07_15_045639_create_producto_table.php
+        [ARCHIVO] 2026_07_15_045713_create_serie_comprobante_table.php
+        [ARCHIVO] 2026_07_15_055428_create_comprobante_table.php
+        [ARCHIVO] 2026_07_15_055454_create_venta_table.php
+        [ARCHIVO] 2026_07_15_055509_create_detalle_venta_table.php
+        [ARCHIVO] 2026_07_16_032217_create_personal_access_tokens_table.php
+        [ARCHIVO] 2026_07_23_183415_add_stock_minimo_producto_to_producto_table.php
+        [ARCHIVO] 2026_07_27_021158_agregar_anulacion_a_venta.php
+        [ARCHIVO] CategoriaSeeder.php
+        [ARCHIVO] ClienteSeeder.php
+        [ARCHIVO] DatabaseSeeder.php
+        [ARCHIVO] PersonalSeeder.php
+        [ARCHIVO] SerieComprobanteSeeder.php
+        [ARCHIVO] UsuarioSeeder.php
+    [ARCHIVO] .htaccess
+    [ARCHIVO] favicon.ico
+    [ARCHIVO] index.php
+    [ARCHIVO] robots.txt
+    [CARPETA] css
+    [CARPETA] js
+    [CARPETA] views
+        [ARCHIVO] app.css
+        [ARCHIVO] app.js
+        [ARCHIVO] welcome.blade.php
+    [ARCHIVO] api.php
+    [ARCHIVO] console.php
+    [ARCHIVO] web.php
+    [CARPETA] app
+        [CARPETA] private
+        [CARPETA] public
+        [ARCHIVO] .gitignore
+            [ARCHIVO] .gitignore
+            [ARCHIVO] .gitignore
+    [CARPETA] Feature
+    [CARPETA] Unit
+    [ARCHIVO] TestCase.php
+        [ARCHIVO] ExampleTest.php
+        [ARCHIVO] ExampleTest.php

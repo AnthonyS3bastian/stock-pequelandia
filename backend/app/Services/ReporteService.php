@@ -18,7 +18,7 @@ class ReporteService
         'ANULADA';
 
     /**
-     * Obtener el valor comercial actual
+     * Obtener la valorizacion actual
      * de todos los productos con existencias.
      */
     public function obtenerResumenInventario(): array
@@ -27,6 +27,9 @@ class ReporteService
             Producto::query()
                 ->select([
                     'id_producto',
+                    'codigo_producto',
+                    'nombre_producto',
+                    'costo_producto',
                     'precio_producto',
                     'stock_producto',
                     'estado',
@@ -42,20 +45,60 @@ class ReporteService
                 )
                 ->values();
 
-        $valorComercial =
+        $rankingProductos =
+            $productosConStock
+                ->map(
+                    fn (Producto $producto): array =>
+                        $this->crearValorizacionProducto(
+                            $producto
+                        )
+                )
+                ->sortByDesc(
+                    'valor_venta_total'
+                )
+                ->values()
+                ->map(
+                    function (
+                        array $producto,
+                        int $indice
+                    ): array {
+                        return [
+                            'puesto' =>
+                                $indice + 1,
+
+                            ...$producto,
+                        ];
+                    }
+                )
+                ->all();
+
+        $productosValorizados =
+            collect(
+                $rankingProductos
+            );
+
+        $valorInventarioCosto =
             round(
-                (float) $productosConStock
+                (float) $productosValorizados
                     ->sum(
-                        function (
-                            Producto $producto
-                        ): float {
-                            return
-                                (int) $producto
-                                    ->stock_producto
-                                * (float) $producto
-                                    ->precio_producto;
-                        }
+                        'valor_costo_total'
                     ),
+                2
+            );
+
+        $valorPotencialVenta =
+            round(
+                (float) $productosValorizados
+                    ->sum(
+                        'valor_venta_total'
+                    ),
+                2
+            );
+
+        $gananciaPotencialInventario =
+            round(
+                $valorPotencialVenta
+                - $valorInventarioCosto,
                 2
             );
 
@@ -71,8 +114,17 @@ class ReporteService
                     'America/Lima'
                 )->toDateTimeString(),
 
+            'valor_inventario_costo' =>
+                $valorInventarioCosto,
+
+            'valor_potencial_venta' =>
+                $valorPotencialVenta,
+
+            'ganancia_potencial_inventario' =>
+                $gananciaPotencialInventario,
+
             'valor_comercial_inventario' =>
-                $valorComercial,
+                $valorPotencialVenta,
 
             'total_unidades' =>
                 $totalUnidades,
@@ -84,11 +136,14 @@ class ReporteService
             'total_productos' =>
                 $productos
                     ->count(),
+
+            'ranking_productos' =>
+                $rankingProductos,
         ];
     }
 
     /**
-     * Obtener el reporte completo de un día.
+     * Obtener el reporte completo de un dia.
      */
     public function obtenerReporteDiario(
         ?string $fecha
@@ -570,6 +625,144 @@ class ReporteService
         ];
     }
 
+    private function crearValorizacionProducto(
+        Producto $producto
+    ): array {
+        $stock =
+            (int) $producto
+                ->stock_producto;
+
+        $costoUnitario =
+            round(
+                (float) $producto
+                    ->costo_producto,
+                2
+            );
+
+        $precioVenta =
+            round(
+                (float) $producto
+                    ->precio_producto,
+                2
+            );
+
+        $valorCostoTotal =
+            round(
+                $costoUnitario
+                * $stock,
+                2
+            );
+
+        $valorVentaTotal =
+            round(
+                $precioVenta
+                * $stock,
+                2
+            );
+
+        $gananciaPotencial =
+            round(
+                $valorVentaTotal
+                - $valorCostoTotal,
+                2
+            );
+
+        $margenGanancia =
+            $valorCostoTotal > 0
+                ? round(
+                    (
+                        $gananciaPotencial
+                        / $valorCostoTotal
+                    ) * 100,
+                    2
+                )
+                : null;
+
+        $estado =
+            $this->normalizarEstadoProducto(
+                $producto->estado
+            );
+
+        return [
+            'id_producto' =>
+                (int) $producto
+                    ->id_producto,
+
+            'codigo_producto' =>
+                (string) $producto
+                    ->codigo_producto,
+
+            'nombre_producto' =>
+                (string) $producto
+                    ->nombre_producto,
+
+            'estado' =>
+                $estado,
+
+            'stock_producto' =>
+                $stock,
+
+            'costo_unitario' =>
+                $costoUnitario,
+
+            'precio_venta' =>
+                $precioVenta,
+
+            'valor_costo_total' =>
+                $valorCostoTotal,
+
+            'valor_venta_total' =>
+                $valorVentaTotal,
+
+            'ganancia_potencial' =>
+                $gananciaPotencial,
+
+            'margen_ganancia' =>
+                $margenGanancia,
+        ];
+    }
+
+    private function normalizarEstadoProducto(
+        mixed $estado
+    ): string {
+        if (is_bool($estado)) {
+            return $estado
+                ? 'Activo'
+                : 'Inactivo';
+        }
+
+        $estadoNormalizado =
+            strtoupper(
+                trim(
+                    (string) $estado
+                )
+            );
+
+        return match ($estadoNormalizado) {
+            '1',
+            'ACTIVO',
+            'ACTIVE',
+            'HABILITADO',
+            'TRUE',
+            'SI',
+            'SÍ' =>
+                'Activo',
+
+            '0',
+            '',
+            'INACTIVO',
+            'INACTIVE',
+            'DESHABILITADO',
+            'FALSE',
+            'NO',
+            'NULL' =>
+                'Inactivo',
+
+            default =>
+                'Inactivo',
+        };
+    }
+
     private function consultarVentas(
         CarbonImmutable $inicio,
         CarbonImmutable $fin
@@ -798,7 +991,7 @@ class ReporteService
         ) {
             throw ValidationException::withMessages([
                 'fecha' => [
-                    'La fecha ingresada no es válida.',
+                    'La fecha ingresada no es valida.',
                 ],
             ]);
         }
@@ -1187,10 +1380,10 @@ class ReporteService
         return match ($numeroDia) {
             1 => 'lunes',
             2 => 'martes',
-            3 => 'miércoles',
+            3 => 'miercoles',
             4 => 'jueves',
             5 => 'viernes',
-            6 => 'sábado',
+            6 => 'sabado',
             7 => 'domingo',
             default => '',
         };

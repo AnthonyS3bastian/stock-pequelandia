@@ -1,6 +1,6 @@
 <div class="contenedor-reportes">
 
-  <div class="cabecera">
+  <header class="cabecera">
 
     <div>
 
@@ -9,23 +9,62 @@
       </h1>
 
       <p>
-        Consulta las ventas y resultados del negocio.
+        Consulta las ventas y el valor actual
+        del inventario del negocio.
       </p>
 
     </div>
 
-  </div>
+  </header>
 
-  <section class="resumen-inventario">
+  <nav
+    class="selector-vista"
+    aria-label="Secciones de reportes">
 
-    <header class="resumen-inventario-header">
+    <button
+      type="button"
+      [class.activo]="vistaActiva === 'ventas'"
+      (click)="seleccionarVista('ventas')">
 
-      <div class="resumen-inventario-titulo">
+      <mat-icon>
+        analytics
+      </mat-icon>
 
-        <span class="icono-resumen">
+      <span>
+        Reportes de ventas
+      </span>
+
+    </button>
+
+    <button
+      type="button"
+      [class.activo]="vistaActiva === 'inventario'"
+      (click)="seleccionarVista('inventario')">
+
+      <mat-icon>
+        inventory_2
+      </mat-icon>
+
+      <span>
+        Valorización del inventario
+      </span>
+
+    </button>
+
+  </nav>
+
+  @if (
+    vistaActiva === 'ventas'
+  ) {
+
+    <section class="vista-ventas">
+
+      <div class="descripcion-vista">
+
+        <span class="descripcion-icono ventas">
 
           <mat-icon>
-            store
+            monitoring
           </mat-icon>
 
         </span>
@@ -33,271 +72,747 @@
         <div>
 
           <h2>
-            Valor actual del inventario
+            Reportes de ventas
           </h2>
 
           <p>
-            Estimación basada en el stock actual
-            multiplicado por el precio de venta.
+            Revisa ingresos, costos, ganancias,
+            metas y movimientos por periodo.
           </p>
 
         </div>
 
       </div>
 
-      <button
-        type="button"
-        class="btn-refrescar-resumen"
-        [disabled]="cargandoInventario"
-        title="Actualizar valor del inventario"
-        (click)="cargarResumenInventario()">
+      <mat-tab-group
+        animationDuration="250ms"
+        mat-stretch-tabs="false">
 
-        @if (cargandoInventario) {
+        <mat-tab label="Diario">
 
-          <mat-spinner
-            diameter="18">
-          </mat-spinner>
+          <div class="contenido-pestana">
 
-        } @else {
+            <app-reporte-diario>
+            </app-reporte-diario>
 
-          <mat-icon>
-            refresh
-          </mat-icon>
+          </div>
 
-        }
+        </mat-tab>
 
-      </button>
+        <mat-tab label="Semanal">
 
-    </header>
+          <div class="contenido-pestana">
 
-    @if (cargandoInventario) {
+            <app-reporte-semanal>
+            </app-reporte-semanal>
 
-      <div class="estado-resumen">
+          </div>
 
-        <mat-spinner
-          diameter="30">
-        </mat-spinner>
+        </mat-tab>
 
-        <span>
-          Calculando el valor del inventario...
-        </span>
+        <mat-tab label="Mensual">
 
-      </div>
+          <div class="contenido-pestana">
 
-    } @else if (
-      errorInventario
-    ) {
+            <app-reporte-mensual>
+            </app-reporte-mensual>
 
-      <div class="estado-resumen error">
+          </div>
 
-        <mat-icon>
-          cloud_off
-        </mat-icon>
+        </mat-tab>
 
-        <div>
+      </mat-tab-group>
 
-          <strong>
-            No se pudo calcular el inventario
-          </strong>
+    </section>
 
-          <span>
-            Verifica que Laravel esté encendido.
+  } @else {
+
+    <section class="vista-inventario">
+
+      <header class="cabecera-inventario">
+
+        <div class="descripcion-vista">
+
+          <span class="descripcion-icono inventario">
+
+            <mat-icon>
+              storefront
+            </mat-icon>
+
           </span>
+
+          <div>
+
+            <h2>
+              Valorización actual del inventario
+            </h2>
+
+            <p>
+              Conoce cuánto costó la mercadería,
+              cuánto podría generar al venderse y
+              qué productos representan mayor valor.
+            </p>
+
+          </div>
 
         </div>
 
         <button
           type="button"
+          class="btn-actualizar"
+          [disabled]="cargandoInventario"
+          title="Actualizar valorización"
           (click)="cargarResumenInventario()">
 
-          Reintentar
+          @if (cargandoInventario) {
+
+            <mat-spinner
+              diameter="19">
+            </mat-spinner>
+
+          } @else {
+
+            <mat-icon>
+              refresh
+            </mat-icon>
+
+          }
+
+          <span>
+            Actualizar
+          </span>
 
         </button>
 
-      </div>
+      </header>
 
-    } @else if (
-      resumenInventario
-    ) {
+      @if (
+        errorInventario
+        && resumenInventario
+      ) {
 
-      <div class="tarjetas-inventario">
+        <div class="aviso-error">
 
-        <article class="tarjeta-valor">
+          <mat-icon>
+            warning_amber
+          </mat-icon>
 
-          <span class="tarjeta-valor-icono">
+          <div>
+
+            <strong>
+              No se pudo actualizar la información
+            </strong>
+
+            <span>
+              {{ mensajeErrorInventario }}
+            </span>
+
+          </div>
+
+          <button
+            type="button"
+            (click)="cargarResumenInventario()">
+
+            Intentar nuevamente
+
+          </button>
+
+        </div>
+
+      }
+
+      @if (
+        cargandoInventario
+        && !resumenInventario
+      ) {
+
+        <div class="estado-inventario">
+
+          <mat-spinner
+            diameter="38">
+          </mat-spinner>
+
+          <strong>
+            Calculando el valor del inventario
+          </strong>
+
+          <span>
+            Estamos revisando el stock, costos
+            y precios de venta.
+          </span>
+
+        </div>
+
+      } @else if (
+        errorInventario
+        && !resumenInventario
+      ) {
+
+        <div class="estado-inventario error">
+
+          <span class="estado-icono">
 
             <mat-icon>
-              paid
+              cloud_off
             </mat-icon>
 
           </span>
 
-          <div>
+          <strong>
+            No se pudo cargar la valorización
+          </strong>
 
-            <small>
-              Valor comercial del inventario
-            </small>
+          <span>
+            {{ mensajeErrorInventario }}
+          </span>
 
-            <strong>
+          <button
+            type="button"
+            (click)="cargarResumenInventario()">
 
-              {{
-                formatearMoneda(
+            <mat-icon>
+              refresh
+            </mat-icon>
+
+            Cargar nuevamente
+
+          </button>
+
+        </div>
+
+      } @else if (
+        resumenInventario
+      ) {
+
+        @if (cargandoInventario) {
+
+          <div class="barra-actualizando">
+
+            <mat-spinner
+              diameter="17">
+            </mat-spinner>
+
+            Actualizando la valorización...
+
+          </div>
+
+        }
+
+        <div class="tarjetas-valorizacion">
+
+          <article class="tarjeta-principal">
+
+            <span class="tarjeta-icono venta">
+
+              <mat-icon>
+                payments
+              </mat-icon>
+
+            </span>
+
+            <div>
+
+              <small>
+                Valor potencial de venta
+              </small>
+
+              <strong>
+
+                {{
+                  formatearMoneda(
+                    resumenInventario
+                      .valor_potencial_venta
+                  )
+                }}
+
+              </strong>
+
+              <p>
+                Ingreso estimado si se vendiera
+                todo el stock al precio público actual.
+              </p>
+
+            </div>
+
+          </article>
+
+          <article class="tarjeta-valorizacion">
+
+            <span class="tarjeta-icono costo">
+
+              <mat-icon>
+                account_balance_wallet
+              </mat-icon>
+
+            </span>
+
+            <div>
+
+              <small>
+                Valor del inventario al costo
+              </small>
+
+              <strong>
+
+                {{
+                  formatearMoneda(
+                    resumenInventario
+                      .valor_inventario_costo
+                  )
+                }}
+
+              </strong>
+
+              <p>
+                Capital aproximado invertido en
+                la mercadería que queda disponible.
+              </p>
+
+            </div>
+
+          </article>
+
+          <article class="tarjeta-valorizacion">
+
+            <span class="tarjeta-icono ganancia">
+
+              <mat-icon>
+                trending_up
+              </mat-icon>
+
+            </span>
+
+            <div>
+
+              <small>
+                Ganancia potencial
+              </small>
+
+              <strong>
+
+                {{
+                  formatearMoneda(
+                    resumenInventario
+                      .ganancia_potencial_inventario
+                  )
+                }}
+
+              </strong>
+
+              <p>
+                Diferencia entre el valor de venta
+                y el costo actual del inventario.
+              </p>
+
+            </div>
+
+          </article>
+
+        </div>
+
+        <div class="resumen-cantidades">
+
+          <article>
+
+            <span class="cantidad-icono">
+
+              <mat-icon>
+                inventory
+              </mat-icon>
+
+            </span>
+
+            <div>
+
+              <small>
+                Unidades disponibles
+              </small>
+
+              <strong>
+                {{
                   resumenInventario
-                    .valor_comercial_inventario
-                )
-              }}
+                    .total_unidades
+                }}
+              </strong>
 
-            </strong>
+            </div>
 
-            <p>
-              Es el ingreso estimado si se vendiera
-              todo el stock al precio público actual.
-            </p>
+          </article>
 
-          </div>
+          <article>
 
-        </article>
+            <span class="cantidad-icono">
 
-        <article class="tarjeta-dato">
+              <mat-icon>
+                category
+              </mat-icon>
 
-          <span class="dato-icono unidades">
+            </span>
+
+            <div>
+
+              <small>
+                Productos con stock
+              </small>
+
+              <strong>
+                {{
+                  resumenInventario
+                    .productos_con_stock
+                }}
+              </strong>
+
+            </div>
+
+          </article>
+
+          <article>
+
+            <span class="cantidad-icono">
+
+              <mat-icon>
+                list_alt
+              </mat-icon>
+
+            </span>
+
+            <div>
+
+              <small>
+                Productos registrados
+              </small>
+
+              <strong>
+                {{
+                  resumenInventario
+                    .total_productos
+                }}
+              </strong>
+
+            </div>
+
+          </article>
+
+          <article class="fecha-calculo">
+
+            <span class="cantidad-icono">
+
+              <mat-icon>
+                schedule
+              </mat-icon>
+
+            </span>
+
+            <div>
+
+              <small>
+                Última actualización
+              </small>
+
+              <strong>
+                {{
+                  formatearFechaCalculo(
+                    resumenInventario
+                      .fecha_calculo
+                  )
+                }}
+              </strong>
+
+            </div>
+
+          </article>
+
+        </div>
+
+        <section class="ranking">
+
+          <header class="ranking-header">
+
+            <div>
+
+              <h3>
+                Productos más valiosos del inventario
+              </h3>
+
+              <p>
+                Ordenados de mayor a menor según
+                el valor total que generarían al vender
+                todo su stock.
+              </p>
+
+            </div>
+
+            <span class="criterio-ranking">
+
+              <mat-icon>
+                sort
+              </mat-icon>
+
+              Mayor valor de venta
+
+            </span>
+
+          </header>
+
+          @if (
+            resumenInventario
+              .ranking_productos
+              .length === 0
+          ) {
+
+            <div class="ranking-vacio">
+
+              <mat-icon>
+                inventory_2
+              </mat-icon>
+
+              <strong>
+                No hay productos con stock
+              </strong>
+
+              <span>
+                Registra o actualiza las existencias
+                para calcular la valorización.
+              </span>
+
+            </div>
+
+          } @else {
+
+            <div class="tabla-contenedor">
+
+              <table>
+
+                <thead>
+
+                  <tr>
+
+                    <th class="columna-puesto">
+                      Puesto
+                    </th>
+
+                    <th class="columna-producto">
+                      Producto
+                    </th>
+
+                    <th class="columna-estado">
+                      Estado
+                    </th>
+
+                    <th class="numero columna-stock">
+                      Stock
+                    </th>
+
+                    <th class="numero">
+                      Costo unitario
+                    </th>
+
+                    <th class="numero">
+                      Precio de venta
+                    </th>
+
+                    <th class="numero destacado">
+                      Valor de venta
+                    </th>
+
+                    <th class="numero">
+                      Valor al costo
+                    </th>
+
+                    <th class="numero">
+                      Ganancia potencial
+                    </th>
+
+                  </tr>
+
+                </thead>
+
+                <tbody>
+
+                  @for (
+                    producto of
+                      resumenInventario
+                        .ranking_productos;
+                    track producto.id_producto
+                  ) {
+
+                    <tr>
+
+                      <td class="columna-puesto">
+
+                        <span
+                          class="puesto"
+                          [class]="
+                            obtenerClasePuesto(
+                              producto.puesto
+                            )
+                          ">
+
+                          {{
+                            producto.puesto
+                          }}
+
+                        </span>
+
+                      </td>
+
+                      <td class="columna-producto">
+
+                        <div class="producto-info">
+
+                          <strong>
+                            {{
+                              producto
+                                .nombre_producto
+                            }}
+                          </strong>
+
+                          <span>
+                            Código:
+                            {{
+                              producto
+                                .codigo_producto
+                            }}
+                          </span>
+
+                        </div>
+
+                      </td>
+
+                      <td class="columna-estado">
+
+                        <span
+                          class="estado-producto"
+                          [class.inactivo]="
+                            !esProductoActivo(
+                              producto.estado
+                            )
+                          ">
+
+                          <mat-icon>
+
+                            {{
+                              esProductoActivo(
+                                producto.estado
+                              )
+                                ? 'check_circle'
+                                : 'block'
+                            }}
+
+                          </mat-icon>
+
+                          {{
+                            producto.estado
+                          }}
+
+                        </span>
+
+                      </td>
+
+                      <td class="numero stock columna-stock">
+
+                        {{
+                          producto
+                            .stock_producto
+                        }}
+
+                      </td>
+
+                      <td class="numero">
+
+                        {{
+                          formatearMoneda(
+                            producto
+                              .costo_unitario
+                          )
+                        }}
+
+                      </td>
+
+                      <td class="numero">
+
+                        {{
+                          formatearMoneda(
+                            producto
+                              .precio_venta
+                          )
+                        }}
+
+                      </td>
+
+                      <td class="numero valor-venta">
+
+                        {{
+                          formatearMoneda(
+                            producto
+                              .valor_venta_total
+                          )
+                        }}
+
+                      </td>
+
+                      <td class="numero">
+
+                        {{
+                          formatearMoneda(
+                            producto
+                              .valor_costo_total
+                          )
+                        }}
+
+                      </td>
+
+                      <td
+                        class="numero ganancia"
+                        [class.negativa]="
+                          producto
+                            .ganancia_potencial < 0
+                        ">
+
+                        {{
+                          formatearMoneda(
+                            producto
+                              .ganancia_potencial
+                          )
+                        }}
+
+                      </td>
+
+                    </tr>
+
+                  }
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          }
+
+          <footer class="nota-inventario">
 
             <mat-icon>
-              inventory
+              info
             </mat-icon>
 
-          </span>
+            <span>
+              La valorización considera todos los
+              productos con stock mayor a cero,
+              incluyendo productos inactivos que
+              todavía conservan existencias.
+              No incluye muebles, vitrinas, equipos,
+              deudas ni otros activos del negocio.
+            </span>
 
-          <div>
+          </footer>
 
-            <small>
-              Unidades disponibles
-            </small>
+        </section>
 
-            <strong>
+      }
 
-              {{
-                resumenInventario
-                  .total_unidades
-              }}
+    </section>
 
-            </strong>
-
-          </div>
-
-        </article>
-
-        <article class="tarjeta-dato">
-
-          <span class="dato-icono productos">
-
-            <mat-icon>
-              category
-            </mat-icon>
-
-          </span>
-
-          <div>
-
-            <small>
-              Productos con stock
-            </small>
-
-            <strong>
-
-              {{
-                resumenInventario
-                  .productos_con_stock
-              }}
-
-            </strong>
-
-          </div>
-
-        </article>
-
-        <article class="tarjeta-dato">
-
-          <span class="dato-icono catalogo">
-
-            <mat-icon>
-              list_alt
-            </mat-icon>
-
-          </span>
-
-          <div>
-
-            <small>
-              Productos registrados
-            </small>
-
-            <strong>
-
-              {{
-                resumenInventario
-                  .total_productos
-              }}
-
-            </strong>
-
-          </div>
-
-        </article>
-
-      </div>
-
-      <p class="nota-inventario">
-
-        <mat-icon>info</mat-icon>
-
-        El cálculo considera todos los productos que
-        tienen stock mayor a cero, incluyendo productos
-        inactivos que todavía conservan existencias.
-
-      </p>
-
-    }
-
-  </section>
-
-  <mat-tab-group
-    animationDuration="250ms"
-    mat-stretch-tabs="false">
-
-    <mat-tab label="Diario">
-
-      <div class="contenido-pestana">
-
-        <app-reporte-diario>
-        </app-reporte-diario>
-
-      </div>
-
-    </mat-tab>
-
-    <mat-tab label="Semanal">
-
-      <div class="contenido-pestana">
-
-        <app-reporte-semanal>
-        </app-reporte-semanal>
-
-      </div>
-
-    </mat-tab>
-
-    <mat-tab label="Mensual">
-
-      <div class="contenido-pestana">
-
-        <app-reporte-mensual>
-        </app-reporte-mensual>
-
-      </div>
-
-    </mat-tab>
-
-  </mat-tab-group>
+  }
 
 </div>

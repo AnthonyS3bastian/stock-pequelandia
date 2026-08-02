@@ -71,12 +71,32 @@ export interface MejorDiaReporte
 extends VentaPorDiaReporte {
 }
 
+export interface ProductoValorizadoReporte {
+  puesto: number;
+  id_producto: number;
+  codigo_producto: string;
+  nombre_producto: string;
+  estado: string;
+  stock_producto: number;
+  costo_unitario: number;
+  precio_venta: number;
+  valor_costo_total: number;
+  valor_venta_total: number;
+  ganancia_potencial: number;
+  margen_ganancia: number | null;
+}
+
 export interface ResumenInventarioReporte {
   fecha_calculo: string;
-  valor_comercial_inventario: number;
+  valor_inventario_costo: number;
+  valor_potencial_venta: number;
+  ganancia_potencial_inventario: number;
+  valor_comercial_inventario?: number;
   total_unidades: number;
   productos_con_stock: number;
   total_productos: number;
+  ranking_productos:
+    ProductoValorizadoReporte[];
 }
 
 export interface ResumenInventarioResponse {
@@ -200,13 +220,29 @@ export class ReporteService {
     Observable<ResumenInventarioResponse> {
 
     const headers =
-      this.obtenerHeadersAutenticacion();
+      this.obtenerHeadersAutenticacion()
+        .set(
+          'Cache-Control',
+          'no-cache'
+        )
+        .set(
+          'Pragma',
+          'no-cache'
+        );
+
+    const params =
+      new HttpParams()
+        .set(
+          '_t',
+          Date.now().toString()
+        );
 
     return this.http
       .get<ResumenInventarioResponse>(
         `${this.apiUrl}/inventario`,
         {
-          headers
+          headers,
+          params
         }
       );
 
