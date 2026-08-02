@@ -1,7 +1,9 @@
 import {
   ChangeDetectorRef,
   Component,
+  ElementRef,
   OnInit,
+  ViewChild,
   inject
 } from '@angular/core';
 
@@ -16,12 +18,24 @@ import {
 } from '@angular/forms';
 
 import {
+  MatFormFieldModule
+} from '@angular/material/form-field';
+
+import {
   MatIconModule
 } from '@angular/material/icon';
 
 import {
+  MatInputModule
+} from '@angular/material/input';
+
+import {
   MatProgressSpinnerModule
 } from '@angular/material/progress-spinner';
+
+import {
+  MatSelectModule
+} from '@angular/material/select';
 
 import {
   MatSnackBar,
@@ -52,8 +66,11 @@ type FiltroEstado =
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    MatFormFieldModule,
     MatIconModule,
+    MatInputModule,
     MatProgressSpinnerModule,
+    MatSelectModule,
     MatSnackBarModule
   ],
   templateUrl: './categorias.html',
@@ -61,6 +78,12 @@ type FiltroEstado =
 })
 export class CategoriasComponent
 implements OnInit {
+
+  @ViewChild(
+    'nombreCategoriaInput'
+  )
+  nombreCategoriaInput?:
+    ElementRef<HTMLInputElement>;
 
   private readonly fb =
     inject(FormBuilder);
@@ -79,7 +102,8 @@ implements OnInit {
   textoBusqueda = '';
 
   filtroEstado:
-    FiltroEstado = 'todos';
+    FiltroEstado =
+      'todos';
 
   cargando = false;
 
@@ -88,18 +112,22 @@ implements OnInit {
   guardando = false;
 
   cambiandoEstadoId:
-    number | null = null;
+    number | null =
+      null;
 
   eliminandoId:
-    number | null = null;
+    number | null =
+      null;
 
   formularioAbierto = false;
 
   categoriaEditando:
-    Categoria | null = null;
+    Categoria | null =
+      null;
 
   categoriaAEliminar:
-    Categoria | null = null;
+    Categoria | null =
+      null;
 
   readonly categoriaForm =
     this.fb.nonNullable.group({
@@ -321,8 +349,16 @@ implements OnInit {
       estado: true
     });
 
+    this.categoriaForm
+      .markAsPristine();
+
+    this.categoriaForm
+      .markAsUntouched();
+
     this.formularioAbierto =
       true;
+
+    this.enfocarNombreCategoria();
 
   }
 
@@ -336,15 +372,25 @@ implements OnInit {
     this.categoriaForm.reset({
       nombre_categoria:
         categoria.nombre_categoria,
+
       descripcion_categoria:
         categoria.descripcion_categoria
         ?? '',
+
       estado:
         categoria.estado
     });
 
+    this.categoriaForm
+      .markAsPristine();
+
+    this.categoriaForm
+      .markAsUntouched();
+
     this.formularioAbierto =
       true;
+
+    this.enfocarNombreCategoria();
 
   }
 
@@ -373,13 +419,49 @@ implements OnInit {
       estado: true
     });
 
+    this.categoriaForm
+      .markAsPristine();
+
+    this.categoriaForm
+      .markAsUntouched();
+
+  }
+
+  manejarEnterNombre(
+    evento: Event
+  ): void {
+
+    evento.preventDefault();
+
+    evento.stopPropagation();
+
   }
 
   guardarCategoria(): void {
 
+    if (this.guardando) {
+
+      return;
+
+    }
+
+    const controlNombre =
+      this.categoriaForm.controls
+        .nombre_categoria;
+
+    if (
+      controlNombre.value.trim()
+        .length === 0
+    ) {
+
+      controlNombre.setErrors({
+        required: true
+      });
+
+    }
+
     if (
       this.categoriaForm.invalid
-      || this.guardando
     ) {
 
       this.categoriaForm
@@ -726,6 +808,22 @@ implements OnInit {
     )
       .format(valor)
       .replace(/\./g, '');
+
+  }
+
+  private enfocarNombreCategoria():
+    void {
+
+    setTimeout(
+      () => {
+
+        this.nombreCategoriaInput
+          ?.nativeElement
+          .focus();
+
+      },
+      100
+    );
 
   }
 

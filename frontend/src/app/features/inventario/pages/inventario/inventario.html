@@ -1,742 +1,1082 @@
-<mat-sidenav-container class="contenedor-sidenav">
+<div class="inventario-contenedor">
 
-  <mat-sidenav
-    mode="over"
-    position="end"
-    [opened]="drawerAbierto"
-    (closed)="cerrarDrawer()"
-    class="drawer">
+  <main class="pagina-inventario">
 
-    @if (
-      contenidoDrawer === 'nuevo'
-      || contenidoDrawer === 'editar'
-    ) {
+    <header class="cabecera">
 
-      <app-drawer-producto
-        [categorias]="categoriasDisponibles"
-        [productoEditar]="productoSeleccionado"
-        (cerrar)="cerrarDrawer()"
-        (guardado)="productoGuardado()">
-      </app-drawer-producto>
+      <div>
 
-    }
+        <h1>
+          Inventario
+        </h1>
 
-    @if (
-      contenidoDrawer === 'detalle'
-      && productoSeleccionado
-    ) {
+        <p>
+          Gestiona los productos, existencias y alertas
+          del negocio.
+        </p>
 
-      <app-detalle-producto
-        [producto]="productoSeleccionado"
-        [esAdministrador]="esAdministrador"
-        (cerrar)="cerrarDrawer()"
-        (editar)="editarProducto($event)"
-        (generarEtiqueta)="
-          abrirEtiquetaProducto($event)
+      </div>
+
+      @if (esAdministrador) {
+
+        <button
+          type="button"
+          class="btn-nuevo"
+          (click)="abrirDrawer()">
+
+          <mat-icon>
+            add
+          </mat-icon>
+
+          Nuevo producto
+
+        </button>
+
+      }
+
+    </header>
+
+    <div class="pestanas">
+
+      <button
+        type="button"
+        [class.activa]="vistaActual === 'productos'"
+        (click)="cambiarVista('productos')">
+
+        <mat-icon>
+          inventory_2
+        </mat-icon>
+
+        Productos
+
+      </button>
+
+      <button
+        type="button"
+        [class.activa]="vistaActual === 'alertas'"
+        (click)="cambiarVista('alertas')">
+
+        <mat-icon>
+          notifications
+        </mat-icon>
+
+        Alertas
+
+        @if (totalAlertas > 0) {
+
+          <span class="contador-alertas">
+
+            {{ totalAlertas }}
+
+          </span>
+
+        }
+
+      </button>
+
+    </div>
+
+    <section class="tarjetas-resumen">
+
+      <button
+        type="button"
+        class="tarjeta-resumen total"
+        [class.seleccionada]="
+          filtroDisponibilidad === 'todos'
+          && vistaActual === 'productos'
         "
-        (actualizarStock)="
-          actualizarStockProducto($event)
+        (click)="filtrarPorTarjeta('todos')">
+
+        <span class="tarjeta-icono">
+
+          <mat-icon>
+            inventory_2
+          </mat-icon>
+
+        </span>
+
+        <span class="tarjeta-contenido">
+
+          <strong>
+            {{ totalProductos }}
+          </strong>
+
+          <small>
+            Productos
+          </small>
+
+        </span>
+
+      </button>
+
+      <button
+        type="button"
+        class="tarjeta-resumen bajo"
+        [class.seleccionada]="
+          filtroDisponibilidad === 'stock_bajo'
         "
-        (cambiarEstado)="
-          cambiarEstadoProducto($event)
-        ">
-      </app-detalle-producto>
+        (click)="filtrarPorTarjeta('stock_bajo')">
 
-    }
+        <span class="tarjeta-icono">
+
+          <mat-icon>
+            warning
+          </mat-icon>
+
+        </span>
+
+        <span class="tarjeta-contenido">
+
+          <strong>
+            {{ totalStockBajo }}
+          </strong>
+
+          <small>
+            Stock bajo
+          </small>
+
+        </span>
+
+      </button>
+
+      <button
+        type="button"
+        class="tarjeta-resumen agotado"
+        [class.seleccionada]="
+          filtroDisponibilidad === 'agotado'
+        "
+        (click)="filtrarPorTarjeta('agotado')">
+
+        <span class="tarjeta-icono">
+
+          <mat-icon>
+            remove_shopping_cart
+          </mat-icon>
+
+        </span>
+
+        <span class="tarjeta-contenido">
+
+          <strong>
+            {{ totalAgotados }}
+          </strong>
+
+          <small>
+            Agotados
+          </small>
+
+        </span>
+
+      </button>
+
+      <button
+        type="button"
+        class="tarjeta-resumen vencer"
+        [class.seleccionada]="
+          filtroDisponibilidad === 'por_vencer'
+        "
+        (click)="filtrarPorTarjeta('por_vencer')">
+
+        <span class="tarjeta-icono">
+
+          <mat-icon>
+            schedule
+          </mat-icon>
+
+        </span>
+
+        <span class="tarjeta-contenido">
+
+          <strong>
+            {{ totalPorVencer }}
+          </strong>
+
+          <small>
+            Por vencer
+          </small>
+
+        </span>
+
+      </button>
+
+      <button
+        type="button"
+        class="tarjeta-resumen inactivos"
+        [class.seleccionada]="
+          filtroDisponibilidad === 'inactivo'
+        "
+        (click)="filtrarPorTarjeta('inactivo')">
+
+        <span class="tarjeta-icono">
+
+          <mat-icon>
+            block
+          </mat-icon>
+
+        </span>
+
+        <span class="tarjeta-contenido">
+
+          <strong>
+            {{ totalInactivos }}
+          </strong>
+
+          <small>
+            Inactivos
+          </small>
+
+        </span>
+
+      </button>
+
+    </section>
 
     @if (
-      contenidoDrawer === 'stock'
-      && productoSeleccionado
+      vistaActual === 'alertas'
     ) {
 
-      <app-actualizar-stock
-        [producto]="productoSeleccionado"
-        (cerrar)="cerrarDrawer()"
-        (stockActualizado)="
-          stockActualizado($event)
-        ">
-      </app-actualizar-stock>
+      <section class="aviso-alertas">
 
-    }
+        <div class="aviso-icono">
 
-    @if (
-      contenidoDrawer === 'etiqueta'
-      && productoSeleccionado
-    ) {
+          <mat-icon>
+            notifications_active
+          </mat-icon>
 
-      <app-etiqueta-producto
-        [producto]="productoSeleccionado"
-        (cerrar)="cerrarDrawer()">
-      </app-etiqueta-producto>
-
-    }
-
-  </mat-sidenav>
-
-  <mat-sidenav-content>
-
-    <main class="pagina-inventario">
-
-      <header class="cabecera">
+        </div>
 
         <div>
 
-          <h1>Inventario</h1>
+          <h2>
+            Productos que requieren atención
+          </h2>
 
           <p>
-            Gestiona los productos, existencias y alertas
-            del negocio.
+            Revisa el stock y las fechas de caducidad
+            antes de continuar con las ventas.
           </p>
 
         </div>
 
-        @if (esAdministrador) {
+        <div class="resumen-alertas">
 
-          <button
-            type="button"
-            class="btn-nuevo"
-            (click)="abrirDrawer()">
-
-            <mat-icon>add</mat-icon>
-
-            Nuevo producto
-
-          </button>
-
-        }
-
-      </header>
-
-      <div class="pestanas">
-
-        <button
-          type="button"
-          [class.activa]="vistaActual === 'productos'"
-          (click)="cambiarVista('productos')">
-
-          <mat-icon>inventory_2</mat-icon>
-
-          Productos
-
-        </button>
-
-        <button
-          type="button"
-          [class.activa]="vistaActual === 'alertas'"
-          (click)="cambiarVista('alertas')">
-
-          <mat-icon>notifications</mat-icon>
-
-          Alertas
-
-          @if (totalAlertas > 0) {
-
-            <span class="contador-alertas">
-
-              {{ totalAlertas }}
-
-            </span>
-
-          }
-
-        </button>
-
-      </div>
-
-      <section class="tarjetas-resumen">
-
-        <button
-          type="button"
-          class="tarjeta-resumen total"
-          [class.seleccionada]="
-            filtroDisponibilidad === 'todos'
-            && vistaActual === 'productos'
-          "
-          (click)="filtrarPorTarjeta('todos')">
-
-          <span class="tarjeta-icono">
-
-            <mat-icon>inventory_2</mat-icon>
-
-          </span>
-
-          <span class="tarjeta-contenido">
-
-            <strong>
-              {{ totalProductos }}
-            </strong>
-
-            <small>
-              Productos
-            </small>
-
-          </span>
-
-        </button>
-
-        <button
-          type="button"
-          class="tarjeta-resumen bajo"
-          [class.seleccionada]="
-            filtroDisponibilidad === 'stock_bajo'
-          "
-          (click)="filtrarPorTarjeta('stock_bajo')">
-
-          <span class="tarjeta-icono">
-
-            <mat-icon>warning</mat-icon>
-
-          </span>
-
-          <span class="tarjeta-contenido">
+          <span>
 
             <strong>
               {{ totalStockBajo }}
             </strong>
 
-            <small>
-              Stock bajo
-            </small>
+            Stock bajo
 
           </span>
 
-        </button>
-
-        <button
-          type="button"
-          class="tarjeta-resumen agotado"
-          [class.seleccionada]="
-            filtroDisponibilidad === 'agotado'
-          "
-          (click)="filtrarPorTarjeta('agotado')">
-
-          <span class="tarjeta-icono">
-
-            <mat-icon>
-              remove_shopping_cart
-            </mat-icon>
-
-          </span>
-
-          <span class="tarjeta-contenido">
+          <span>
 
             <strong>
               {{ totalAgotados }}
             </strong>
 
-            <small>
-              Agotados
-            </small>
+            Agotados
 
           </span>
 
-        </button>
-
-        <button
-          type="button"
-          class="tarjeta-resumen vencer"
-          [class.seleccionada]="
-            filtroDisponibilidad === 'por_vencer'
-          "
-          (click)="filtrarPorTarjeta('por_vencer')">
-
-          <span class="tarjeta-icono">
-
-            <mat-icon>schedule</mat-icon>
-
-          </span>
-
-          <span class="tarjeta-contenido">
+          <span>
 
             <strong>
               {{ totalPorVencer }}
             </strong>
 
-            <small>
-              Por vencer
-            </small>
+            Por vencer
 
           </span>
 
-        </button>
-
-        <button
-          type="button"
-          class="tarjeta-resumen inactivos"
-          [class.seleccionada]="
-            filtroDisponibilidad === 'inactivo'
-          "
-          (click)="filtrarPorTarjeta('inactivo')">
-
-          <span class="tarjeta-icono">
-
-            <mat-icon>block</mat-icon>
-
-          </span>
-
-          <span class="tarjeta-contenido">
+          <span>
 
             <strong>
-              {{ totalInactivos }}
+              {{ totalVencidos }}
             </strong>
 
-            <small>
-              Inactivos
-            </small>
+            Vencidos
 
           </span>
-
-        </button>
-
-      </section>
-
-      @if (
-        vistaActual === 'alertas'
-      ) {
-
-        <section class="aviso-alertas">
-
-          <div class="aviso-icono">
-
-            <mat-icon>
-              notifications_active
-            </mat-icon>
-
-          </div>
-
-          <div>
-
-            <h2>
-              Productos que requieren atención
-            </h2>
-
-            <p>
-              Revisa el stock y las fechas de caducidad
-              antes de continuar con las ventas.
-            </p>
-
-          </div>
-
-          <div class="resumen-alertas">
-
-            <span>
-              <strong>{{ totalStockBajo }}</strong>
-              Stock bajo
-            </span>
-
-            <span>
-              <strong>{{ totalAgotados }}</strong>
-              Agotados
-            </span>
-
-            <span>
-              <strong>{{ totalPorVencer }}</strong>
-              Por vencer
-            </span>
-
-            <span>
-              <strong>{{ totalVencidos }}</strong>
-              Vencidos
-            </span>
-
-          </div>
-
-        </section>
-
-      }
-
-      <section class="panel-filtros">
-
-        <div class="busqueda">
-
-          @if (buscandoCodigo) {
-
-            <mat-spinner
-              diameter="20">
-            </mat-spinner>
-
-          } @else {
-
-            <mat-icon>search</mat-icon>
-
-          }
-
-          <input
-            type="text"
-            autocomplete="off"
-            placeholder="Buscar por nombre, categoría o código..."
-            [(ngModel)]="textoBusqueda"
-            (input)="buscarProducto()"
-            (keydown.enter)="
-              buscarProductoPorCodigoExacto($event)
-            ">
-
-          @if (
-            textoBusqueda
-            && !buscandoCodigo
-          ) {
-
-            <button
-              type="button"
-              class="btn-limpiar-texto"
-              aria-label="Limpiar búsqueda"
-              (click)="limpiarBusqueda()">
-
-              <mat-icon>close</mat-icon>
-
-            </button>
-
-          }
 
         </div>
 
-        <select
-          [(ngModel)]="categoriaSeleccionada">
-
-          <option [ngValue]="0">
-            Todas las categorías
-          </option>
-
-          @for (
-            categoria of categorias;
-            track categoria.id_categoria
-          ) {
-
-            <option
-              [ngValue]="categoria.id_categoria">
-
-              {{
-                categoria.nombre_categoria
-              }}
-
-            </option>
-
-          }
-
-        </select>
-
-        <select
-          [(ngModel)]="estadoSeleccionado">
-
-          <option value="todos">
-            Todos los estados
-          </option>
-
-          <option value="activos">
-            Activos
-          </option>
-
-          <option value="inactivos">
-            Inactivos
-          </option>
-
-        </select>
-
-        <button
-          type="button"
-          class="btn-actualizar"
-          [disabled]="cargando"
-          (click)="actualizarInventario()">
-
-          @if (cargando) {
-
-            <mat-spinner
-              diameter="18">
-            </mat-spinner>
-
-          } @else {
-
-            <mat-icon>
-              refresh
-            </mat-icon>
-
-          }
-
-          <span>
-            Actualizar
-          </span>
-
-        </button>
-
       </section>
 
-      <section class="filtros-rapidos">
+    }
 
-        <button
-          type="button"
-          [class.activo]="
-            filtroDisponibilidad === 'todos'
-          "
-          (click)="
-            cambiarFiltroDisponibilidad('todos')
+    <section class="panel-filtros">
+
+      <div class="busqueda">
+
+        @if (buscandoCodigo) {
+
+          <mat-spinner
+            diameter="20">
+          </mat-spinner>
+
+        } @else {
+
+          <mat-icon>
+            search
+          </mat-icon>
+
+        }
+
+        <input
+          type="text"
+          autocomplete="off"
+          placeholder="Buscar por nombre, categoría o código..."
+          [(ngModel)]="textoBusqueda"
+          (input)="buscarProducto()"
+          (keydown.enter)="
+            buscarProductoPorCodigoExacto($event)
           ">
 
-          Todos
-
-        </button>
-
         @if (
-          vistaActual === 'productos'
+          textoBusqueda
+          && !buscandoCodigo
         ) {
 
           <button
             type="button"
-            [class.activo]="
-              filtroDisponibilidad === 'disponible'
-            "
-            (click)="
-              cambiarFiltroDisponibilidad('disponible')
-            ">
+            class="btn-limpiar-texto"
+            aria-label="Limpiar búsqueda"
+            (click)="limpiarBusqueda()">
 
-            Disponible
+            <mat-icon>
+              close
+            </mat-icon>
 
           </button>
 
         }
 
-        <button
-          type="button"
-          [class.activo]="
-            filtroDisponibilidad === 'stock_bajo'
-          "
-          (click)="
-            cambiarFiltroDisponibilidad('stock_bajo')
-          ">
+      </div>
 
-          Stock bajo
+      <select
+        [(ngModel)]="categoriaSeleccionada">
 
-        </button>
+        <option [ngValue]="0">
+          Todas las categorías
+        </option>
 
-        <button
-          type="button"
-          [class.activo]="
-            filtroDisponibilidad === 'agotado'
-          "
-          (click)="
-            cambiarFiltroDisponibilidad('agotado')
-          ">
+        @for (
+          categoria of categorias;
+          track categoria.id_categoria
+        ) {
 
-          Agotados
+          <option
+            [ngValue]="categoria.id_categoria">
 
-        </button>
+            {{
+              categoria.nombre_categoria
+            }}
 
-        <button
-          type="button"
-          [class.activo]="
-            filtroDisponibilidad === 'por_vencer'
-          "
-          (click)="
-            cambiarFiltroDisponibilidad('por_vencer')
-          ">
+          </option>
 
-          Por vencer
+        }
 
-        </button>
+      </select>
 
-        <button
-          type="button"
-          [class.activo]="
-            filtroDisponibilidad === 'vencido'
-          "
-          (click)="
-            cambiarFiltroDisponibilidad('vencido')
-          ">
+      <select
+        [(ngModel)]="estadoSeleccionado">
 
-          Vencidos
+        <option value="todos">
+          Todos los estados
+        </option>
 
-        </button>
+        <option value="activos">
+          Activos
+        </option>
 
-        <button
-          type="button"
-          class="btn-limpiar-filtros"
-          (click)="limpiarFiltros()">
+        <option value="inactivos">
+          Inactivos
+        </option>
+
+      </select>
+
+      <button
+        type="button"
+        class="btn-actualizar"
+        [disabled]="cargando"
+        (click)="actualizarInventario()">
+
+        @if (cargando) {
+
+          <mat-spinner
+            diameter="18">
+          </mat-spinner>
+
+        } @else {
 
           <mat-icon>
-            filter_alt_off
+            refresh
           </mat-icon>
 
-          Limpiar
+        }
+
+        <span>
+          Actualizar
+        </span>
+
+      </button>
+
+    </section>
+
+    <section class="filtros-rapidos">
+
+      <button
+        type="button"
+        [class.activo]="
+          filtroDisponibilidad === 'todos'
+        "
+        (click)="
+          cambiarFiltroDisponibilidad('todos')
+        ">
+
+        Todos
+
+      </button>
+
+      @if (
+        vistaActual === 'productos'
+      ) {
+
+        <button
+          type="button"
+          [class.activo]="
+            filtroDisponibilidad === 'disponible'
+          "
+          (click)="
+            cambiarFiltroDisponibilidad('disponible')
+          ">
+
+          Disponible
 
         </button>
 
-      </section>
+      }
 
-      @if (
-        vistaActual === 'alertas'
-      ) {
+      <button
+        type="button"
+        [class.activo]="
+          filtroDisponibilidad === 'stock_bajo'
+        "
+        (click)="
+          cambiarFiltroDisponibilidad('stock_bajo')
+        ">
 
-        <section class="panel-alertas">
+        Stock bajo
 
-          <header class="panel-alertas-header">
+      </button>
 
-            <div>
+      <button
+        type="button"
+        [class.activo]="
+          filtroDisponibilidad === 'agotado'
+        "
+        (click)="
+          cambiarFiltroDisponibilidad('agotado')
+        ">
 
-              <h2>
-                Alertas de inventario
-              </h2>
+        Agotados
 
-              <p>
+      </button>
 
-                {{ productosFiltrados.length }}
+      <button
+        type="button"
+        [class.activo]="
+          filtroDisponibilidad === 'por_vencer'
+        "
+        (click)="
+          cambiarFiltroDisponibilidad('por_vencer')
+        ">
 
-                @if (
-                  productosFiltrados.length === 1
-                ) {
+        Por vencer
 
-                  producto requiere atención
+      </button>
 
-                } @else {
+      <button
+        type="button"
+        [class.activo]="
+          filtroDisponibilidad === 'vencido'
+        "
+        (click)="
+          cambiarFiltroDisponibilidad('vencido')
+        ">
 
-                  productos requieren atención
+        Vencidos
 
-                }
+      </button>
 
-              </p>
+      <button
+        type="button"
+        class="btn-limpiar-filtros"
+        (click)="limpiarFiltros()">
 
-            </div>
+        <mat-icon>
+          filter_alt_off
+        </mat-icon>
 
-          </header>
+        Limpiar
 
-          @if (cargando) {
+      </button>
 
-            <div class="estado-central">
+    </section>
 
-              <mat-spinner
-                diameter="38">
-              </mat-spinner>
+    @if (
+      vistaActual === 'alertas'
+    ) {
 
-              <strong>
-                Cargando alertas
-              </strong>
+      <section class="panel-alertas">
 
-              <p>
-                Estamos revisando el inventario.
-              </p>
+        <header class="panel-alertas-header">
 
-            </div>
+          <div>
 
-          } @else if (errorCarga) {
+            <h2>
+              Alertas de inventario
+            </h2>
 
-            <div class="estado-central error">
+            <p>
 
-              <span class="estado-icono">
+              {{ productosFiltrados.length }}
 
-                <mat-icon>
-                  cloud_off
-                </mat-icon>
-
-              </span>
-
-              <strong>
-                No se pudieron cargar las alertas
-              </strong>
-
-              <p>
-                Verifica que Laravel esté encendido.
-              </p>
-
-              <button
-                type="button"
-                (click)="actualizarInventario()">
-
-                <mat-icon>
-                  refresh
-                </mat-icon>
-
-                Reintentar
-
-              </button>
-
-            </div>
-
-          } @else if (
-            productosFiltrados.length === 0
-          ) {
-
-            <div class="estado-central sin-alertas">
-
-              <span class="estado-icono">
-
-                <mat-icon>
-                  verified
-                </mat-icon>
-
-              </span>
-
-              <strong>
-                No existen alertas pendientes
-              </strong>
-
-              <p>
-                El stock y las fechas de caducidad
-                se encuentran controlados.
-              </p>
-
-              <button
-                type="button"
-                (click)="limpiarFiltros()">
-
-                Ver todas las alertas
-
-              </button>
-
-            </div>
-
-          } @else {
-
-            <div class="lista-alertas">
-
-              @for (
-                producto of productosFiltrados;
-                track producto.id_producto
+              @if (
+                productosFiltrados.length === 1
               ) {
 
-                <article
-                  class="tarjeta-alerta"
-                  [ngClass]="
-                    obtenerClaseAlerta(producto)
-                  ">
+                producto requiere atención
 
-                  <div class="alerta-icono">
+              } @else {
 
-                    <mat-icon>
+                productos requieren atención
+
+              }
+
+            </p>
+
+          </div>
+
+        </header>
+
+        @if (cargando) {
+
+          <div class="estado-central">
+
+            <mat-spinner
+              diameter="38">
+            </mat-spinner>
+
+            <strong>
+              Cargando alertas
+            </strong>
+
+            <p>
+              Estamos revisando el inventario.
+            </p>
+
+          </div>
+
+        } @else if (errorCarga) {
+
+          <div class="estado-central error">
+
+            <span class="estado-icono">
+
+              <mat-icon>
+                cloud_off
+              </mat-icon>
+
+            </span>
+
+            <strong>
+              No se pudieron cargar las alertas
+            </strong>
+
+            <p>
+              Verifica que Laravel esté encendido.
+            </p>
+
+            <button
+              type="button"
+              (click)="actualizarInventario()">
+
+              <mat-icon>
+                refresh
+              </mat-icon>
+
+              Reintentar
+
+            </button>
+
+          </div>
+
+        } @else if (
+          productosFiltrados.length === 0
+        ) {
+
+          <div class="estado-central sin-alertas">
+
+            <span class="estado-icono">
+
+              <mat-icon>
+                verified
+              </mat-icon>
+
+            </span>
+
+            <strong>
+              No existen alertas pendientes
+            </strong>
+
+            <p>
+              El stock y las fechas de caducidad
+              se encuentran controlados.
+            </p>
+
+            <button
+              type="button"
+              (click)="limpiarFiltros()">
+
+              Ver todas las alertas
+
+            </button>
+
+          </div>
+
+        } @else {
+
+          <div class="lista-alertas">
+
+            @for (
+              producto of productosFiltrados;
+              track producto.id_producto
+            ) {
+
+              <article
+                class="tarjeta-alerta"
+                [ngClass]="
+                  obtenerClaseAlerta(producto)
+                ">
+
+                <div class="alerta-icono">
+
+                  <mat-icon>
+
+                    {{
+                      obtenerIconoAlerta(producto)
+                    }}
+
+                  </mat-icon>
+
+                </div>
+
+                <div class="alerta-contenido">
+
+                  <div class="alerta-encabezado">
+
+                    <div>
+
+                      <span class="alerta-tipo">
+
+                        {{
+                          obtenerTituloAlerta(producto)
+                        }}
+
+                      </span>
+
+                      <h3>
+
+                        {{
+                          producto.nombre_producto
+                        }}
+
+                      </h3>
+
+                      <p class="alerta-codigo">
+
+                        Código:
+                        {{ producto.codigo_producto }}
+
+                      </p>
+
+                    </div>
+
+                    <span class="categoria-etiqueta">
 
                       {{
-                        obtenerIconoAlerta(producto)
+                        producto.categoria
+                          ?.nombre_categoria
+                        ?? 'Sin categoría'
                       }}
 
-                    </mat-icon>
+                    </span>
 
                   </div>
 
-                  <div class="alerta-contenido">
+                  <p class="alerta-mensaje">
 
-                    <div class="alerta-encabezado">
+                    {{
+                      obtenerTextoAlerta(producto)
+                    }}
 
-                      <div>
+                  </p>
 
-                        <span class="alerta-tipo">
+                  <div class="alerta-datos">
 
-                          {{
-                            obtenerTituloAlerta(producto)
-                          }}
+                    <span>
+
+                      <small>
+                        Stock actual
+                      </small>
+
+                      <strong>
+                        {{ producto.stock_producto }}
+                      </strong>
+
+                    </span>
+
+                    <span>
+
+                      <small>
+                        Stock mínimo
+                      </small>
+
+                      <strong>
+
+                        {{
+                          producto
+                            .stock_minimo_producto
+                        }}
+
+                      </strong>
+
+                    </span>
+
+                    <span>
+
+                      <small>
+                        Disponibilidad
+                      </small>
+
+                      <strong>
+
+                        {{
+                          obtenerTextoDisponibilidad(
+                            producto
+                          )
+                        }}
+
+                      </strong>
+
+                    </span>
+
+                    <span>
+
+                      <small>
+                        Caducidad
+                      </small>
+
+                      <strong>
+
+                        {{
+                          producto.fecha_caducidad
+                          ?? 'No registrada'
+                        }}
+
+                      </strong>
+
+                    </span>
+
+                  </div>
+
+                </div>
+
+                <div class="alerta-acciones">
+
+                  <button
+                    type="button"
+                    class="btn-ver-alerta"
+                    [disabled]="cargandoDetalle"
+                    (click)="
+                      verInformacion(producto)
+                    ">
+
+                    <mat-icon>
+                      visibility
+                    </mat-icon>
+
+                    Información
+
+                  </button>
+
+                  @if (
+                    esAdministrador
+                    && (
+                      esStockBajo(producto)
+                      || esAgotado(producto)
+                    )
+                  ) {
+
+                    <button
+                      type="button"
+                      class="btn-stock-alerta"
+                      (click)="
+                        actualizarStockProducto(producto)
+                      ">
+
+                      <mat-icon>
+                        inventory
+                      </mat-icon>
+
+                      Actualizar stock
+
+                    </button>
+
+                  }
+
+                </div>
+
+              </article>
+
+            }
+
+          </div>
+
+        }
+
+      </section>
+
+    } @else {
+
+      <section class="tabla-tarjeta">
+
+        <header class="tabla-header">
+
+          <div>
+
+            <h2>
+              Lista de productos
+            </h2>
+
+            <p>
+
+              {{ productosFiltrados.length }}
+
+              @if (
+                productosFiltrados.length === 1
+              ) {
+
+                resultado encontrado
+
+              } @else {
+
+                resultados encontrados
+
+              }
+
+            </p>
+
+          </div>
+
+        </header>
+
+        @if (cargando) {
+
+          <div class="estado-central">
+
+            <mat-spinner
+              diameter="38">
+            </mat-spinner>
+
+            <strong>
+              Cargando productos
+            </strong>
+
+            <p>
+              Estamos consultando la información
+              del inventario.
+            </p>
+
+          </div>
+
+        } @else if (errorCarga) {
+
+          <div class="estado-central error">
+
+            <span class="estado-icono">
+
+              <mat-icon>
+                cloud_off
+              </mat-icon>
+
+            </span>
+
+            <strong>
+              No se pudieron cargar los productos
+            </strong>
+
+            <p>
+              Verifica que Laravel esté encendido
+              e inténtalo nuevamente.
+            </p>
+
+            <button
+              type="button"
+              (click)="actualizarInventario()">
+
+              <mat-icon>
+                refresh
+              </mat-icon>
+
+              Reintentar
+
+            </button>
+
+          </div>
+
+        } @else if (
+          productosFiltrados.length === 0
+        ) {
+
+          <div class="estado-central">
+
+            <span class="estado-icono">
+
+              <mat-icon>
+                search_off
+              </mat-icon>
+
+            </span>
+
+            <strong>
+              No se encontraron productos
+            </strong>
+
+            <p>
+              Cambia la búsqueda o limpia
+              los filtros aplicados.
+            </p>
+
+            <button
+              type="button"
+              (click)="limpiarFiltros()">
+
+              Limpiar filtros
+
+            </button>
+
+          </div>
+
+        } @else {
+
+          <div class="tabla-scroll">
+
+            <table>
+
+              <thead>
+
+                <tr>
+
+                  <th>
+                    Código
+                  </th>
+
+                  <th>
+                    Producto
+                  </th>
+
+                  <th>
+                    Categoría
+                  </th>
+
+                  <th>
+                    Stock
+                  </th>
+
+                  <th>
+                    Disponibilidad
+                  </th>
+
+                  <th>
+                    Precio de venta
+                  </th>
+
+                  <th>
+                    Estado
+                  </th>
+
+                  <th class="columna-acciones">
+                    Acciones
+                  </th>
+
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                @for (
+                  producto of productosFiltrados;
+                  track producto.id_producto
+                ) {
+
+                  <tr>
+
+                    <td>
+
+                      <span class="codigo-producto">
+
+                        {{
+                          producto.codigo_producto
+                        }}
+
+                      </span>
+
+                    </td>
+
+                    <td>
+
+                      <div class="producto-info">
+
+                        <span class="producto-icono">
+
+                          <mat-icon>
+                            inventory_2
+                          </mat-icon>
 
                         </span>
 
-                        <h3>
+                        <div>
 
-                          {{ producto.nombre_producto }}
+                          <strong>
 
-                        </h3>
+                            {{
+                              producto.nombre_producto
+                            }}
 
-                        <p class="alerta-codigo">
+                          </strong>
 
-                          Código:
-                          {{ producto.codigo_producto }}
+                          <small>
 
-                        </p>
+                            Stock mínimo:
+                            {{
+                              producto
+                                .stock_minimo_producto
+                            }}
+
+                          </small>
+
+                        </div>
 
                       </div>
+
+                    </td>
+
+                    <td>
 
                       <span class="categoria-etiqueta">
 
@@ -748,478 +1088,217 @@
 
                       </span>
 
-                    </div>
+                    </td>
 
-                    <p class="alerta-mensaje">
+                    <td>
 
-                      {{
-                        obtenerTextoAlerta(producto)
-                      }}
+                      <strong
+                        class="cantidad-stock"
+                        [class.stock-cero]="
+                          producto.stock_producto
+                          === 0
+                        ">
 
-                    </p>
+                        {{
+                          producto.stock_producto
+                        }}
 
-                    <div class="alerta-datos">
+                      </strong>
 
-                      <span>
+                    </td>
 
-                        <small>Stock actual</small>
+                    <td>
 
-                        <strong>
-                          {{ producto.stock_producto }}
-                        </strong>
-
-                      </span>
-
-                      <span>
-
-                        <small>Stock mínimo</small>
-
-                        <strong>
-                          {{
-                            producto.stock_minimo_producto
-                          }}
-                        </strong>
-
-                      </span>
-
-                      <span>
-
-                        <small>Disponibilidad</small>
-
-                        <strong>
-
-                          {{
-                            obtenerTextoDisponibilidad(
-                              producto
-                            )
-                          }}
-
-                        </strong>
-
-                      </span>
-
-                      <span>
-
-                        <small>Caducidad</small>
-
-                        <strong>
-
-                          {{
-                            producto.fecha_caducidad
-                            ?? 'No registrada'
-                          }}
-
-                        </strong>
-
-                      </span>
-
-                    </div>
-
-                  </div>
-
-                  <div class="alerta-acciones">
-
-                    <button
-                      type="button"
-                      class="btn-ver-alerta"
-                      [disabled]="cargandoDetalle"
-                      (click)="
-                        verInformacion(producto)
-                      ">
-
-                      <mat-icon>
-                        visibility
-                      </mat-icon>
-
-                      Información
-
-                    </button>
-
-                    @if (
-                      esAdministrador
-                      && (
-                        esStockBajo(producto)
-                        || esAgotado(producto)
-                      )
-                    ) {
-
-                      <button
-                        type="button"
-                        class="btn-stock-alerta"
-                        (click)="
-                          actualizarStockProducto(producto)
+                      <span
+                        class="disponibilidad"
+                        [ngClass]="
+                          obtenerClaseDisponibilidad(
+                            producto
+                          )
                         ">
 
                         <mat-icon>
-                          inventory
+
+                          {{
+                            obtenerIconoDisponibilidad(
+                              producto
+                            )
+                          }}
+
                         </mat-icon>
 
-                        Actualizar stock
+                        {{
+                          obtenerTextoDisponibilidad(
+                            producto
+                          )
+                        }}
+
+                      </span>
+
+                    </td>
+
+                    <td>
+
+                      <strong class="precio-venta">
+
+                        {{
+                          formatearPrecio(
+                            producto.precio_producto
+                          )
+                        }}
+
+                      </strong>
+
+                    </td>
+
+                    <td>
+
+                      @if (
+                        producto.estado
+                      ) {
+
+                        <span
+                          class="estado-producto activo">
+
+                          Activo
+
+                        </span>
+
+                      } @else {
+
+                        <span
+                          class="estado-producto inactivo">
+
+                          Inactivo
+
+                        </span>
+
+                      }
+
+                    </td>
+
+                    <td class="columna-acciones">
+
+                      <button
+                        type="button"
+                        class="btn-informacion"
+                        title="Más información"
+                        [disabled]="cargandoDetalle"
+                        (click)="
+                          verInformacion(producto)
+                        ">
+
+                        <mat-icon>
+                          visibility
+                        </mat-icon>
+
+                        <span>
+                          Información
+                        </span>
 
                       </button>
 
-                    }
-
-                  </div>
-
-                </article>
-
-              }
-
-            </div>
-
-          }
-
-        </section>
-
-      } @else {
-
-        <section class="tabla-tarjeta">
-
-          <header class="tabla-header">
-
-            <div>
-
-              <h2>
-                Lista de productos
-              </h2>
-
-              <p>
-
-                {{ productosFiltrados.length }}
-
-                @if (
-                  productosFiltrados.length === 1
-                ) {
-
-                  resultado encontrado
-
-                } @else {
-
-                  resultados encontrados
-
-                }
-
-              </p>
-
-            </div>
-
-          </header>
-
-          @if (cargando) {
-
-            <div class="estado-central">
-
-              <mat-spinner
-                diameter="38">
-              </mat-spinner>
-
-              <strong>
-                Cargando productos
-              </strong>
-
-              <p>
-                Estamos consultando la información
-                del inventario.
-              </p>
-
-            </div>
-
-          } @else if (errorCarga) {
-
-            <div class="estado-central error">
-
-              <span class="estado-icono">
-
-                <mat-icon>
-                  cloud_off
-                </mat-icon>
-
-              </span>
-
-              <strong>
-                No se pudieron cargar los productos
-              </strong>
-
-              <p>
-                Verifica que Laravel esté encendido
-                e inténtalo nuevamente.
-              </p>
-
-              <button
-                type="button"
-                (click)="actualizarInventario()">
-
-                <mat-icon>
-                  refresh
-                </mat-icon>
-
-                Reintentar
-
-              </button>
-
-            </div>
-
-          } @else if (
-            productosFiltrados.length === 0
-          ) {
-
-            <div class="estado-central">
-
-              <span class="estado-icono">
-
-                <mat-icon>
-                  search_off
-                </mat-icon>
-
-              </span>
-
-              <strong>
-                No se encontraron productos
-              </strong>
-
-              <p>
-                Cambia la búsqueda o limpia
-                los filtros aplicados.
-              </p>
-
-              <button
-                type="button"
-                (click)="limpiarFiltros()">
-
-                Limpiar filtros
-
-              </button>
-
-            </div>
-
-          } @else {
-
-            <div class="tabla-scroll">
-
-              <table>
-
-                <thead>
-
-                  <tr>
-
-                    <th>Código</th>
-                    <th>Producto</th>
-                    <th>Categoría</th>
-                    <th>Stock</th>
-                    <th>Disponibilidad</th>
-                    <th>Precio de venta</th>
-                    <th>Estado</th>
-
-                    <th class="columna-acciones">
-                      Acciones
-                    </th>
+                    </td>
 
                   </tr>
 
-                </thead>
+                }
 
-                <tbody>
+              </tbody>
 
-                  @for (
-                    producto of productosFiltrados;
-                    track producto.id_producto
-                  ) {
+            </table>
 
-                    <tr>
+          </div>
 
-                      <td>
+        }
 
-                        <span class="codigo-producto">
+      </section>
 
-                          {{
-                            producto.codigo_producto
-                          }}
+    }
 
-                        </span>
+  </main>
 
-                      </td>
+  @if (drawerAbierto) {
 
-                      <td>
+    <div
+      class="drawer-fondo"
+      (click)="cerrarDrawer()">
 
-                        <div class="producto-info">
+      <aside
+        class="drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Panel de inventario"
+        (click)="$event.stopPropagation()">
 
-                          <span class="producto-icono">
+        @if (
+          contenidoDrawer === 'nuevo'
+          || contenidoDrawer === 'editar'
+        ) {
 
-                            <mat-icon>
-                              inventory_2
-                            </mat-icon>
+          <app-drawer-producto
+            [categorias]="categoriasDisponibles"
+            [productoEditar]="productoSeleccionado"
+            (cerrar)="cerrarDrawer()"
+            (guardado)="productoGuardado()">
+          </app-drawer-producto>
 
-                          </span>
+        }
 
-                          <div>
+        @if (
+          contenidoDrawer === 'detalle'
+          && productoSeleccionado
+        ) {
 
-                            <strong>
+          <app-detalle-producto
+            [producto]="productoSeleccionado"
+            [esAdministrador]="esAdministrador"
+            (cerrar)="cerrarDrawer()"
+            (editar)="editarProducto($event)"
+            (generarEtiqueta)="
+              abrirEtiquetaProducto($event)
+            "
+            (actualizarStock)="
+              actualizarStockProducto($event)
+            "
+            (cambiarEstado)="
+              cambiarEstadoProducto($event)
+            ">
+          </app-detalle-producto>
 
-                              {{
-                                producto.nombre_producto
-                              }}
+        }
 
-                            </strong>
+        @if (
+          contenidoDrawer === 'stock'
+          && productoSeleccionado
+        ) {
 
-                            <small>
+          <app-actualizar-stock
+            [producto]="productoSeleccionado"
+            (cerrar)="cerrarDrawer()"
+            (stockActualizado)="
+              stockActualizado($event)
+            ">
+          </app-actualizar-stock>
 
-                              Stock mínimo:
-                              {{
-                                producto
-                                  .stock_minimo_producto
-                              }}
+        }
 
-                            </small>
+        @if (
+          contenidoDrawer === 'etiqueta'
+          && productoSeleccionado
+        ) {
 
-                          </div>
+          <app-etiqueta-producto
+            [producto]="productoSeleccionado"
+            (cerrar)="cerrarDrawer()">
+          </app-etiqueta-producto>
 
-                        </div>
+        }
 
-                      </td>
+      </aside>
 
-                      <td>
+    </div>
 
-                        <span class="categoria-etiqueta">
+  }
 
-                          {{
-                            producto.categoria
-                              ?.nombre_categoria
-                            ?? 'Sin categoría'
-                          }}
-
-                        </span>
-
-                      </td>
-
-                      <td>
-
-                        <strong
-                          class="cantidad-stock"
-                          [class.stock-cero]="
-                            producto.stock_producto
-                            === 0
-                          ">
-
-                          {{
-                            producto.stock_producto
-                          }}
-
-                        </strong>
-
-                      </td>
-
-                      <td>
-
-                        <span
-                          class="disponibilidad"
-                          [ngClass]="
-                            obtenerClaseDisponibilidad(
-                              producto
-                            )
-                          ">
-
-                          <mat-icon>
-
-                            {{
-                              obtenerIconoDisponibilidad(
-                                producto
-                              )
-                            }}
-
-                          </mat-icon>
-
-                          {{
-                            obtenerTextoDisponibilidad(
-                              producto
-                            )
-                          }}
-
-                        </span>
-
-                      </td>
-
-                      <td>
-
-                        <strong class="precio-venta">
-
-                          {{
-                            formatearPrecio(
-                              producto.precio_producto
-                            )
-                          }}
-
-                        </strong>
-
-                      </td>
-
-                      <td>
-
-                        @if (
-                          producto.estado
-                        ) {
-
-                          <span
-                            class="estado-producto activo">
-
-                            Activo
-
-                          </span>
-
-                        } @else {
-
-                          <span
-                            class="estado-producto inactivo">
-
-                            Inactivo
-
-                          </span>
-
-                        }
-
-                      </td>
-
-                      <td class="columna-acciones">
-
-                        <button
-                          type="button"
-                          class="btn-informacion"
-                          title="Más información"
-                          [disabled]="cargandoDetalle"
-                          (click)="
-                            verInformacion(producto)
-                          ">
-
-                          <mat-icon>
-                            visibility
-                          </mat-icon>
-
-                          <span>
-                            Información
-                          </span>
-
-                        </button>
-
-                      </td>
-
-                    </tr>
-
-                  }
-
-                </tbody>
-
-              </table>
-
-            </div>
-
-          }
-
-        </section>
-
-      }
-
-    </main>
-
-  </mat-sidenav-content>
-
-</mat-sidenav-container>
+</div>

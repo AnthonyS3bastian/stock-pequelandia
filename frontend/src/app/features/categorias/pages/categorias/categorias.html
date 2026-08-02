@@ -730,27 +730,28 @@
 @if (formularioAbierto) {
 
   <div
-    class="modal-fondo"
+    class="drawer-fondo"
     (click)="cerrarFormulario()">
 
-    <section
-      class="modal"
+    <aside
+      class="drawer-categoria"
       role="dialog"
       aria-modal="true"
+      aria-label="Formulario de categoria"
       (click)="$event.stopPropagation()">
 
-      <header class="modal-cabecera">
+      <header class="drawer-header">
 
-        <div>
+        <div class="titulo-header">
 
-          <span class="modal-icono">
+          <span class="icono-header">
 
             <mat-icon>
 
               {{
                 categoriaEditando
                 ? 'edit'
-                : 'add'
+                : 'category'
               }}
 
             </mat-icon>
@@ -770,7 +771,13 @@
             </h2>
 
             <p>
-              Completa la informacion de la categoria.
+
+              {{
+                categoriaEditando
+                ? 'Modifica la informacion registrada.'
+                : 'Registra una categoria para organizar los productos.'
+              }}
+
             </p>
 
           </div>
@@ -779,6 +786,7 @@
 
         <button
           type="button"
+          class="btn-cerrar-drawer"
           aria-label="Cerrar formulario"
           [disabled]="guardando"
           (click)="cerrarFormulario()">
@@ -792,123 +800,233 @@
       </header>
 
       <form
+        class="formulario-drawer"
         [formGroup]="categoriaForm"
         (ngSubmit)="guardarCategoria()">
 
-        <label class="campo">
+        <section class="seccion-formulario">
 
-          <span>
-            Nombre de la categoria
-          </span>
+          <div class="seccion-titulo">
 
-          <input
-            type="text"
-            maxlength="100"
-            placeholder="Ejemplo: Jugueteria"
-            formControlName="nombre_categoria">
+            <mat-icon>
+              description
+            </mat-icon>
 
-          <small class="contador">
+            <div>
 
-            {{
-              categoriaForm.controls
-                .nombre_categoria
-                .value.length
-            }}/100
+              <h3>
+                Informacion principal
+              </h3>
 
-          </small>
+              <p>
+                Datos utilizados para identificar
+                y describir la categoria.
+              </p>
 
-        </label>
+            </div>
 
-        @if (
-          categoriaForm.controls
-            .nombre_categoria.touched
-          && categoriaForm.controls
-            .nombre_categoria.invalid
-        ) {
+          </div>
 
-          <p class="error-campo">
+          <mat-form-field appearance="outline">
+
+            <mat-label>
+              Nombre de la categoria
+            </mat-label>
+
+            <input
+              #nombreCategoriaInput
+              matInput
+              type="text"
+              maxlength="100"
+              autocomplete="off"
+              placeholder="Ejemplo: Jugueteria"
+              formControlName="nombre_categoria"
+              (keydown.enter)="
+                manejarEnterNombre($event)
+              ">
+
+            <mat-icon matSuffix>
+              category
+            </mat-icon>
+
+            <mat-hint align="end">
+
+              {{
+                categoriaForm.controls
+                  .nombre_categoria
+                  .value.length
+              }}/100
+
+            </mat-hint>
 
             @if (
               categoriaForm.controls
+                .nombre_categoria.touched
+              && categoriaForm.controls
                 .nombre_categoria
                 .hasError('required')
             ) {
 
-              El nombre es obligatorio.
-
-            } @else {
-
-              El nombre no puede superar
-              los 100 caracteres.
+              <mat-error>
+                El nombre es obligatorio.
+              </mat-error>
 
             }
 
-          </p>
-
-        }
-
-        <label class="campo">
-
-          <span>
-            Descripcion
-          </span>
-
-          <textarea
-            rows="4"
-            maxlength="255"
-            placeholder="Describe brevemente los productos de esta categoria."
-            formControlName="descripcion_categoria">
-          </textarea>
-
-          <small class="contador">
-
-            {{
+            @if (
               categoriaForm.controls
+                .nombre_categoria.touched
+              && categoriaForm.controls
+                .nombre_categoria
+                .hasError('maxlength')
+            ) {
+
+              <mat-error>
+                El nombre no puede superar
+                los 100 caracteres.
+              </mat-error>
+
+            }
+
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+
+            <mat-label>
+              Descripcion
+            </mat-label>
+
+            <textarea
+              matInput
+              rows="5"
+              maxlength="255"
+              placeholder="Describe brevemente los productos de esta categoria."
+              formControlName="descripcion_categoria">
+            </textarea>
+
+            <mat-icon matSuffix>
+              notes
+            </mat-icon>
+
+            <mat-hint align="end">
+
+              {{
+                categoriaForm.controls
+                  .descripcion_categoria
+                  .value.length
+              }}/255
+
+            </mat-hint>
+
+            @if (
+              categoriaForm.controls
+                .descripcion_categoria.touched
+              && categoriaForm.controls
                 .descripcion_categoria
-                .value.length
-            }}/255
+                .hasError('maxlength')
+            ) {
 
-          </small>
+              <mat-error>
+                La descripcion no puede superar
+                los 255 caracteres.
+              </mat-error>
 
-        </label>
+            }
 
-        @if (
-          categoriaForm.controls
-            .descripcion_categoria.touched
-          && categoriaForm.controls
-            .descripcion_categoria.invalid
-        ) {
+          </mat-form-field>
 
-          <p class="error-campo">
-            La descripcion no puede superar los 255 caracteres.
-          </p>
+        </section>
 
-        }
+        <section class="seccion-formulario">
 
-        <label class="estado-control">
+          <div class="seccion-titulo">
 
-          <input
-            type="checkbox"
-            formControlName="estado">
+            <mat-icon>
+              settings
+            </mat-icon>
 
-          <span class="interruptor"></span>
+            <div>
 
-          <span>
+              <h3>
+                Configuracion
+              </h3>
 
-            <strong>
-              Categoria activa
-            </strong>
+              <p>
+                Define si la categoria puede utilizarse
+                al registrar productos.
+              </p>
 
-            <small>
-              Las categorias activas pueden utilizarse
-              para organizar productos.
-            </small>
+            </div>
 
-          </span>
+          </div>
 
-        </label>
+          <mat-form-field appearance="outline">
 
-        <footer class="modal-acciones">
+            <mat-label>
+              Estado
+            </mat-label>
+
+            <mat-select
+              formControlName="estado">
+
+              <mat-option [value]="true">
+                Activa
+              </mat-option>
+
+              <mat-option [value]="false">
+                Inactiva
+              </mat-option>
+
+            </mat-select>
+
+            <mat-icon matSuffix>
+              toggle_on
+            </mat-icon>
+
+          </mat-form-field>
+
+          <div
+            class="aviso-estado"
+            [class.inactivo]="
+              !categoriaForm.controls
+                .estado.value
+            ">
+
+            <mat-icon>
+
+              {{
+                categoriaForm.controls
+                  .estado.value
+                ? 'check_circle'
+                : 'info'
+              }}
+
+            </mat-icon>
+
+            <p>
+
+              @if (
+                categoriaForm.controls
+                  .estado.value
+              ) {
+
+                La categoria estará disponible
+                para organizar productos.
+
+              } @else {
+
+                La categoria permanecerá registrada,
+                pero no debería utilizarse en productos nuevos.
+
+              }
+
+            </p>
+
+          </div>
+
+        </section>
+
+        <footer class="acciones-drawer">
 
           <button
             type="button"
@@ -942,7 +1060,7 @@
               {{
                 categoriaEditando
                 ? 'Guardar cambios'
-                : 'Crear categoria'
+                : 'Guardar categoria'
               }}
 
             }
@@ -953,7 +1071,7 @@
 
       </form>
 
-    </section>
+    </aside>
 
   </div>
 

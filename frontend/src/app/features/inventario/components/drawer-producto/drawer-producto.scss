@@ -5,28 +5,48 @@
 }
 
 .drawer-producto {
+  position: relative;
+
   width: 100%;
   height: 100%;
+
   display: flex;
   flex-direction: column;
+
   overflow: hidden;
-  background: #f8fafc;
-  color: #1e293b;
+
+  color:
+    var(--color-texto);
+
+  background:
+    var(--superficie-alternativa);
 }
+
+/* ==========================================================
+   CABECERA
+========================================================== */
 
 .drawer-header {
   flex-shrink: 0;
+
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
+
   padding: 18px 24px;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+
+  border-bottom:
+    1px solid
+    var(--color-borde);
+
+  background:
+    var(--superficie);
 }
 
 .titulo-header {
   min-width: 0;
+
   display: flex;
   align-items: center;
   gap: 13px;
@@ -35,17 +55,19 @@
 .icono-header {
   width: 42px;
   height: 42px;
+
   display: grid;
   place-items: center;
+
   flex-shrink: 0;
+
   border-radius: 12px;
+
   color: #ffffff;
+
   background:
-    linear-gradient(
-      135deg,
-      #7c3aed,
-      #db2777
-    );
+    var(--degradado-principal);
+
   box-shadow:
     0 7px 17px
     rgba(124, 58, 237, 0.2);
@@ -54,27 +76,43 @@
 .icono-header mat-icon {
   width: 23px;
   height: 23px;
+
   font-size: 23px;
 }
 
 .titulo-header h2 {
   margin: 0;
+
+  color:
+    var(--color-texto);
+
   font-size: 19px;
   font-weight: 800;
   letter-spacing: -0.3px;
-  color: #172033;
 }
 
 .titulo-header p {
   margin: 3px 0 0;
+
+  color:
+    var(--color-texto-secundario);
+
   font-size: 12px;
-  color: #64748b;
 }
+
+/* ==========================================================
+   FORMULARIO
+========================================================== */
 
 .formulario {
   flex: 1;
   min-height: 0;
-  padding: 16px 20px 94px;
+
+  padding:
+    16px
+    20px
+    94px;
+
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -82,9 +120,16 @@
 .seccion {
   padding: 16px 18px;
   margin-bottom: 12px;
-  border: 1px solid #dce4ee;
+
+  border:
+    1px solid
+    var(--color-borde-campo);
+
   border-radius: 15px;
-  background: #ffffff;
+
+  background:
+    var(--superficie);
+
   box-shadow:
     0 3px 12px
     rgba(15, 23, 42, 0.035);
@@ -94,41 +139,59 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
+
   margin-bottom: 12px;
 }
 
 .seccion-titulo > mat-icon {
   width: 21px;
   height: 21px;
+
   margin-top: 1px;
+
+  color:
+    var(--color-primario);
+
   font-size: 21px;
-  color: #7c3aed;
 }
 
 .seccion-titulo h3 {
   margin: 0;
+
+  color:
+    var(--color-texto);
+
   font-size: 14px;
   font-weight: 800;
-  color: #1e293b;
 }
 
 .seccion-titulo p {
   margin: 2px 0 0;
+
+  color:
+    var(--color-texto-secundario);
+
   font-size: 11px;
   line-height: 1.35;
-  color: #64748b;
 }
 
 mat-form-field {
   width: 100%;
 }
 
+/* ==========================================================
+   CÓDIGO DE BARRAS
+========================================================== */
+
 .grupo-codigo {
   display: grid;
+
   grid-template-columns:
     minmax(0, 1fr)
     128px;
+
   align-items: start;
+
   gap: 10px;
 }
 
@@ -139,10 +202,18 @@ mat-form-field {
 .btn-generar {
   width: 128px;
   height: 52px;
+
   padding: 0 12px;
-  border-color: #c4b5fd;
-  border-radius: 26px;
-  color: #a21caf;
+
+  border-color:
+    #c4b5fd;
+
+  border-radius:
+    26px;
+
+  color:
+    var(--color-primario);
+
   font-size: 13px;
   font-weight: 800;
 }
@@ -151,10 +222,19 @@ mat-form-field {
   margin-right: 3px;
 }
 
+/* ==========================================================
+   COLUMNAS Y TEXTAREA
+========================================================== */
+
 .dos-columnas {
   display: grid;
+
   grid-template-columns:
-    repeat(2, minmax(0, 1fr));
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
   gap: 12px;
 }
 
@@ -164,52 +244,91 @@ mat-form-field {
 
 textarea {
   min-height: 66px;
+
   resize: vertical;
 }
+
+/* ==========================================================
+   AVISO DE STOCK
+========================================================== */
 
 .aviso-stock {
   display: flex;
   align-items: flex-start;
   gap: 9px;
+
   padding: 10px 12px;
   margin: -1px 0 12px;
-  border: 1px solid #ddd6fe;
+
+  border:
+    1px solid
+    #ddd6fe;
+
   border-radius: 10px;
-  background: #f5f3ff;
+
+  background:
+    var(--color-primario-suave);
 }
 
 .aviso-stock mat-icon {
   width: 18px;
   height: 18px;
+
   flex-shrink: 0;
+
+  color:
+    var(--color-primario);
+
   font-size: 18px;
-  color: #7c3aed;
 }
 
 .aviso-stock p {
   margin: 0;
+
+  color:
+    var(--color-primario-oscuro);
+
   font-size: 11px;
   line-height: 1.4;
-  color: #5b21b6;
 }
+
+/* ==========================================================
+   ACCIONES INFERIORES
+========================================================== */
 
 .acciones {
   position: absolute;
+
   right: 0;
   bottom: 0;
   left: 0;
+
   z-index: 5;
+
+  width: 100%;
+
   display: grid;
+
   grid-template-columns:
     140px
     44px
     minmax(0, 1fr);
+
   gap: 10px;
+
+  box-sizing: border-box;
+
   padding: 12px 20px;
-  border-top: 1px solid #e2e8f0;
+
+  border-top:
+    1px solid
+    var(--color-borde);
+
   background:
     rgba(255, 255, 255, 0.97);
-  backdrop-filter: blur(10px);
+
+  backdrop-filter:
+    blur(10px);
 }
 
 .acciones.edicion {
@@ -221,51 +340,74 @@ textarea {
 .btn-cancelar,
 .btn-guardar {
   height: 42px;
-  border-radius: 10px;
+
+  border-radius:
+    var(--radio-control);
+
   font-size: 13px;
   font-weight: 800;
 }
 
 .btn-cancelar {
-  border-color: #cbd5e1;
-  color: #475569;
+  border-color:
+    var(--color-borde-campo);
+
+  color:
+    #475569;
+
+  background:
+    var(--superficie);
 }
 
 .btn-repetir {
   width: 42px;
   min-width: 42px;
   height: 42px;
+
   padding: 0;
-  border-color: #c4b5fd;
-  border-radius: 50%;
-  color: #7c3aed;
-  background: #f5f3ff;
+
+  border-color:
+    #c4b5fd;
+
+  border-radius:
+    50%;
+
+  color:
+    var(--color-primario);
+
+  background:
+    var(--color-primario-suave);
 }
 
 .btn-repetir mat-icon {
   margin: 0;
+
   transition:
     transform 0.45s ease;
 }
 
 .btn-repetir.animando mat-icon {
-  transform: rotate(360deg);
+  transform:
+    rotate(360deg);
 }
 
 .btn-repetir:disabled {
-  color: #94a3b8;
-  border-color: #e2e8f0;
-  background: #f8fafc;
+  border-color:
+    var(--color-borde);
+
+  color:
+    var(--color-texto-suave);
+
+  background:
+    var(--superficie-alternativa);
 }
 
 .btn-guardar {
   color: #ffffff;
+
   background:
-    linear-gradient(
-      135deg,
-      #7c3aed,
-      #db2777
-    );
+    var(--degradado-principal);
+
   box-shadow:
     0 7px 18px
     rgba(124, 58, 237, 0.2);
@@ -275,7 +417,13 @@ textarea {
   margin-right: 4px;
 }
 
-:host ::ng-deep .mat-mdc-form-field {
+/* ==========================================================
+   ANGULAR MATERIAL
+========================================================== */
+
+:host
+::ng-deep
+.mat-mdc-form-field {
   margin-bottom: 0;
 }
 
@@ -288,13 +436,15 @@ textarea {
 :host
 ::ng-deep
 .mat-mdc-form-field-error-wrapper {
-  padding: 0 12px;
+  padding:
+    0 12px;
 }
 
 :host
 ::ng-deep
 .mat-mdc-text-field-wrapper {
   min-height: 52px;
+
   border-radius: 11px;
 }
 
@@ -303,6 +453,7 @@ textarea {
 .mat-mdc-form-field-infix {
   min-width: 0;
   min-height: 52px;
+
   padding-top: 15px;
   padding-bottom: 11px;
 }
@@ -316,19 +467,27 @@ textarea {
 :host
 ::ng-deep
 .mdc-notched-outline__leading {
-  border-radius: 11px 0 0 11px;
+  border-radius:
+    11px 0 0 11px;
 }
 
 :host
 ::ng-deep
 .mdc-notched-outline__trailing {
-  border-radius: 0 11px 11px 0;
+  border-radius:
+    0 11px 11px 0;
 }
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
 
 @media (max-width: 700px) {
 
   .drawer-header {
-    padding: 15px 17px;
+    padding:
+      15px
+      17px;
   }
 
   .titulo-header h2 {
@@ -340,23 +499,32 @@ textarea {
   }
 
   .formulario {
-    padding: 14px 16px 92px;
+    padding:
+      14px
+      16px
+      92px;
   }
 
   .seccion {
-    padding: 14px 15px;
-    margin-bottom: 11px;
+    padding:
+      14px
+      15px;
+
+    margin-bottom:
+      11px;
   }
 
   .grupo-codigo {
     grid-template-columns:
       minmax(0, 1fr)
       112px;
+
     gap: 8px;
   }
 
   .btn-generar {
     width: 112px;
+
     padding: 0 8px;
   }
 
@@ -365,7 +533,10 @@ textarea {
       108px
       42px
       minmax(0, 1fr);
-    padding: 10px 16px;
+
+    padding:
+      10px
+      16px;
   }
 
   .acciones.edicion {
@@ -390,6 +561,7 @@ textarea {
 
   .btn-generar {
     width: 98px;
+
     font-size: 12px;
   }
 
@@ -399,7 +571,11 @@ textarea {
 
   .dos-columnas {
     grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
     gap: 8px;
   }
 
