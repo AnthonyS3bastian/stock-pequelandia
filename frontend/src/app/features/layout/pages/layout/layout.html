@@ -1,29 +1,32 @@
 <mat-sidenav-container class="layout">
 
-    <mat-sidenav
-        class="panel-lateral"
-        [mode]="esMovil ? 'over' : 'side'"
-        [fixedInViewport]="esMovil"
-        [autoFocus]="false"
-        [(opened)]="menuAbierto"
-        (backdropClick)="cerrarMenuMovil()">
+  <mat-sidenav
+    class="panel-lateral"
+    [mode]="esMovil ? 'over' : 'side'"
+    [fixedInViewport]="esMovil"
+    [autoFocus]="false"
+    [disableClose]="!esMovil"
+    [(opened)]="menuAbierto"
+    (backdropClick)="cerrarMenuMovil()">
 
-        <app-sidebar></app-sidebar>
+    <app-sidebar>
+    </app-sidebar>
 
-    </mat-sidenav>
+  </mat-sidenav>
 
-    <mat-sidenav-content class="contenido">
+  <mat-sidenav-content class="contenido">
 
-        <app-toolbar
-            (menuSolicitado)="alternarMenu()">
-        </app-toolbar>
+    <app-toolbar
+      (menuSolicitado)="alternarMenu()">
+    </app-toolbar>
 
-        <main class="pagina">
+    <main class="pagina">
 
-            <router-outlet></router-outlet>
+      <router-outlet>
+      </router-outlet>
 
-        </main>
+    </main>
 
-    </mat-sidenav-content>
+  </mat-sidenav-content>
 
 </mat-sidenav-container>
