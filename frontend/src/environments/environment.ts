@@ -1,7 +1,7 @@
 export const environment = {
-  production: false,
+  production: true,
 
   appName: 'Stock Pequelandia',
 
-  apiUrl: 'http://127.0.0.1:8000/api'
+  apiUrl: '/api'
 };

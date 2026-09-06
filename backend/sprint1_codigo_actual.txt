@@ -1,0 +1,1238 @@
+
+============================================================
+ARCHIVO: app/Http/Controllers/AuthController.php
+============================================================
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\CambiarPasswordRequest;
+use App\Models\Usuario;
+use App\Services\UsuarioService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class AuthController extends Controller
+{
+    public function __construct(
+        private readonly UsuarioService $usuarioService
+    ) {
+    }
+
+    /**
+     * Iniciar sesion.
+     */
+    public function login(
+        Request $request
+    ): JsonResponse {
+
+        $datos = $request->validate([
+            'nombre_usuario' => [
+                'required',
+                'string',
+            ],
+            'password' => [
+                'required',
+                'string',
+            ],
+        ]);
+
+        $resultado =
+            $this->usuarioService->login(
+                $datos['nombre_usuario'],
+                $datos['password']
+            );
+
+        return response()->json([
+            'mensaje' =>
+                'Inicio de sesion exitoso.',
+            'usuario' =>
+                $resultado['usuario'],
+            'token' =>
+                $resultado['token'],
+        ]);
+    }
+
+    /**
+     * Obtener el perfil del usuario autenticado.
+     */
+    public function perfil(
+        Request $request
+    ): JsonResponse {
+
+        /** @var Usuario|null $usuario */
+        $usuario = $request->user();
+
+        if (!$usuario) {
+            return response()->json([
+                'mensaje' =>
+                    'Usuario no autenticado.',
+            ], 401);
+        }
+
+        $perfil =
+            $this->usuarioService
+                ->obtenerPerfil($usuario);
+
+        return response()->json([
+            'perfil' => $perfil,
+        ]);
+    }
+
+    /**
+     * Cambiar la contrasena propia.
+     */
+    public function cambiarPassword(
+        CambiarPasswordRequest $request
+    ): JsonResponse {
+
+        /** @var Usuario $usuario */
+        $usuario = $request->user();
+
+        $datos = $request->validated();
+
+        $this->usuarioService
+            ->cambiarPassword(
+                $usuario,
+                $datos['password_actual'],
+                $datos['password']
+            );
+
+        return response()->json([
+            'mensaje' =>
+                'Contrasena actualizada correctamente.',
+        ]);
+    }
+
+    /**
+     * Cerrar la sesion actual.
+     */
+    public function logout(
+        Request $request
+    ): JsonResponse {
+
+        /** @var Usuario|null $usuario */
+        $usuario = $request->user();
+
+        if ($usuario) {
+            $this->usuarioService->logout(
+                $usuario
+            );
+        }
+
+        return response()->json([
+            'mensaje' =>
+                'Sesion cerrada correctamente.',
+        ]);
+    }
+}
+
+============================================================
+ARCHIVO: app/Http/Controllers/UsuarioController.php
+============================================================
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StoreUsuarioRequest;
+use App\Models\Usuario;
+use App\Services\UsuarioService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class UsuarioController extends Controller
+{
+    public function __construct(
+        private readonly UsuarioService $usuarioService
+    ) {
+    }
+
+    /**
+     * Listar todas las cuentas.
+     */
+    public function index(): JsonResponse
+    {
+        return response()->json([
+            'usuarios' =>
+                $this->usuarioService
+                    ->listarUsuarios(),
+        ]);
+    }
+
+    /**
+     * Crear una cuenta de empleado.
+     */
+    public function store(
+        StoreUsuarioRequest $request
+    ): JsonResponse {
+
+        $usuario =
+            $this->usuarioService
+                ->crearEmpleado(
+                    $request->validated()
+                );
+
+        return response()->json([
+            'mensaje' =>
+                'Empleado creado correctamente. La contrasena inicial es su DNI.',
+            'usuario' => $usuario,
+        ], 201);
+    }
+
+    /**
+     * Activar o desactivar una cuenta de empleado.
+     */
+    public function cambiarEstado(
+        Request $request,
+        int $id
+    ): JsonResponse {
+
+        /** @var Usuario $usuarioAutenticado */
+        $usuarioAutenticado =
+            $request->user();
+
+        $usuario =
+            $this->usuarioService
+                ->cambiarEstado(
+                    $id,
+                    $usuarioAutenticado
+                );
+
+        $mensaje =
+            $usuario->estado_usuario
+                ? 'Cuenta activada correctamente.'
+                : 'Cuenta desactivada correctamente.';
+
+        return response()->json([
+            'mensaje' => $mensaje,
+            'usuario' => $usuario,
+        ]);
+    }
+
+    /**
+     * Restablecer la contrasena de un empleado a su DNI.
+     */
+    public function restablecerPassword(
+        int $id
+    ): JsonResponse {
+
+        $usuario =
+            $this->usuarioService
+                ->restablecerPassword($id);
+
+        return response()->json([
+            'mensaje' =>
+                'Contrasena restablecida correctamente. La nueva contrasena es el DNI del empleado.',
+            'usuario' => $usuario,
+        ]);
+    }
+}
+
+============================================================
+ARCHIVO: app/Http/Middleware/AdministradorMiddleware.php
+============================================================
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class AdministradorMiddleware
+{
+    /**
+     * Verifica que el usuario autenticado tenga rol de administrador.
+     */
+    public function handle(
+        Request $request,
+        Closure $next
+    ): Response|JsonResponse {
+
+        $usuario = $request->user();
+
+        if (!$usuario) {
+            return response()->json([
+                'mensaje' => 'No autenticado.',
+            ], 401);
+        }
+
+        if (!$usuario->estado_usuario) {
+            $usuario->tokens()->delete();
+
+            return response()->json([
+                'mensaje' => 'La cuenta se encuentra inactiva.',
+            ], 403);
+        }
+
+        if (
+            strtoupper($usuario->rol_usuario)
+            !== 'ADMINISTRADOR'
+        ) {
+            return response()->json([
+                'mensaje' => 'No autorizado para realizar esta accion.',
+            ], 403);
+        }
+
+        return $next($request);
+    }
+}
+
+============================================================
+ARCHIVO: app/Http/Requests/CambiarPasswordRequest.php
+============================================================
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class CambiarPasswordRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'password_actual' => [
+                'required',
+                'string',
+            ],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'max:100',
+                'confirmed',
+                'different:password_actual',
+            ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'password_actual.required' => 'La contrasena actual es obligatoria.',
+            'password.required' => 'La nueva contrasena es obligatoria.',
+            'password.min' => 'La nueva contrasena debe tener al menos 8 caracteres.',
+            'password.max' => 'La nueva contrasena no debe superar los 100 caracteres.',
+            'password.confirmed' => 'La confirmacion de la nueva contrasena no coincide.',
+            'password.different' => 'La nueva contrasena debe ser diferente de la contrasena actual.',
+        ];
+    }
+}
+
+============================================================
+ARCHIVO: app/Http/Requests/StoreUsuarioRequest.php
+============================================================
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class StoreUsuarioRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'dni_personal' => [
+                'required',
+                'digits:8',
+                Rule::unique('personal', 'dni_personal'),
+            ],
+            'nombre_personal' => [
+                'required',
+                'string',
+                'max:50',
+            ],
+            'apellido_personal' => [
+                'required',
+                'string',
+                'max:50',
+            ],
+            'tel_personal' => [
+                'nullable',
+                'regex:/^[0-9]{6,12}$/',
+            ],
+            'nombre_usuario' => [
+                'required',
+                'string',
+                'min:3',
+                'max:50',
+                'alpha_dash',
+                Rule::unique('usuario', 'nombre_usuario'),
+            ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'dni_personal.required' => 'El DNI es obligatorio.',
+            'dni_personal.digits' => 'El DNI debe tener exactamente 8 digitos.',
+            'dni_personal.unique' => 'Ya existe una persona registrada con ese DNI.',
+            'nombre_personal.required' => 'Los nombres son obligatorios.',
+            'nombre_personal.max' => 'Los nombres no deben superar los 50 caracteres.',
+            'apellido_personal.required' => 'Los apellidos son obligatorios.',
+            'apellido_personal.max' => 'Los apellidos no deben superar los 50 caracteres.',
+            'tel_personal.regex' => 'El telefono debe contener entre 6 y 12 numeros.',
+            'nombre_usuario.required' => 'El nombre de usuario es obligatorio.',
+            'nombre_usuario.min' => 'El nombre de usuario debe tener al menos 3 caracteres.',
+            'nombre_usuario.max' => 'El nombre de usuario no debe superar los 50 caracteres.',
+            'nombre_usuario.alpha_dash' => 'El nombre de usuario solo puede contener letras, numeros, guiones y guion bajo.',
+            'nombre_usuario.unique' => 'Ese nombre de usuario ya se encuentra registrado.',
+        ];
+    }
+}
+
+============================================================
+ARCHIVO: app/Models/Personal.php
+============================================================
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+
+class Personal extends Model
+{
+    protected $table = 'personal';
+
+    protected $primaryKey = 'id_personal';
+
+    protected $fillable = [
+        'dni_personal',
+        'nombre_personal',
+        'apellido_personal',
+        'tel_personal',
+    ];
+
+    public function usuario(): HasOne
+    {
+        return $this->hasOne(Usuario::class, 'id_personal', 'id_personal');
+    }
+}
+
+============================================================
+ARCHIVO: app/Models/Usuario.php
+============================================================
+<?php
+
+namespace App\Models;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Sanctum\HasApiTokens;
+
+class Usuario extends Authenticatable
+{
+    use HasApiTokens;
+
+    protected $table = 'usuario';
+
+    protected $primaryKey = 'id_usuario';
+
+    public $timestamps = true;
+
+    protected $fillable = [
+        'rol_usuario',
+        'nombre_usuario',
+        'password',
+        'estado_usuario',
+        'id_personal',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'password' => 'hashed',
+            'estado_usuario' => 'boolean',
+        ];
+    }
+
+    public function personal(): BelongsTo
+    {
+        return $this->belongsTo(Personal::class, 'id_personal', 'id_personal');
+    }
+
+    public function ventas(): HasMany
+    {
+        return $this->hasMany(Venta::class, 'id_usuario', 'id_usuario');
+    }
+}
+
+============================================================
+ARCHIVO: app/Services/UsuarioService.php
+============================================================
+<?php
+
+namespace App\Services;
+
+use App\Models\Personal;
+use App\Models\Usuario;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+
+class UsuarioService
+{
+    /**
+     * Buscar un usuario por su nombre de usuario.
+     */
+    public function buscarPorNombre(
+        string $nombreUsuario
+    ): ?Usuario {
+
+        return Usuario::where(
+            'nombre_usuario',
+            $nombreUsuario
+        )
+            ->with('personal')
+            ->first();
+    }
+
+    /**
+     * Obtener el perfil del usuario autenticado.
+     */
+    public function obtenerPerfil(
+        Usuario $usuario
+    ): Usuario {
+
+        return $usuario->load('personal');
+    }
+
+    /**
+     * Listar usuarios con sus datos personales.
+     */
+    public function listarUsuarios(): Collection
+    {
+        return Usuario::query()
+            ->with('personal')
+            ->orderByRaw(
+                "CASE WHEN rol_usuario = 'ADMINISTRADOR' THEN 0 ELSE 1 END"
+            )
+            ->orderBy('nombre_usuario')
+            ->get();
+    }
+
+    /**
+     * Crear una cuenta de empleado.
+     * La contrasena inicial sera su DNI.
+     */
+    public function crearEmpleado(
+        array $datos
+    ): Usuario {
+
+        return DB::transaction(
+            function () use ($datos): Usuario {
+
+                $personal = Personal::create([
+                    'dni_personal' => $datos['dni_personal'],
+                    'nombre_personal' => trim($datos['nombre_personal']),
+                    'apellido_personal' => trim($datos['apellido_personal']),
+                    'tel_personal' => $datos['tel_personal'] ?? null,
+                ]);
+
+                $usuario = Usuario::create([
+                    'rol_usuario' => 'EMPLEADO',
+                    'nombre_usuario' => trim($datos['nombre_usuario']),
+                    'password' => $datos['dni_personal'],
+                    'estado_usuario' => true,
+                    'id_personal' => $personal->id_personal,
+                ]);
+
+                return $usuario->load('personal');
+            }
+        );
+    }
+
+    /**
+     * Activar o desactivar una cuenta de empleado.
+     */
+    public function cambiarEstado(
+        int $idUsuario,
+        Usuario $usuarioAutenticado
+    ): Usuario {
+
+        $usuario = Usuario::with('personal')
+            ->findOrFail($idUsuario);
+
+        if (
+            $usuario->id_usuario ===
+            $usuarioAutenticado->id_usuario
+        ) {
+            throw ValidationException::withMessages([
+                'usuario' => [
+                    'No puedes desactivar tu propia cuenta.',
+                ],
+            ]);
+        }
+
+        if (
+            strtoupper($usuario->rol_usuario)
+            !== 'EMPLEADO'
+        ) {
+            throw ValidationException::withMessages([
+                'usuario' => [
+                    'Desde esta pantalla solo se administran cuentas de empleados.',
+                ],
+            ]);
+        }
+
+        $usuario->estado_usuario =
+            !$usuario->estado_usuario;
+
+        $usuario->save();
+
+        if (!$usuario->estado_usuario) {
+            $usuario->tokens()->delete();
+        }
+
+        return $usuario->fresh('personal');
+    }
+
+    /**
+     * Restablecer la contrasena de un empleado a su DNI.
+     */
+    public function restablecerPassword(
+        int $idUsuario
+    ): Usuario {
+
+        $usuario = Usuario::with('personal')
+            ->findOrFail($idUsuario);
+
+        if (
+            strtoupper($usuario->rol_usuario)
+            !== 'EMPLEADO'
+        ) {
+            throw ValidationException::withMessages([
+                'usuario' => [
+                    'Desde esta pantalla solo se restablecen cuentas de empleados.',
+                ],
+            ]);
+        }
+
+        if (!$usuario->personal) {
+            throw ValidationException::withMessages([
+                'usuario' => [
+                    'La cuenta no tiene datos personales asociados.',
+                ],
+            ]);
+        }
+
+        $usuario->password =
+            $usuario->personal->dni_personal;
+
+        $usuario->save();
+
+        $usuario->tokens()->delete();
+
+        return $usuario->fresh('personal');
+    }
+
+    /**
+     * Cambiar la contrasena del usuario autenticado.
+     */
+    public function cambiarPassword(
+        Usuario $usuario,
+        string $passwordActual,
+        string $nuevoPassword
+    ): void {
+
+        if (
+            !Hash::check(
+                $passwordActual,
+                $usuario->password
+            )
+        ) {
+            throw ValidationException::withMessages([
+                'password_actual' => [
+                    'La contrasena actual es incorrecta.',
+                ],
+            ]);
+        }
+
+        $usuario->password = $nuevoPassword;
+        $usuario->save();
+
+        $tokenActual =
+            $usuario->currentAccessToken();
+
+        if ($tokenActual) {
+            $usuario->tokens()
+                ->where(
+                    'id',
+                    '!=',
+                    $tokenActual->id
+                )
+                ->delete();
+        }
+    }
+
+    /**
+     * Iniciar sesion.
+     */
+    public function login(
+        string $nombreUsuario,
+        string $password
+    ): array {
+
+        $usuario = $this->buscarPorNombre(
+            $nombreUsuario
+        );
+
+        if (
+            !$usuario ||
+            !Hash::check(
+                $password,
+                $usuario->password
+            )
+        ) {
+            throw ValidationException::withMessages([
+                'credenciales' => [
+                    'Usuario o contrasena incorrectos.',
+                ],
+            ]);
+        }
+
+        if (!$usuario->estado_usuario) {
+            throw ValidationException::withMessages([
+                'credenciales' => [
+                    'La cuenta se encuentra inactiva. Comuniquese con la administradora.',
+                ],
+            ]);
+        }
+
+        $usuario->tokens()->delete();
+
+        $token = $usuario
+            ->createToken('auth_token')
+            ->plainTextToken;
+
+        return [
+            'usuario' => $usuario,
+            'token' => $token,
+        ];
+    }
+
+    /**
+     * Cerrar la sesion actual.
+     */
+    public function logout(
+        Usuario $usuario
+    ): void {
+
+        $tokenActual =
+            $usuario->currentAccessToken();
+
+        if ($tokenActual) {
+            $tokenActual->delete();
+        }
+    }
+}
+
+============================================================
+ARCHIVO: bootstrap/app.php
+============================================================
+<?php
+
+use App\Http\Middleware\AdministradorMiddleware;
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+
+return Application::configure(
+    basePath: dirname(__DIR__)
+)
+    ->withRouting(
+        web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
+        commands: __DIR__.'/../routes/console.php',
+        health: '/up',
+    )
+    ->withMiddleware(
+        function (Middleware $middleware): void {
+
+            $middleware->alias([
+                'administrador' => AdministradorMiddleware::class,
+            ]);
+
+        }
+    )
+    ->withExceptions(
+        function (Exceptions $exceptions): void {
+
+            $exceptions->shouldRenderJsonWhen(
+                fn (Request $request): bool =>
+                    $request->is('api/*'),
+            );
+
+        }
+    )
+    ->create();
+
+============================================================
+ARCHIVO: config/auth.php
+============================================================
+<?php
+
+use App\Models\Usuario;
+
+return [
+
+    'defaults' => [
+        'guard' => env('AUTH_GUARD', 'web'),
+        'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
+    ],
+
+    'guards' => [
+        'web' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
+    ],
+
+    'providers' => [
+        'users' => [
+            'driver' => 'eloquent',
+            'model' => env('AUTH_MODEL', Usuario::class),
+        ],
+    ],
+
+    'passwords' => [
+        'users' => [
+            'provider' => 'users',
+            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+    ],
+
+    'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
+
+];
+
+============================================================
+ARCHIVO: routes/api.php
+============================================================
+<?php
+
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\ConsultaDocumentoController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\VentaController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Autenticacion publica
+|--------------------------------------------------------------------------
+*/
+
+Route::post(
+    '/login',
+    [AuthController::class, 'login']
+);
+
+/*
+|--------------------------------------------------------------------------
+| Rutas protegidas con Laravel Sanctum
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth:sanctum')
+    ->group(function (): void {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Autenticacion y perfil
+        |--------------------------------------------------------------------------
+        */
+
+        Route::post(
+            '/logout',
+            [AuthController::class, 'logout']
+        );
+
+        Route::get(
+            '/perfil',
+            [AuthController::class, 'perfil']
+        );
+
+        Route::put(
+            '/perfil/password',
+            [AuthController::class, 'cambiarPassword']
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Dashboard
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/dashboard',
+            [DashboardController::class, 'index']
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Consultas DNI y RUC
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/consultas/dni/{dni}',
+            [
+                ConsultaDocumentoController::class,
+                'consultarDni',
+            ]
+        );
+
+        Route::get(
+            '/consultas/ruc/{ruc}',
+            [
+                ConsultaDocumentoController::class,
+                'consultarRuc',
+            ]
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Categorias: consulta
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/categorias',
+            [CategoriaController::class, 'index']
+        );
+
+        Route::get(
+            '/categorias/{id}',
+            [CategoriaController::class, 'show']
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Productos: consulta
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/productos',
+            [ProductoController::class, 'index']
+        );
+
+        Route::get(
+            '/productos/buscar',
+            [ProductoController::class, 'buscar']
+        );
+
+        Route::get(
+            '/productos/codigo/{codigo}',
+            [
+                ProductoController::class,
+                'buscarPorCodigo',
+            ]
+        );
+
+        Route::get(
+            '/productos/{id}',
+            [ProductoController::class, 'show']
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ventas
+        |--------------------------------------------------------------------------
+        */
+
+        Route::post(
+            '/ventas',
+            [VentaController::class, 'registrar']
+        );
+
+        Route::get(
+            '/ventas/comprobante/{numeroComprobante}',
+            [
+                VentaController::class,
+                'buscarPorComprobante',
+            ]
+        );
+
+        Route::patch(
+            '/ventas/comprobante/{numeroComprobante}/anular',
+            [VentaController::class, 'anular']
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Rutas exclusivas del administrador
+        |--------------------------------------------------------------------------
+        */
+
+        Route::middleware('administrador')
+            ->group(function (): void {
+
+                /*
+                |--------------------------------------------------------------------------
+                | Gestion de usuarios
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/usuarios',
+                    [UsuarioController::class, 'index']
+                );
+
+                Route::post(
+                    '/usuarios',
+                    [UsuarioController::class, 'store']
+                );
+
+                Route::patch(
+                    '/usuarios/{id}/estado',
+                    [UsuarioController::class, 'cambiarEstado']
+                );
+
+                Route::patch(
+                    '/usuarios/{id}/restablecer-password',
+                    [UsuarioController::class, 'restablecerPassword']
+                );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Gestion de categorias
+                |--------------------------------------------------------------------------
+                */
+
+                Route::post(
+                    '/categorias',
+                    [CategoriaController::class, 'store']
+                );
+
+                Route::put(
+                    '/categorias/{id}',
+                    [CategoriaController::class, 'update']
+                );
+
+                Route::delete(
+                    '/categorias/{id}',
+                    [CategoriaController::class, 'destroy']
+                );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Gestion de productos
+                |--------------------------------------------------------------------------
+                */
+
+                Route::post(
+                    '/productos',
+                    [ProductoController::class, 'store']
+                );
+
+                Route::patch(
+                    '/productos/{id}/stock',
+                    [ProductoController::class, 'actualizarStock']
+                );
+
+                Route::patch(
+                    '/productos/{id}/estado',
+                    [ProductoController::class, 'cambiarEstado']
+                );
+
+                Route::put(
+                    '/productos/{id}',
+                    [ProductoController::class, 'update']
+                );
+
+                Route::delete(
+                    '/productos/{id}',
+                    [ProductoController::class, 'destroy']
+                );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Reportes
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/reportes/inventario',
+                    [ReporteController::class, 'inventario']
+                );
+
+                Route::get(
+                    '/reportes/diario',
+                    [ReporteController::class, 'diario']
+                );
+
+                Route::get(
+                    '/reportes/semanal',
+                    [ReporteController::class, 'semanal']
+                );
+
+                Route::get(
+                    '/reportes/mensual',
+                    [ReporteController::class, 'mensual']
+                );
+            });
+    });
+
+============================================================
+ARCHIVO: database/migrations/2026_07_15_034708_create_personal_table.php
+============================================================
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Ejecuta la migración.
+     */
+    public function up(): void
+    {
+        Schema::create('personal', function (Blueprint $table) {
+            $table->id('id_personal');
+            $table->string('dni_personal', 8)->unique();
+            $table->string('nombre_personal', 100);
+            $table->string('apellido_personal', 100);
+            $table->string('tel_personal', 15);
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Revierte la migración.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('personal');
+    }
+};
+
+============================================================
+ARCHIVO: database/migrations/2026_07_15_040323_create_usuario_table.php
+============================================================
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Ejecuta la migración.
+     */
+    public function up(): void
+    {
+        Schema::create('usuario', function (Blueprint $table) {
+
+            $table->id('id_usuario');
+
+            $table->string('rol_usuario', 50);
+
+            $table->string('nombre_usuario', 50)->unique();
+
+            $table->string('password');
+
+            $table->boolean('estado_usuario')->default(true);
+
+            $table->foreignId('id_personal')
+                  ->constrained('personal', 'id_personal')
+                  ->cascadeOnUpdate()
+                  ->restrictOnDelete();
+
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Revierte la migración.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('usuario');
+    }
+};
+
+============================================================
+ARCHIVO: database/migrations/2026_07_16_032217_create_personal_access_tokens_table.php
+============================================================
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('personal_access_tokens', function (Blueprint $table) {
+            $table->id();
+            $table->morphs('tokenable');
+            $table->text('name');
+            $table->string('token', 64)->unique();
+            $table->text('abilities')->nullable();
+            $table->timestamp('last_used_at')->nullable();
+            $table->timestamp('expires_at')->nullable()->index();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('personal_access_tokens');
+    }
+};
+
+============================================================
+ARCHIVO: tests/TestCase.php
+============================================================
+<?php
+
+namespace Tests;
+
+use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+
+abstract class TestCase extends BaseTestCase
+{
+    //
+}

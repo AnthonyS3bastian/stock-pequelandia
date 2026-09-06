@@ -16,6 +16,10 @@ import {
   Producto
 } from '../interfaces/producto.interface';
 
+import {
+  environment
+} from '../../../../environments/environment';
+
 export type OperacionStock =
   | 'agregar'
   | 'retirar'
@@ -60,7 +64,7 @@ export class ProductoService {
     inject(HttpClient);
 
   private readonly api =
-    'http://127.0.0.1:8000/api/productos';
+    `${environment.apiUrl}/productos`;
 
   listar():
     Observable<RespuestaProductos> {
