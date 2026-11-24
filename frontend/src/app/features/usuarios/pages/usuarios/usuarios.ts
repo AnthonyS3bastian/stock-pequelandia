@@ -91,6 +91,7 @@ export class UsuariosComponent {
           Validators.pattern(/^\d{8}$/)
         ]
       ],
+
       nombre_personal: [
         '',
         [
@@ -98,6 +99,7 @@ export class UsuariosComponent {
           Validators.maxLength(50)
         ]
       ],
+
       apellido_personal: [
         '',
         [
@@ -105,19 +107,23 @@ export class UsuariosComponent {
           Validators.maxLength(50)
         ]
       ],
+
       tel_personal: [
         '',
         [
-          Validators.pattern(/^\d{6,12}$/)
+          Validators.pattern(/^9\d{8}$/)
         ]
       ],
+
       nombre_usuario: [
         '',
         [
           Validators.required,
           Validators.minLength(3),
           Validators.maxLength(50),
-          Validators.pattern(/^[a-zA-Z0-9_-]+$/)
+          Validators.pattern(
+            /^[a-zA-Z0-9_-]+$/
+          )
         ]
       ]
     });
@@ -163,14 +169,19 @@ export class UsuariosComponent {
 
     const datos: CrearEmpleadoRequest = {
       ...valores,
+
       dni_personal:
         valores.dni_personal.trim(),
+
       nombre_personal:
         valores.nombre_personal.trim(),
+
       apellido_personal:
         valores.apellido_personal.trim(),
+
       tel_personal:
         valores.tel_personal.trim() || null,
+
       nombre_usuario:
         valores.nombre_usuario.trim()
     };
@@ -193,12 +204,15 @@ export class UsuariosComponent {
           this.cargarUsuarios();
 
         },
+
         error: error => {
 
           this.guardando.set(false);
 
           this.mostrarMensaje(
-            this.obtenerMensajeError(error),
+            this.obtenerMensajeError(
+              error
+            ),
             true
           );
 
@@ -254,12 +268,15 @@ export class UsuariosComponent {
           );
 
         },
+
         error: error => {
 
           this.procesandoId.set(null);
 
           this.mostrarMensaje(
-            this.obtenerMensajeError(error),
+            this.obtenerMensajeError(
+              error
+            ),
             true
           );
 
@@ -306,12 +323,15 @@ export class UsuariosComponent {
           );
 
         },
+
         error: error => {
 
           this.procesandoId.set(null);
 
           this.mostrarMensaje(
-            this.obtenerMensajeError(error),
+            this.obtenerMensajeError(
+              error
+            ),
             true
           );
 
@@ -348,12 +368,15 @@ export class UsuariosComponent {
           this.cargando.set(false);
 
         },
+
         error: error => {
 
           this.cargando.set(false);
 
           this.mostrarMensaje(
-            this.obtenerMensajeError(error),
+            this.obtenerMensajeError(
+              error
+            ),
             true
           );
 
@@ -368,11 +391,12 @@ export class UsuariosComponent {
 
     this.usuarios.update(
       usuarios =>
-        usuarios.map(usuario =>
-          usuario.id_usuario ===
-          usuarioActualizado.id_usuario
-            ? usuarioActualizado
-            : usuario
+        usuarios.map(
+          usuario =>
+            usuario.id_usuario ===
+            usuarioActualizado.id_usuario
+              ? usuarioActualizado
+              : usuario
         )
     );
 
@@ -390,6 +414,7 @@ export class UsuariosComponent {
         duration: 5000,
         horizontalPosition: 'end',
         verticalPosition: 'top',
+
         panelClass: esError
           ? ['snackbar-error']
           : ['snackbar-exito']
@@ -410,7 +435,9 @@ export class UsuariosComponent {
     if (errores) {
 
       const primerError =
-        Object.values(errores)[0]?.[0];
+        Object.values(
+          errores
+        )[0]?.[0];
 
       if (primerError) {
         return primerError;

@@ -10,7 +10,7 @@
       <h2>Gestion de usuarios</h2>
 
       <p>
-        Crea cuentas para empleadas y controla su acceso al sistema.
+        Crea cuentas para vendedores y controla su acceso al sistema.
       </p>
     </div>
 
@@ -21,7 +21,7 @@
       (click)="abrirFormulario()">
 
       <mat-icon>person_add</mat-icon>
-      Nuevo empleado
+      Nuevo vendedor
 
     </button>
 
@@ -34,7 +34,8 @@
       <div class="cabecera-formulario">
 
         <div>
-          <h3>Nueva cuenta de empleado</h3>
+          <h3>Nueva cuenta de vendedor</h3>
+
           <p>
             La contraseña inicial sera automaticamente el DNI.
           </p>
@@ -59,7 +60,11 @@
         (ngSubmit)="crearEmpleado()">
 
         <div class="campo">
-          <label for="dni_personal">DNI</label>
+
+          <label for="dni_personal">
+            DNI
+          </label>
+
           <input
             id="dni_personal"
             type="text"
@@ -72,12 +77,21 @@
             formulario.controls.dni_personal.invalid &&
             formulario.controls.dni_personal.touched
           ) {
-            <small>Ingresa un DNI valido de 8 digitos.</small>
+
+            <small>
+              Ingresa un DNI valido de 8 digitos.
+            </small>
+
           }
+
         </div>
 
         <div class="campo">
-          <label for="nombre_personal">Nombres</label>
+
+          <label for="nombre_personal">
+            Nombres
+          </label>
+
           <input
             id="nombre_personal"
             type="text"
@@ -89,12 +103,21 @@
             formulario.controls.nombre_personal.invalid &&
             formulario.controls.nombre_personal.touched
           ) {
-            <small>Los nombres son obligatorios.</small>
+
+            <small>
+              Los nombres son obligatorios.
+            </small>
+
           }
+
         </div>
 
         <div class="campo">
-          <label for="apellido_personal">Apellidos</label>
+
+          <label for="apellido_personal">
+            Apellidos
+          </label>
+
           <input
             id="apellido_personal"
             type="text"
@@ -106,17 +129,27 @@
             formulario.controls.apellido_personal.invalid &&
             formulario.controls.apellido_personal.touched
           ) {
-            <small>Los apellidos son obligatorios.</small>
+
+            <small>
+              Los apellidos son obligatorios.
+            </small>
+
           }
+
         </div>
 
         <div class="campo">
-          <label for="tel_personal">Telefono opcional</label>
+
+          <label for="tel_personal">
+            Celular opcional
+          </label>
+
           <input
             id="tel_personal"
-            type="text"
+            type="tel"
             inputmode="numeric"
-            maxlength="12"
+            maxlength="9"
+            autocomplete="tel"
             formControlName="tel_personal"
             placeholder="987654321">
 
@@ -124,12 +157,21 @@
             formulario.controls.tel_personal.invalid &&
             formulario.controls.tel_personal.touched
           ) {
-            <small>Ingresa entre 6 y 12 numeros.</small>
+
+            <small>
+              Ingresa un celular valido de 9 digitos que comience con 9.
+            </small>
+
           }
+
         </div>
 
         <div class="campo campo-usuario">
-          <label for="nombre_usuario">Nombre de usuario</label>
+
+          <label for="nombre_usuario">
+            Nombre de usuario
+          </label>
+
           <input
             id="nombre_usuario"
             type="text"
@@ -141,10 +183,13 @@
             formulario.controls.nombre_usuario.invalid &&
             formulario.controls.nombre_usuario.touched
           ) {
+
             <small>
               Usa al menos 3 caracteres, sin espacios ni tildes.
             </small>
+
           }
+
         </div>
 
         <div class="acciones-formulario">
@@ -154,7 +199,9 @@
             type="button"
             [disabled]="guardando()"
             (click)="cerrarFormulario()">
+
             Cancelar
+
           </button>
 
           <button
@@ -168,7 +215,7 @@
             @if (guardando()) {
               Guardando...
             } @else {
-              Crear empleado
+              Crear vendedor
             }
 
           </button>
@@ -184,26 +231,47 @@
   <article class="panel-listado">
 
     <div class="cabecera-listado">
+
       <div>
-        <h3>Cuentas registradas</h3>
+
+        <h3>
+          Cuentas registradas
+        </h3>
+
         <p>
           {{ usuarios().length }} usuario(s) en el sistema
         </p>
+
       </div>
+
     </div>
 
     @if (cargando()) {
 
       <div class="estado-vacio">
-        <mat-icon>hourglass_top</mat-icon>
-        <p>Cargando usuarios...</p>
+
+        <mat-icon>
+          hourglass_top
+        </mat-icon>
+
+        <p>
+          Cargando usuarios...
+        </p>
+
       </div>
 
     } @else if (usuarios().length === 0) {
 
       <div class="estado-vacio">
-        <mat-icon>group_off</mat-icon>
-        <p>No hay usuarios registrados.</p>
+
+        <mat-icon>
+          group_off
+        </mat-icon>
+
+        <p>
+          No hay usuarios registrados.
+        </p>
+
       </div>
 
     } @else {
@@ -211,14 +279,20 @@
       <div class="tabla-contenedor">
 
         <table>
+
           <thead>
+
             <tr>
               <th>Persona</th>
               <th>Usuario</th>
               <th>Rol</th>
               <th>Estado</th>
-              <th class="columna-acciones">Acciones</th>
+
+              <th class="columna-acciones">
+                Acciones
+              </th>
             </tr>
+
           </thead>
 
           <tbody>
@@ -229,13 +303,17 @@
             ) {
 
               <tr>
+
                 <td data-label="Persona">
+
                   <div class="persona">
+
                     <span class="avatar-lista">
                       {{ nombreCompleto(usuario).charAt(0).toUpperCase() }}
                     </span>
 
                     <div>
+
                       <strong>
                         {{ nombreCompleto(usuario) }}
                       </strong>
@@ -243,37 +321,61 @@
                       <span>
                         DNI {{ usuario.personal?.dni_personal ?? 'No registrado' }}
                       </span>
+
                     </div>
+
                   </div>
+
                 </td>
 
                 <td data-label="Usuario">
+
                   <span class="nombre-cuenta">
                     {{ usuario.nombre_usuario }}
                   </span>
+
                 </td>
 
                 <td data-label="Rol">
+
                   <span
                     class="insignia rol"
                     [class.administrador]="usuario.rol_usuario === 'ADMINISTRADOR'">
-                    {{ usuario.rol_usuario === 'ADMINISTRADOR' ? 'Administrador' : 'Empleado' }}
+
+                    {{
+                      usuario.rol_usuario === 'ADMINISTRADOR'
+                        ? 'Administrador'
+                        : 'Vendedor'
+                    }}
+
                   </span>
+
                 </td>
 
                 <td data-label="Estado">
+
                   <span
                     class="insignia estado"
                     [class.inactivo]="!usuario.estado_usuario">
-                    {{ usuario.estado_usuario ? 'Activo' : 'Inactivo' }}
+
+                    {{
+                      usuario.estado_usuario
+                        ? 'Activo'
+                        : 'Inactivo'
+                    }}
+
                   </span>
+
                 </td>
 
                 <td
                   data-label="Acciones"
                   class="columna-acciones">
 
-                  @if (usuario.rol_usuario === 'EMPLEADO') {
+                  @if (
+                    usuario.rol_usuario ===
+                    'EMPLEADO'
+                  ) {
 
                     <button
                       mat-icon-button
@@ -286,7 +388,11 @@
                       (click)="cambiarEstado(usuario)">
 
                       <mat-icon>
-                        {{ usuario.estado_usuario ? 'person_off' : 'person_check' }}
+                        {{
+                          usuario.estado_usuario
+                            ? 'person_off'
+                            : 'person_check'
+                        }}
                       </mat-icon>
 
                     </button>
@@ -300,7 +406,9 @@
                       title="Restablecer contraseña al DNI"
                       (click)="restablecerPassword(usuario)">
 
-                      <mat-icon>lock_reset</mat-icon>
+                      <mat-icon>
+                        lock_reset
+                      </mat-icon>
 
                     </button>
 
@@ -313,11 +421,13 @@
                   }
 
                 </td>
+
               </tr>
 
             }
 
           </tbody>
+
         </table>
 
       </div>
