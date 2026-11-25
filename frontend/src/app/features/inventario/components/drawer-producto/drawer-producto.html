@@ -7,13 +7,11 @@
       <div class="icono-header">
 
         <mat-icon>
-
           {{
             esEdicion
               ? 'edit'
               : 'inventory_2'
           }}
-
         </mat-icon>
 
       </div>
@@ -21,23 +19,19 @@
       <div>
 
         <h2>
-
           {{
             esEdicion
               ? 'Editar producto'
               : 'Nuevo producto'
           }}
-
         </h2>
 
         <p>
-
           {{
             esEdicion
-              ? 'Modifica la información registrada.'
-              : 'Registra la información del producto.'
+              ? 'Actualiza los datos del producto.'
+              : 'Agrega un nuevo producto al inventario.'
           }}
-
         </p>
 
       </div>
@@ -47,11 +41,13 @@
     <button
       mat-icon-button
       type="button"
-      aria-label="Cerrar formulario"
+      aria-label="Cerrar"
       [disabled]="guardando"
       (click)="cerrarDrawer()">
 
-      <mat-icon>close</mat-icon>
+      <mat-icon>
+        close
+      </mat-icon>
 
     </button>
 
@@ -62,92 +58,29 @@
     [formGroup]="formulario"
     (ngSubmit)="guardar()">
 
+    <!-- ================================
+         DATOS DEL PRODUCTO
+    ================================= -->
+
     <section class="seccion">
 
       <div class="seccion-titulo">
 
-        <mat-icon>description</mat-icon>
+        <mat-icon>
+          description
+        </mat-icon>
 
         <div>
 
           <h3>
-            Información principal
+            Datos del producto
           </h3>
 
           <p>
-            Datos generales para identificar el producto.
+            Completa la información básica.
           </p>
 
         </div>
-
-      </div>
-
-      <div class="grupo-codigo">
-
-        <mat-form-field appearance="outline">
-
-          <mat-label>
-            Código de barras
-          </mat-label>
-
-          <input
-            matInput
-            type="text"
-            autocomplete="off"
-            placeholder="Ingrese o genere un código"
-            formControlName="codigo_producto"
-            (keydown.enter)="
-              manejarEnterCodigo($event)
-            ">
-
-          <mat-icon matSuffix>
-            qr_code_2
-          </mat-icon>
-
-          @if (
-            formulario
-              .get('codigo_producto')
-              ?.touched
-            && formulario
-              .get('codigo_producto')
-              ?.hasError('required')
-          ) {
-
-            <mat-error>
-              El código es obligatorio.
-            </mat-error>
-
-          }
-
-          @if (
-            formulario
-              .get('codigo_producto')
-              ?.touched
-            && formulario
-              .get('codigo_producto')
-              ?.hasError('maxlength')
-          ) {
-
-            <mat-error>
-              El código es demasiado largo.
-            </mat-error>
-
-          }
-
-        </mat-form-field>
-
-        <button
-          mat-stroked-button
-          class="btn-generar"
-          type="button"
-          [disabled]="guardando"
-          (click)="generarCodigo()">
-
-          <mat-icon>autorenew</mat-icon>
-
-          Generar
-
-        </button>
 
       </div>
 
@@ -158,10 +91,10 @@
         </mat-label>
 
         <input
-          #nombreProductoInput
           matInput
           type="text"
-          placeholder="Ejemplo: Oso de peluche grande"
+          autocomplete="off"
+          placeholder="Ej. Plumón Faber azul"
           formControlName="nombre_producto">
 
         <mat-icon matSuffix>
@@ -169,27 +102,27 @@
         </mat-icon>
 
         @if (
-          formulario
-            .get('nombre_producto')
-            ?.touched
-          && formulario
-            .get('nombre_producto')
-            ?.hasError('required')
+          formulario.controls
+            .nombre_producto
+            .touched
+          && formulario.controls
+            .nombre_producto
+            .hasError('required')
         ) {
 
           <mat-error>
-            El nombre es obligatorio.
+            Ingresa el nombre del producto.
           </mat-error>
 
         }
 
         @if (
-          formulario
-            .get('nombre_producto')
-            ?.touched
-          && formulario
-            .get('nombre_producto')
-            ?.hasError('maxlength')
+          formulario.controls
+            .nombre_producto
+            .touched
+          && formulario.controls
+            .nombre_producto
+            .hasError('maxlength')
         ) {
 
           <mat-error>
@@ -197,21 +130,6 @@
           </mat-error>
 
         }
-
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-
-        <mat-label>
-          Descripción
-        </mat-label>
-
-        <textarea
-          matInput
-          rows="3"
-          placeholder="Descripción opcional del producto"
-          formControlName="descripcion_producto">
-        </textarea>
 
       </mat-form-field>
 
@@ -247,38 +165,206 @@
         </mat-icon>
 
         @if (
-          formulario
-            .get('id_categoria')
-            ?.touched
-          && formulario
-            .get('id_categoria')
-            ?.hasError('required')
+          formulario.controls
+            .id_categoria
+            .touched
+          && formulario.controls
+            .id_categoria
+            .hasError('required')
         ) {
 
           <mat-error>
-            Seleccione una categoría.
+            Selecciona una categoría.
           </mat-error>
 
         }
 
       </mat-form-field>
 
+      <mat-form-field appearance="outline">
+
+        <mat-label>
+          Descripción
+        </mat-label>
+
+        <textarea
+          matInput
+          rows="3"
+          placeholder="Opcional. Ej. Color azul, punta gruesa..."
+          formControlName="descripcion_producto">
+        </textarea>
+
+      </mat-form-field>
+
     </section>
+
+    <!-- ================================
+         CÓDIGO DE BARRAS
+    ================================= -->
 
     <section class="seccion">
 
       <div class="seccion-titulo">
 
-        <mat-icon>payments</mat-icon>
+        <mat-icon>
+          qr_code_2
+        </mat-icon>
 
         <div>
 
           <h3>
-            Información comercial
+            Código de barras
           </h3>
 
           <p>
-            Precios utilizados para compra y venta.
+            Escanea el código del producto o genera uno para usar en la tienda.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div
+        class="lista-codigos"
+        formArrayName="codigos_barra">
+
+        @for (
+          control of codigosBarra.controls;
+          track $index;
+          let i = $index
+        ) {
+
+          <div class="fila-codigo">
+
+            <mat-form-field appearance="outline">
+
+              <mat-label>
+                Código de barras
+              </mat-label>
+
+              <input
+                matInput
+                type="text"
+                inputmode="numeric"
+                autocomplete="off"
+                maxlength="50"
+                placeholder="Escanea o escribe aquí"
+                [formControlName]="i">
+
+              <mat-icon matSuffix>
+                qr_code_scanner
+              </mat-icon>
+
+              @if (
+                control.touched
+                && control.hasError('maxlength')
+              ) {
+
+                <mat-error>
+                  El código es demasiado largo.
+                </mat-error>
+
+              }
+
+            </mat-form-field>
+
+            @if (
+              control.value.trim() === ''
+            ) {
+
+              <button
+                mat-stroked-button
+                type="button"
+                class="btn-generar-codigo"
+                title="Generar código"
+                [disabled]="guardando"
+                (click)="generarCodigoBarra(i)">
+
+                <mat-icon>
+                  auto_awesome
+                </mat-icon>
+
+                Generar
+
+              </button>
+
+            }
+
+            @if (
+              codigosBarra.length > 1
+              || control.value.trim() !== ''
+            ) {
+
+              <button
+                mat-icon-button
+                type="button"
+                class="btn-quitar-codigo"
+                title="Quitar código"
+                [disabled]="guardando"
+                (click)="quitarCodigoBarra(i)">
+
+                <mat-icon>
+                  delete_outline
+                </mat-icon>
+
+              </button>
+
+            }
+
+          </div>
+
+        }
+
+      </div>
+
+      <button
+        mat-stroked-button
+        type="button"
+        class="btn-agregar-codigo"
+        [disabled]="!puedeAgregarCodigo"
+        (click)="agregarCodigoBarra()">
+
+        <mat-icon>
+          add
+        </mat-icon>
+
+        Agregar otro código
+
+      </button>
+
+      <p class="nota-codigo">
+
+        <mat-icon>
+          info
+        </mat-icon>
+
+        Si generas un código, puedes imprimirlo después
+        en la etiqueta del producto.
+
+      </p>
+
+    </section>
+
+    <!-- ================================
+         PRECIO E INVENTARIO
+    ================================= -->
+
+    <section class="seccion">
+
+      <div class="seccion-titulo">
+
+        <mat-icon>
+          sell
+        </mat-icon>
+
+        <div>
+
+          <h3>
+            Precio e inventario
+          </h3>
+
+          <p>
+            Define el precio de venta y cuándo quieres recibir una alerta.
           </p>
 
         </div>
@@ -286,40 +372,6 @@
       </div>
 
       <div class="dos-columnas">
-
-        <mat-form-field appearance="outline">
-
-          <mat-label>
-            Precio de compra
-          </mat-label>
-
-          <span matTextPrefix>
-            S/&nbsp;
-          </span>
-
-          <input
-            matInput
-            type="number"
-            min="0"
-            step="0.01"
-            formControlName="costo_producto">
-
-          @if (
-            formulario
-              .get('costo_producto')
-              ?.touched
-            && formulario
-              .get('costo_producto')
-              ?.invalid
-          ) {
-
-            <mat-error>
-              Ingrese un precio válido.
-            </mat-error>
-
-          }
-
-        </mat-form-field>
 
         <mat-form-field appearance="outline">
 
@@ -334,57 +386,31 @@
           <input
             matInput
             type="number"
-            min="0"
+            min="0.01"
             step="0.01"
             formControlName="precio_producto">
 
           @if (
-            formulario
-              .get('precio_producto')
-              ?.touched
-            && formulario
-              .get('precio_producto')
-              ?.invalid
+            formulario.controls
+              .precio_producto
+              .touched
+            && formulario.controls
+              .precio_producto
+              .invalid
           ) {
 
             <mat-error>
-              Ingrese un precio válido.
+              Ingresa un precio mayor que cero.
             </mat-error>
 
           }
 
         </mat-form-field>
 
-      </div>
-
-    </section>
-
-    <section class="seccion">
-
-      <div class="seccion-titulo">
-
-        <mat-icon>inventory</mat-icon>
-
-        <div>
-
-          <h3>
-            Configuración de inventario
-          </h3>
-
-          <p>
-            Configura alertas, caducidad y estado.
-          </p>
-
-        </div>
-
-      </div>
-
-      @if (!esEdicion) {
-
         <mat-form-field appearance="outline">
 
           <mat-label>
-            Stock inicial
+            Avisar cuando queden
           </mat-label>
 
           <input
@@ -392,106 +418,43 @@
             type="number"
             min="0"
             step="1"
-            formControlName="stock_producto">
+            formControlName="stock_minimo_producto">
+
+          <span matTextSuffix>
+            &nbsp;unid.
+          </span>
 
           <mat-icon matSuffix>
-            inventory_2
+            notifications
           </mat-icon>
 
           @if (
-            formulario
-              .get('stock_producto')
-              ?.touched
-            && formulario
-              .get('stock_producto')
-              ?.invalid
+            formulario.controls
+              .stock_minimo_producto
+              .touched
+            && formulario.controls
+              .stock_minimo_producto
+              .invalid
           ) {
 
             <mat-error>
-              Ingrese un stock válido.
+              Ingresa una cantidad válida.
             </mat-error>
 
           }
 
         </mat-form-field>
 
-      } @else {
+      </div>
 
-        <div class="aviso-stock">
-
-          <mat-icon>info</mat-icon>
-
-          <p>
-            El stock actual se administra desde la opción
-            <strong>Actualizar stock</strong>.
-          </p>
-
-        </div>
-
-      }
-
-      <mat-form-field appearance="outline">
-
-        <mat-label>
-          Stock mínimo
-        </mat-label>
-
-        <input
-          matInput
-          type="number"
-          min="0"
-          step="1"
-          formControlName="stock_minimo_producto">
-
-        <mat-icon matSuffix>
-          notification_important
-        </mat-icon>
-
-        @if (
-          formulario
-            .get('stock_minimo_producto')
-            ?.touched
-          && formulario
-            .get('stock_minimo_producto')
-            ?.invalid
-        ) {
-
-          <mat-error>
-            Ingrese un stock mínimo válido.
-          </mat-error>
-
-        }
-
-      </mat-form-field>
-
-      <div class="dos-columnas">
+      @if (
+        esEdicion
+      ) {
 
         <mat-form-field appearance="outline">
 
           <mat-label>
-            Fecha de caducidad
-          </mat-label>
-
-          <input
-            matInput
-            [matDatepicker]="picker"
-            formControlName="fecha_caducidad_producto">
-
-          <mat-datepicker-toggle
-            matIconSuffix
-            [for]="picker">
-          </mat-datepicker-toggle>
-
-          <mat-datepicker
-            #picker>
-          </mat-datepicker>
-
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-
-          <mat-label>
-            Estado
+            Estado del producto
           </mat-label>
 
           <mat-select
@@ -507,15 +470,294 @@
 
           </mat-select>
 
-          <mat-icon matSuffix>
-            toggle_on
-          </mat-icon>
-
         </mat-form-field>
 
-      </div>
+      }
 
     </section>
+
+    <!-- ================================
+         MERCADERÍA INICIAL
+    ================================= -->
+
+    @if (
+      !esEdicion
+    ) {
+
+      <section class="seccion mercaderia-seccion">
+
+        <label
+          class="opcion-mercaderia"
+          [class.activa]="ingresarMercaderia">
+
+          <input
+            type="checkbox"
+            formControlName="ingresar_mercaderia">
+
+          <span class="opcion-icono">
+
+            <mat-icon>
+              local_shipping
+            </mat-icon>
+
+          </span>
+
+          <span class="opcion-texto">
+
+            <strong>
+              Ingresar mercadería ahora
+            </strong>
+
+            <small>
+              Actívalo si ya tienes unidades disponibles de este producto.
+            </small>
+
+          </span>
+
+          <span
+            class="selector-visual"
+            [class.activo]="ingresarMercaderia">
+
+            <mat-icon>
+              {{
+                ingresarMercaderia
+                  ? 'check'
+                  : 'add'
+              }}
+            </mat-icon>
+
+          </span>
+
+        </label>
+
+        @if (
+          ingresarMercaderia
+        ) {
+
+          <div class="mercaderia-formulario">
+
+            <div class="mercaderia-encabezado">
+
+              <div>
+
+                <h3>
+                  Mercadería inicial
+                </h3>
+
+                <p>
+                  Registra las unidades que tienes actualmente.
+                </p>
+
+              </div>
+
+            </div>
+
+            <div class="dos-columnas">
+
+              <mat-form-field appearance="outline">
+
+                <mat-label>
+                  Cantidad recibida
+                </mat-label>
+
+                <input
+                  matInput
+                  type="number"
+                  min="1"
+                  step="1"
+                  formControlName="cantidad_inicial">
+
+                <mat-icon matSuffix>
+                  inventory_2
+                </mat-icon>
+
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+
+                <mat-label>
+                  Costo unitario
+                </mat-label>
+
+                <span matTextPrefix>
+                  S/&nbsp;
+                </span>
+
+                <input
+                  matInput
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  formControlName="costo_inicial">
+
+              </mat-form-field>
+
+            </div>
+
+            <mat-form-field appearance="outline">
+
+              <mat-label>
+                Fecha de caducidad (opcional)
+              </mat-label>
+
+              <input
+                matInput
+                type="date"
+                [min]="fechaHoy"
+                formControlName="fecha_caducidad_inicial">
+
+              <mat-icon matSuffix>
+                calendar_month
+              </mat-icon>
+
+            </mat-form-field>
+
+            <div class="resumen-mercaderia">
+
+              <div class="dato-resumen">
+
+                <span class="dato-icono">
+
+                  <mat-icon>
+                    inventory
+                  </mat-icon>
+
+                </span>
+
+                <div>
+
+                  <small>
+                    Stock inicial
+                  </small>
+
+                  <strong>
+                    {{
+                      formulario.controls
+                        .cantidad_inicial
+                        .value
+                      ?? 0
+                    }}
+                    unid.
+                  </strong>
+
+                </div>
+
+              </div>
+
+              <div class="dato-resumen">
+
+                <span class="dato-icono">
+
+                  <mat-icon>
+                    payments
+                  </mat-icon>
+
+                </span>
+
+                <div>
+
+                  <small>
+                    Costo total
+                  </small>
+
+                  <strong>
+                    S/
+                    {{
+                      costoTotalInicial
+                        | number:'1.2-2'
+                    }}
+                  </strong>
+
+                </div>
+
+              </div>
+
+              <div class="dato-resumen">
+
+                <span class="dato-icono">
+
+                  <mat-icon>
+                    trending_up
+                  </mat-icon>
+
+                </span>
+
+                <div>
+
+                  <small>
+                    Margen aprox.
+                  </small>
+
+                  <strong>
+
+                    @if (
+                      margenInicial !== null
+                    ) {
+
+                      {{
+                        margenInicial
+                          | number:'1.2-2'
+                      }}
+                      %
+
+                    } @else {
+
+                      —
+
+                    }
+
+                  </strong>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        }
+
+      </section>
+
+    } @else {
+
+      <section class="seccion">
+
+        <div class="aviso-abastecimiento">
+
+          <mat-icon>
+            inventory
+          </mat-icon>
+
+          <div>
+
+            <strong>
+              Stock actual:
+              {{
+                productoEditar
+                  ?.stock_producto
+                ?? 0
+              }}
+              unidades
+            </strong>
+
+            <p>
+              Para agregar nueva mercadería usa
+              <b>Abastecer productos</b>.
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    }
+
+    <!-- ================================
+         ACCIONES
+    ================================= -->
 
     <footer
       class="acciones"
@@ -526,25 +768,29 @@
         class="btn-cancelar"
         type="button"
         [disabled]="guardando"
-        (click)="cerrarDrawer()">
+        (click)="cancelarFormulario()">
 
         Cancelar
 
       </button>
 
-      @if (!esEdicion) {
+      @if (
+        !esEdicion
+      ) {
 
         <button
           mat-stroked-button
           class="btn-repetir"
           type="button"
-          title="Repetir último producto"
-          aria-label="Repetir último producto"
+          title="Usar datos del último producto"
+          aria-label="Usar datos del último producto"
           [class.animando]="repitiendoUltimo"
           [disabled]="!puedeRepetirUltimo"
           (click)="repetirUltimoProducto()">
 
-          <mat-icon>sync</mat-icon>
+          <mat-icon>
+            sync
+          </mat-icon>
 
         </button>
 
@@ -557,26 +803,28 @@
         [disabled]="guardando">
 
         <mat-icon>
-
           {{
             guardando
               ? 'hourglass_top'
               : 'save'
           }}
-
         </mat-icon>
 
-        @if (guardando) {
+        @if (
+          guardando
+        ) {
 
           Guardando...
 
-        } @else if (esEdicion) {
+        } @else if (
+          esEdicion
+        ) {
 
           Guardar cambios
 
         } @else {
 
-          Guardar producto
+          Crear producto
 
         }
 

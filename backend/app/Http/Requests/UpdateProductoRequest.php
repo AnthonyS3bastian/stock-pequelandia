@@ -14,11 +14,6 @@ class UpdateProductoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            /*
-             * codigo_producto ya no se edita.
-             * Es el codigo interno generado por el sistema.
-             */
-
             'codigos_barra' => [
                 'sometimes',
                 'array',
@@ -52,7 +47,7 @@ class UpdateProductoRequest extends FormRequest
             'precio_producto' => [
                 'required',
                 'numeric',
-                'min:0',
+                'min:0.01',
             ],
 
             'stock_minimo_producto' => [
@@ -92,9 +87,6 @@ class UpdateProductoRequest extends FormRequest
             'nombre_producto.max' =>
                 'El nombre no puede superar los 150 caracteres.',
 
-            'descripcion_producto.string' =>
-                'La descripcion debe ser un texto valido.',
-
             'id_categoria.required' =>
                 'La categoria es obligatoria.',
 
@@ -108,7 +100,7 @@ class UpdateProductoRequest extends FormRequest
                 'El precio de venta debe ser numerico.',
 
             'precio_producto.min' =>
-                'El precio de venta no puede ser negativo.',
+                'El precio de venta debe ser mayor que cero.',
 
             'stock_minimo_producto.required' =>
                 'El stock minimo es obligatorio.',

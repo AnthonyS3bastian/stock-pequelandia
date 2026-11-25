@@ -26,33 +26,50 @@ export type OperacionStock =
   | 'establecer';
 
 export interface ActualizarStockRequest {
-
   operacion: OperacionStock;
-
   cantidad: number;
+}
 
+export interface CrearProductoRequest {
+  nombre_producto: string;
+  descripcion_producto: string | null;
+  id_categoria: number;
+  precio_producto: number;
+  stock_minimo_producto: number;
+  estado: boolean;
+  codigos_barra: string[];
+
+  /*
+   * Solo se envían cuando se registra
+   * mercadería inicial.
+   */
+  stock_producto?: number;
+  costo_producto?: number;
+  fecha_caducidad?: string | null;
+}
+
+export interface ActualizarProductoRequest {
+  nombre_producto: string;
+  descripcion_producto: string | null;
+  id_categoria: number;
+  precio_producto: number;
+  stock_minimo_producto: number;
+  estado: boolean;
+  codigos_barra: string[];
 }
 
 export interface RespuestaProductos {
-
   mensaje: string;
-
   data: Producto[];
-
 }
 
 export interface RespuestaProducto {
-
   mensaje: string;
-
   data: Producto;
-
 }
 
 export interface RespuestaMensaje {
-
   mensaje: string;
-
 }
 
 @Injectable({
@@ -130,7 +147,7 @@ export class ProductoService {
   }
 
   registrar(
-    producto: Producto
+    producto: CrearProductoRequest
   ): Observable<RespuestaProducto> {
 
     return this.http
@@ -143,7 +160,7 @@ export class ProductoService {
 
   actualizar(
     idProducto: number,
-    producto: Producto
+    producto: ActualizarProductoRequest
   ): Observable<RespuestaProducto> {
 
     return this.http

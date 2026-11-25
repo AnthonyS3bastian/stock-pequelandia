@@ -17,9 +17,9 @@ class StoreProductoRequest extends FormRequest
     {
         return [
             /*
-             * Compatibilidad temporal con el frontend actual.
-             * Actualmente este campo contiene el codigo de barras.
-             * El codigo interno PRODxxxxxx sera generado por Laravel.
+             * Compatibilidad temporal.
+             * El frontend nuevo ya no envia
+             * codigo_producto.
              */
             'codigo_producto' => [
                 'nullable',
@@ -31,10 +31,6 @@ class StoreProductoRequest extends FormRequest
                 ),
             ],
 
-            /*
-             * Nueva estructura.
-             * Permitira registrar varios codigos de barras.
-             */
             'codigos_barra' => [
                 'sometimes',
                 'array',
@@ -72,12 +68,13 @@ class StoreProductoRequest extends FormRequest
             'precio_producto' => [
                 'required',
                 'numeric',
-                'min:0',
+                'min:0.01',
             ],
 
             /*
-             * Se conserva temporalmente para permitir
-             * registrar el primer lote desde el formulario actual.
+             * Campos heredados.
+             * Ya no los envia el formulario de producto,
+             * pero permanecen temporalmente compatibles.
              */
             'costo_producto' => [
                 'nullable',
@@ -149,9 +146,6 @@ class StoreProductoRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'codigo_producto.string' =>
-                'El codigo de barras debe ser un texto valido.',
-
             'codigo_producto.max' =>
                 'El codigo de barras no puede superar los 50 caracteres.',
 
@@ -182,9 +176,6 @@ class StoreProductoRequest extends FormRequest
             'nombre_producto.max' =>
                 'El nombre no puede superar los 150 caracteres.',
 
-            'descripcion_producto.string' =>
-                'La descripcion debe ser un texto valido.',
-
             'id_categoria.required' =>
                 'La categoria es obligatoria.',
 
@@ -198,22 +189,7 @@ class StoreProductoRequest extends FormRequest
                 'El precio de venta debe ser numerico.',
 
             'precio_producto.min' =>
-                'El precio de venta no puede ser negativo.',
-
-            'costo_producto.numeric' =>
-                'El costo de compra debe ser numerico.',
-
-            'costo_producto.min' =>
-                'El costo de compra no puede ser negativo.',
-
-            'fecha_caducidad.date' =>
-                'La fecha de caducidad no es valida.',
-
-            'stock_producto.integer' =>
-                'El stock inicial debe ser un numero entero.',
-
-            'stock_producto.min' =>
-                'El stock inicial no puede ser negativo.',
+                'El precio de venta debe ser mayor que cero.',
 
             'stock_minimo_producto.integer' =>
                 'El stock minimo debe ser un numero entero.',
