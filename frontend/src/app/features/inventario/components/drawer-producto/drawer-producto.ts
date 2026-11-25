@@ -213,18 +213,11 @@ implements OnInit, OnChanges {
       ],
 
       cantidad_inicial: [
-        1,
-        [
-          Validators.min(1),
-          Validators.pattern(/^\d+$/)
-        ]
+        1
       ],
 
       costo_inicial: [
-        0,
-        [
-          Validators.min(0.01)
-        ]
+        0
       ],
 
       fecha_caducidad_inicial: [
@@ -374,6 +367,31 @@ implements OnInit, OnChanges {
       this.agregarCodigoBarra();
 
     }
+
+    this.actualizarValidacionesMercaderia(
+      this.ingresarMercaderia
+    );
+
+    this.formulario
+      .controls
+      .ingresar_mercaderia
+      .valueChanges
+      .pipe(
+        takeUntilDestroyed(
+          this.destroyRef
+        )
+      )
+      .subscribe(
+        activar => {
+
+          this.actualizarValidacionesMercaderia(
+            Boolean(
+              activar
+            )
+          );
+
+        }
+      );
 
     this.formulario
       .valueChanges
@@ -951,6 +969,58 @@ implements OnInit, OnChanges {
       codigos
     );
 
+    this.actualizarValidacionesMercaderia(
+      false
+    );
+
+  }
+
+  private actualizarValidacionesMercaderia(
+    activar: boolean
+  ): void {
+
+    const cantidad =
+      this.formulario
+        .controls
+        .cantidad_inicial;
+
+    const costo =
+      this.formulario
+        .controls
+        .costo_inicial;
+
+    if (
+      activar
+      && !this.esEdicion
+    ) {
+
+      cantidad.setValidators([
+        Validators.required,
+        Validators.min(1),
+        Validators.pattern(/^\d+$/)
+      ]);
+
+      costo.setValidators([
+        Validators.required,
+        Validators.min(0.01)
+      ]);
+
+    } else {
+
+      cantidad.clearValidators();
+
+      costo.clearValidators();
+
+    }
+
+    cantidad.updateValueAndValidity({
+      emitEvent: false
+    });
+
+    costo.updateValueAndValidity({
+      emitEvent: false
+    });
+
   }
 
   private reemplazarCodigos(
@@ -1172,7 +1242,9 @@ implements OnInit, OnChanges {
       );
 
     } catch {
+
       this.eliminarBorradorProducto();
+
     }
 
   }
@@ -1254,8 +1326,10 @@ implements OnInit, OnChanges {
       }
 
     } catch {
+
       this.ultimoProductoRegistrado =
         null;
+
     }
 
   }

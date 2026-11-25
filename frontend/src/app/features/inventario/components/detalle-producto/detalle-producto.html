@@ -75,8 +75,22 @@
         </h3>
 
         <p>
-          Código:
-          {{ producto.codigo_producto }}
+          Código de barras:
+          {{ codigoBarraPrincipal }}
+
+          @if (
+            codigosBarraActivos.length > 1
+          ) {
+
+            <span>
+              (+{{
+                codigosBarraActivos.length
+                - 1
+              }})
+            </span>
+
+          }
+
         </p>
 
       </div>
@@ -110,17 +124,27 @@
         <div class="dato ancho-completo">
 
           <span>
+            Códigos de barras
+          </span>
+
+          <strong>
+            {{ textoCodigosBarra }}
+          </strong>
+
+        </div>
+
+        <div class="dato ancho-completo">
+
+          <span>
             Descripción
           </span>
 
           <strong>
-
             {{
               producto
                 .descripcion_producto
               || 'Sin descripción'
             }}
-
           </strong>
 
         </div>
@@ -132,13 +156,11 @@
           </span>
 
           <strong>
-
             {{
               producto.categoria
                 ?.nombre_categoria
               ?? 'Sin categoría'
             }}
-
           </strong>
 
         </div>
@@ -211,14 +233,12 @@
             </span>
 
             <strong>
-
               {{
                 formatearPrecio(
                   producto
                     .costo_producto
                 )
               }}
-
             </strong>
 
           </div>
@@ -232,14 +252,12 @@
           </span>
 
           <strong>
-
             {{
               formatearPrecio(
                 producto
                   .precio_producto
               )
             }}
-
           </strong>
 
         </div>
@@ -255,13 +273,11 @@
             </span>
 
             <strong>
-
               {{
                 formatearPrecio(
                   obtenerGananciaUnidad()
                 )
               }}
-
             </strong>
 
           </div>
@@ -315,12 +331,10 @@
           </span>
 
           <strong>
-
             {{
               producto
                 .stock_minimo_producto
             }}
-
           </strong>
 
         </div>
@@ -355,14 +369,12 @@
           </span>
 
           <strong>
-
             {{
               formatearFecha(
                 producto
                   .fecha_caducidad
               )
             }}
-
           </strong>
 
         </div>
@@ -374,13 +386,11 @@
           </span>
 
           <strong>
-
             {{
               formatearFecha(
                 producto.created_at
               )
             }}
-
           </strong>
 
         </div>
@@ -392,13 +402,11 @@
           </span>
 
           <strong>
-
             {{
               formatearFecha(
                 producto.updated_at
               )
             }}
-
           </strong>
 
         </div>
@@ -454,13 +462,11 @@
         ">
 
         <mat-icon>
-
           {{
             producto.estado
               ? 'block'
               : 'check_circle'
           }}
-
         </mat-icon>
 
         {{

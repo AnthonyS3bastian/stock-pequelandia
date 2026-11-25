@@ -101,6 +101,54 @@ export class DetalleProductoComponent {
 
   }
 
+  get codigosBarraActivos(): string[] {
+
+    const codigos =
+      this.producto.codigos_barra
+      ?? this.producto.codigosBarra
+      ?? [];
+
+    return codigos
+      .filter(
+        codigo =>
+          codigo.estado
+          && String(
+            codigo.codigo_barra
+            ?? ''
+          ).trim() !== ''
+      )
+      .map(
+        codigo =>
+          String(
+            codigo.codigo_barra
+          ).trim()
+      );
+
+  }
+
+  get codigoBarraPrincipal(): string {
+
+    return (
+      this.codigosBarraActivos[0]
+      ?? 'Sin código'
+    );
+
+  }
+
+  get textoCodigosBarra(): string {
+
+    if (
+      this.codigosBarraActivos.length
+      === 0
+    ) {
+      return 'Sin código de barras';
+    }
+
+    return this.codigosBarraActivos
+      .join(' · ');
+
+  }
+
   obtenerGananciaUnidad(): number {
 
     const precioVenta =
@@ -130,18 +178,14 @@ export class DetalleProductoComponent {
     if (
       !this.producto.estado
     ) {
-
       return 'Inactivo';
-
     }
 
     if (
       this.producto
         .stock_producto === 0
     ) {
-
       return 'Agotado';
-
     }
 
     if (
@@ -152,9 +196,7 @@ export class DetalleProductoComponent {
         <= this.producto
           .stock_minimo_producto
     ) {
-
       return 'Stock bajo';
-
     }
 
     return 'Disponible';
@@ -167,18 +209,14 @@ export class DetalleProductoComponent {
     if (
       !this.producto.estado
     ) {
-
       return 'inactivo';
-
     }
 
     if (
       this.producto
         .stock_producto === 0
     ) {
-
       return 'agotado';
-
     }
 
     if (
@@ -189,9 +227,7 @@ export class DetalleProductoComponent {
         <= this.producto
           .stock_minimo_producto
     ) {
-
       return 'stock-bajo';
-
     }
 
     return 'disponible';
@@ -225,9 +261,7 @@ export class DetalleProductoComponent {
   ): string {
 
     if (!fecha) {
-
       return 'No registrada';
-
     }
 
     const partes =
@@ -243,9 +277,7 @@ export class DetalleProductoComponent {
     if (
       partes.length !== 3
     ) {
-
       return fecha;
-
     }
 
     return (

@@ -288,6 +288,17 @@ implements OnInit {
             producto.codigo_producto
           );
 
+        const codigosBarraProducto =
+          this.obtenerCodigosBarraActivos(
+            producto
+          )
+            .map(
+              codigo =>
+                this.normalizarTexto(
+                  codigo
+                )
+            );
+
         const nombreCategoria =
           this.normalizarTexto(
             producto.categoria
@@ -303,6 +314,13 @@ implements OnInit {
           || codigoProducto.includes(
             texto
           )
+          || codigosBarraProducto
+            .some(
+              codigo =>
+                codigo.includes(
+                  texto
+                )
+            )
           || nombreCategoria.includes(
             texto
           );
@@ -449,6 +467,59 @@ implements OnInit {
 
   }
 
+  obtenerCodigosBarraActivos(
+    producto: Producto
+  ): string[] {
+
+    const codigos =
+      producto.codigos_barra
+      ?? producto.codigosBarra
+      ?? [];
+
+    return codigos
+      .filter(
+        codigo =>
+          codigo.estado
+          && String(
+            codigo.codigo_barra
+            ?? ''
+          ).trim() !== ''
+      )
+      .map(
+        codigo =>
+          String(
+            codigo.codigo_barra
+          ).trim()
+      );
+
+  }
+
+  obtenerCodigoBarraPrincipal(
+    producto: Producto
+  ): string {
+
+    return (
+      this.obtenerCodigosBarraActivos(
+        producto
+      )[0]
+      ?? 'Sin código'
+    );
+
+  }
+
+  obtenerCantidadCodigosAdicionales(
+    producto: Producto
+  ): number {
+
+    return Math.max(
+      this.obtenerCodigosBarraActivos(
+        producto
+      ).length - 1,
+      0
+    );
+
+  }
+
   buscarProducto(): void {
 
     if (
@@ -521,8 +592,7 @@ implements OnInit {
           }
 
           this.textoBusqueda =
-            producto
-              .codigo_producto;
+            codigo;
 
           this.vistaActual =
             'productos';

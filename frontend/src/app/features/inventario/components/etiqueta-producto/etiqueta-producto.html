@@ -83,7 +83,9 @@
 
           </div>
 
-          @if (codigoBarras.valido) {
+          @if (
+            codigoBarras.valido
+          ) {
 
             <svg
               class="preview-codigo"
@@ -96,7 +98,7 @@
               role="img"
               [attr.aria-label]="
                 'Código de barras '
-                + producto.codigo_producto
+                + codigoEtiqueta
               ">
 
               @for (
@@ -117,7 +119,7 @@
 
             <div class="preview-codigo-texto">
 
-              {{ producto.codigo_producto }}
+              {{ codigoEtiqueta }}
 
             </div>
 
@@ -183,6 +185,50 @@
         </div>
 
       </div>
+
+      @if (
+        tieneMultiplesCodigos
+      ) {
+
+        <mat-form-field
+          appearance="outline">
+
+          <mat-label>
+            Código de barras a imprimir
+          </mat-label>
+
+          <mat-select
+            [value]="codigoEtiqueta"
+            [disabled]="operacionEnCurso"
+            (selectionChange)="
+              cambiarCodigoEtiqueta(
+                $event.value
+              )
+            ">
+
+            @for (
+              codigo of codigosBarraDisponibles;
+              track codigo
+            ) {
+
+              <mat-option
+                [value]="codigo">
+
+                {{ codigo }}
+
+              </mat-option>
+
+            }
+
+          </mat-select>
+
+          <mat-icon matSuffix>
+            qr_code_2
+          </mat-icon>
+
+        </mat-form-field>
+
+      }
 
       <div class="configuracion-grid">
 
@@ -258,13 +304,11 @@
             ">
 
             <mat-icon>
-
               {{
                 bluetoothConectado
                   ? 'print'
                   : 'bluetooth'
               }}
-
             </mat-icon>
 
           </span>
@@ -280,7 +324,9 @@
                 bluetoothConectado
               ">
 
-              @if (bluetoothConectado) {
+              @if (
+                bluetoothConectado
+              ) {
 
                 {{
                   nombreImpresoraBluetooth
@@ -299,7 +345,9 @@
 
         </div>
 
-        @if (bluetoothConectado) {
+        @if (
+          bluetoothConectado
+        ) {
 
           <button
             type="button"
@@ -322,7 +370,9 @@
             "
             (click)="conectarBluetooth()">
 
-            @if (conectandoBluetooth) {
+            @if (
+              conectandoBluetooth
+            ) {
 
               Conectando...
 
@@ -338,7 +388,9 @@
 
       </div>
 
-      @if (!bluetoothCompatible) {
+      @if (
+        !bluetoothCompatible
+      ) {
 
         <div class="mensaje error">
 
@@ -355,7 +407,9 @@
 
       }
 
-      @if (mensajeEstado) {
+      @if (
+        mensajeEstado
+      ) {
 
         <div
           class="mensaje"
@@ -371,7 +425,9 @@
 
           <mat-icon>
 
-            @if (tipoMensaje === 'error') {
+            @if (
+              tipoMensaje === 'error'
+            ) {
 
               error_outline
 

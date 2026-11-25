@@ -97,9 +97,7 @@
         ) {
 
           <span class="contador-alertas">
-
             {{ totalAlertas }}
-
           </span>
 
         }
@@ -383,7 +381,7 @@
         <input
           type="text"
           autocomplete="off"
-          placeholder="Buscar por nombre, categoría o código..."
+          placeholder="Buscar por nombre, categoría o código de barras..."
           [(ngModel)]="textoBusqueda"
           (input)="buscarProducto()"
           (keydown.enter)="
@@ -793,21 +791,36 @@
                       </span>
 
                       <h3>
-
                         {{
                           producto
                             .nombre_producto
                         }}
-
                       </h3>
 
                       <p class="alerta-codigo">
 
-                        Código:
+                        Código de barras:
                         {{
-                          producto
-                            .codigo_producto
+                          obtenerCodigoBarraPrincipal(
+                            producto
+                          )
                         }}
+
+                        @if (
+                          obtenerCantidadCodigosAdicionales(
+                            producto
+                          ) > 0
+                        ) {
+
+                          <span>
+                            (+{{
+                              obtenerCantidadCodigosAdicionales(
+                                producto
+                              )
+                            }})
+                          </span>
+
+                        }
 
                       </p>
 
@@ -859,12 +872,10 @@
                       </small>
 
                       <strong>
-
                         {{
                           producto
                             .stock_minimo_producto
                         }}
-
                       </strong>
 
                     </span>
@@ -876,13 +887,11 @@
                       </small>
 
                       <strong>
-
                         {{
                           obtenerTextoDisponibilidad(
                             producto
                           )
                         }}
-
                       </strong>
 
                     </span>
@@ -894,13 +903,11 @@
                       </small>
 
                       <strong>
-
                         {{
                           producto
                             .fecha_caducidad
                           ?? 'No registrada'
                         }}
-
                       </strong>
 
                     </span>
@@ -1118,7 +1125,7 @@
                 <tr>
 
                   <th>
-                    Código
+                    Código de barras
                   </th>
 
                   <th>
@@ -1167,9 +1174,26 @@
                       <span class="codigo-producto">
 
                         {{
-                          producto
-                            .codigo_producto
+                          obtenerCodigoBarraPrincipal(
+                            producto
+                          )
                         }}
+
+                        @if (
+                          obtenerCantidadCodigosAdicionales(
+                            producto
+                          ) > 0
+                        ) {
+
+                          <small>
+                            +{{
+                              obtenerCantidadCodigosAdicionales(
+                                producto
+                              )
+                            }}
+                          </small>
+
+                        }
 
                       </span>
 
@@ -1190,12 +1214,10 @@
                         <div>
 
                           <strong>
-
                             {{
                               producto
                                 .nombre_producto
                             }}
-
                           </strong>
 
                           <small>
@@ -1258,13 +1280,11 @@
                         ">
 
                         <mat-icon>
-
                           {{
                             obtenerIconoDisponibilidad(
                               producto
                             )
                           }}
-
                         </mat-icon>
 
                         {{
@@ -1280,14 +1300,12 @@
                     <td>
 
                       <strong class="precio-venta">
-
                         {{
                           formatearPrecio(
                             producto
                               .precio_producto
                           )
                         }}
-
                       </strong>
 
                     </td>
@@ -1368,10 +1386,7 @@
   ) {
 
     <div
-      class="drawer-fondo"
-      (click)="
-        cerrarDrawer()
-      ">
+      class="drawer-fondo">
 
       <aside
         class="drawer"
