@@ -60,7 +60,16 @@ export class SidebarComponent {
     }
   ];
 
-  private readonly gestionGeneral:
+  private readonly gestionVendedor:
+    MenuItem[] = [
+      {
+        titulo: 'Ventas',
+        icono: 'point_of_sale',
+        ruta: '/ventas'
+      }
+    ];
+
+  private readonly gestionAdministrador:
     MenuItem[] = [
       {
         titulo: 'Inventario',
@@ -71,11 +80,7 @@ export class SidebarComponent {
         titulo: 'Ventas',
         icono: 'point_of_sale',
         ruta: '/ventas'
-      }
-    ];
-
-  private readonly gestionAdministrador:
-    MenuItem[] = [
+      },
       {
         titulo: 'Categorias',
         icono: 'category',
@@ -93,29 +98,29 @@ export class SidebarComponent {
       }
     ];
 
-  readonly gestion = computed<MenuItem[]>(
-    () => {
+  readonly gestion =
+    computed<MenuItem[]>(
+      () => {
 
-      const usuario =
-        this.authService.usuarioActual();
+        const usuario =
+          this.authService.usuarioActual();
 
-      if (
-        usuario?.rol_usuario ===
-        'ADMINISTRADOR'
-      ) {
+        if (
+          usuario?.rol_usuario ===
+          'ADMINISTRADOR'
+        ) {
+
+          return [
+            ...this.gestionAdministrador
+          ];
+
+        }
 
         return [
-          ...this.gestionGeneral,
-          ...this.gestionAdministrador
+          ...this.gestionVendedor
         ];
 
       }
-
-      return [
-        ...this.gestionGeneral
-      ];
-
-    }
-  );
+    );
 
 }

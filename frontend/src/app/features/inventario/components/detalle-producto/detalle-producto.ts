@@ -51,7 +51,7 @@ export class DetalleProductoComponent {
     new EventEmitter<Producto>();
 
   @Output()
-  actualizarStock =
+  abastecer =
     new EventEmitter<Producto>();
 
   @Output()
@@ -76,10 +76,10 @@ export class DetalleProductoComponent {
 
   }
 
-  solicitarActualizacionStock():
+  solicitarAbastecimiento():
     void {
 
-    this.actualizarStock.emit(
+    this.abastecer.emit(
       this.producto
     );
 
@@ -98,6 +98,54 @@ export class DetalleProductoComponent {
     this.generarEtiqueta.emit(
       this.producto
     );
+
+  }
+
+  get codigosBarraActivos(): string[] {
+
+    const codigos =
+      this.producto.codigos_barra
+      ?? this.producto.codigosBarra
+      ?? [];
+
+    return codigos
+      .filter(
+        codigo =>
+          codigo.estado
+          && String(
+            codigo.codigo_barra
+            ?? ''
+          ).trim() !== ''
+      )
+      .map(
+        codigo =>
+          String(
+            codigo.codigo_barra
+          ).trim()
+      );
+
+  }
+
+  get codigoBarraPrincipal(): string {
+
+    return (
+      this.codigosBarraActivos[0]
+      ?? 'Sin código'
+    );
+
+  }
+
+  get textoCodigosBarra(): string {
+
+    if (
+      this.codigosBarraActivos.length
+      === 0
+    ) {
+      return 'Sin código de barras';
+    }
+
+    return this.codigosBarraActivos
+      .join(' · ');
 
   }
 
@@ -124,21 +172,20 @@ export class DetalleProductoComponent {
 
   }
 
-  obtenerTextoEstadoStock(): string {
+  obtenerTextoEstadoStock():
+    string {
 
-    if (!this.producto.estado) {
-
+    if (
+      !this.producto.estado
+    ) {
       return 'Inactivo';
-
     }
 
     if (
       this.producto
         .stock_producto === 0
     ) {
-
       return 'Agotado';
-
     }
 
     if (
@@ -149,30 +196,27 @@ export class DetalleProductoComponent {
         <= this.producto
           .stock_minimo_producto
     ) {
-
       return 'Stock bajo';
-
     }
 
     return 'Disponible';
 
   }
 
-  obtenerClaseEstadoStock(): string {
+  obtenerClaseEstadoStock():
+    string {
 
-    if (!this.producto.estado) {
-
+    if (
+      !this.producto.estado
+    ) {
       return 'inactivo';
-
     }
 
     if (
       this.producto
         .stock_producto === 0
     ) {
-
       return 'agotado';
-
     }
 
     if (
@@ -183,9 +227,7 @@ export class DetalleProductoComponent {
         <= this.producto
           .stock_minimo_producto
     ) {
-
       return 'stock-bajo';
-
     }
 
     return 'disponible';
@@ -204,32 +246,38 @@ export class DetalleProductoComponent {
         minimumFractionDigits: 2
       }
     ).format(
-      Number(valor ?? 0)
+      Number(
+        valor ?? 0
+      )
     );
 
   }
 
   formatearFecha(
-    fecha: string | null | undefined
+    fecha:
+      string
+      | null
+      | undefined
   ): string {
 
     if (!fecha) {
-
       return 'No registrada';
-
     }
 
     const partes =
       fecha
-        .substring(0, 10)
-        .split('-');
+        .substring(
+          0,
+          10
+        )
+        .split(
+          '-'
+        );
 
     if (
       partes.length !== 3
     ) {
-
       return fecha;
-
     }
 
     return (

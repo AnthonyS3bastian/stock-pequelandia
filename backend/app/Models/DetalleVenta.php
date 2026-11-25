@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DetalleVenta extends Model
 {
-    protected $table = 'detalle_venta';
+    protected $table =
+        'detalle_venta';
 
     protected $primaryKey =
         'id_detalle_venta';
@@ -23,12 +25,23 @@ class DetalleVenta extends Model
     protected function casts(): array
     {
         return [
-            'id_detalle_venta' => 'integer',
-            'precio_publico_venta' => 'decimal:2',
-            'costo_detalle_venta' => 'decimal:2',
-            'cantidad_detalle_venta' => 'integer',
-            'id_producto' => 'integer',
-            'id_venta' => 'integer',
+            'id_detalle_venta' =>
+                'integer',
+
+            'precio_publico_venta' =>
+                'decimal:2',
+
+            'costo_detalle_venta' =>
+                'decimal:2',
+
+            'cantidad_detalle_venta' =>
+                'integer',
+
+            'id_producto' =>
+                'integer',
+
+            'id_venta' =>
+                'integer',
         ];
     }
 
@@ -47,6 +60,19 @@ class DetalleVenta extends Model
             Venta::class,
             'id_venta',
             'id_venta'
+        );
+    }
+
+    /**
+     * Lotes utilizados para atender
+     * este detalle de venta.
+     */
+    public function consumosLote(): HasMany
+    {
+        return $this->hasMany(
+            DetalleVentaLote::class,
+            'id_detalle_venta',
+            'id_detalle_venta'
         );
     }
 }

@@ -20,6 +20,7 @@ export const routes: Routes = [
 
   {
     path: 'login',
+
     loadComponent: () =>
       import(
         './features/auth/pages/login/login'
@@ -31,15 +32,18 @@ export const routes: Routes = [
 
   {
     path: '',
+
     canActivate: [
       authGuard
     ],
+
     loadComponent: () =>
       import(
         './features/layout/pages/layout/layout'
       )
         .then(
-          modulo => modulo.LayoutComponent
+          modulo =>
+            modulo.LayoutComponent
         ),
 
     children: [
@@ -52,6 +56,7 @@ export const routes: Routes = [
 
       {
         path: 'dashboard',
+
         loadComponent: () =>
           import(
             './features/dashboard/pages/dashboard/dashboard'
@@ -64,6 +69,17 @@ export const routes: Routes = [
 
       {
         path: 'inventario',
+
+        canActivate: [
+          rolGuard
+        ],
+
+        data: {
+          roles: [
+            'ADMINISTRADOR'
+          ]
+        },
+
         loadComponent: () =>
           import(
             './features/inventario/pages/inventario/inventario'
@@ -76,14 +92,17 @@ export const routes: Routes = [
 
       {
         path: 'categorias',
+
         canActivate: [
           rolGuard
         ],
+
         data: {
           roles: [
             'ADMINISTRADOR'
           ]
         },
+
         loadComponent: () =>
           import(
             './features/categorias/pages/categorias/categorias'
@@ -96,6 +115,7 @@ export const routes: Routes = [
 
       {
         path: 'ventas',
+
         loadComponent: () =>
           import(
             './features/ventas/pages/ventas/ventas'
@@ -107,14 +127,17 @@ export const routes: Routes = [
 
       {
         path: 'reportes',
+
         canActivate: [
           rolGuard
         ],
+
         data: {
           roles: [
             'ADMINISTRADOR'
           ]
         },
+
         loadComponent: () =>
           import(
             './features/reportes/pages/reportes/reportes'
@@ -127,14 +150,17 @@ export const routes: Routes = [
 
       {
         path: 'usuarios',
+
         canActivate: [
           rolGuard
         ],
+
         data: {
           roles: [
             'ADMINISTRADOR'
           ]
         },
+
         loadComponent: () =>
           import(
             './features/usuarios/pages/usuarios/usuarios'
@@ -147,6 +173,7 @@ export const routes: Routes = [
 
       {
         path: 'perfil',
+
         loadComponent: () =>
           import(
             './features/perfil/pages/perfil/perfil'

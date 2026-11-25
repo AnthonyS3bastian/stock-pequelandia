@@ -1,0 +1,889 @@
+<div class="abastecimiento">
+
+  <header class="cabecera">
+
+    <div class="titulo">
+
+      <span class="icono-principal">
+
+        <mat-icon>
+          local_shipping
+        </mat-icon>
+
+      </span>
+
+      <div>
+
+        <h2>
+          Abastecer productos
+        </h2>
+
+        <p>
+          Registra el ingreso de nueva mercadería.
+        </p>
+
+      </div>
+
+    </div>
+
+    <button
+      mat-icon-button
+      type="button"
+      aria-label="Cerrar"
+      [disabled]="guardando"
+      (click)="cerrarComponente()">
+
+      <mat-icon>
+        close
+      </mat-icon>
+
+    </button>
+
+  </header>
+
+  @if (
+    !productoSeleccionado
+  ) {
+
+    <div class="contenido">
+
+      <section class="buscar-producto">
+
+        <div class="seccion-titulo">
+
+          <mat-icon>
+            search
+          </mat-icon>
+
+          <div>
+
+            <h3>
+              Seleccionar producto
+            </h3>
+
+            <p>
+              Busca el producto que acaba de ingresar.
+            </p>
+
+          </div>
+
+        </div>
+
+        <div class="buscador">
+
+          <mat-icon>
+            search
+          </mat-icon>
+
+          <input
+            type="text"
+            autocomplete="off"
+            placeholder="Nombre, PROD000001 o código de barras"
+            [formControl]="busquedaControl"
+            (input)="buscarProducto()"
+            (keydown.enter)="
+              seleccionarConEnter($event)
+            ">
+
+        </div>
+
+        <p class="ayuda-escaner">
+
+          <mat-icon>
+            qr_code_scanner
+          </mat-icon>
+
+          También puedes escanear directamente
+          con el lector de código de barras.
+
+        </p>
+
+        @if (
+          busquedaControl.value.trim().length === 1
+        ) {
+
+          <p class="ayuda-minima">
+            Escribe al menos 2 caracteres.
+          </p>
+
+        }
+
+        @if (
+          mensajeBusqueda
+        ) {
+
+          <div class="mensaje-busqueda">
+
+            <mat-icon>
+              info
+            </mat-icon>
+
+            <span>
+              {{ mensajeBusqueda }}
+            </span>
+
+          </div>
+
+        }
+
+        @if (
+          resultadosBusqueda.length > 0
+        ) {
+
+          <div class="resultados">
+
+            @for (
+              producto of resultadosBusqueda;
+              track producto.id_producto
+            ) {
+
+              <button
+                type="button"
+                class="resultado-producto"
+                (click)="
+                  seleccionarProducto(producto)
+                ">
+
+                <span class="resultado-icono">
+
+                  <mat-icon>
+                    inventory_2
+                  </mat-icon>
+
+                </span>
+
+                <span class="resultado-info">
+
+                  <strong>
+                    {{ producto.nombre_producto }}
+                  </strong>
+
+                  <small>
+
+                    {{ producto.codigo_producto }}
+
+                    ·
+
+                    {{
+                      producto.categoria
+                        ?.nombre_categoria
+                      ?? 'Sin categoría'
+                    }}
+
+                    · Stock:
+                    {{ producto.stock_producto }}
+
+                  </small>
+
+                </span>
+
+                <mat-icon class="flecha">
+                  chevron_right
+                </mat-icon>
+
+              </button>
+
+            }
+
+          </div>
+
+        }
+
+        <div class="nuevo-producto">
+
+          <div>
+
+            <strong>
+              ¿El producto todavía no existe?
+            </strong>
+
+            <p>
+              Créalo primero y luego registra
+              su abastecimiento.
+            </p>
+
+          </div>
+
+          <button
+            mat-stroked-button
+            type="button"
+            (click)="solicitarCrearProducto()">
+
+            <mat-icon>
+              add
+            </mat-icon>
+
+            Nuevo producto
+
+          </button>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  } @else {
+
+    <form
+      class="contenido formulario"
+      [formGroup]="formulario"
+      (ngSubmit)="guardar()">
+
+      <section class="producto-seleccionado">
+
+        <div class="producto-identidad">
+
+          <span class="producto-icono">
+
+            <mat-icon>
+              inventory_2
+            </mat-icon>
+
+          </span>
+
+          <div>
+
+            <small>
+              Producto seleccionado
+            </small>
+
+            <h3>
+              {{
+                productoSeleccionado
+                  .nombre_producto
+              }}
+            </h3>
+
+            <p>
+
+              {{
+                productoSeleccionado
+                  .codigo_producto
+              }}
+
+              ·
+
+              {{
+                productoSeleccionado
+                  .categoria
+                  ?.nombre_categoria
+                ?? 'Sin categoría'
+              }}
+
+            </p>
+
+          </div>
+
+        </div>
+
+        <button
+          mat-stroked-button
+          type="button"
+          [disabled]="guardando"
+          (click)="volverABusqueda()">
+
+          <mat-icon>
+            swap_horiz
+          </mat-icon>
+
+          Cambiar
+
+        </button>
+
+      </section>
+
+      <section class="resumen-compacto">
+
+        <div>
+
+          <span>
+            Stock actual
+          </span>
+
+          <strong>
+            {{ stockActual }}
+          </strong>
+
+        </div>
+
+        <div>
+
+          <span>
+            Último costo
+          </span>
+
+          <strong>
+            {{ formatearPrecio(costoActual) }}
+          </strong>
+
+        </div>
+
+        <div>
+
+          <span>
+            Precio de venta
+          </span>
+
+          <strong>
+            {{ formatearPrecio(precioActual) }}
+          </strong>
+
+        </div>
+
+      </section>
+
+      <section class="bloque">
+
+        <div class="seccion-titulo">
+
+          <mat-icon>
+            inventory
+          </mat-icon>
+
+          <div>
+
+            <h3>
+              Mercadería recibida
+            </h3>
+
+            <p>
+              Cantidad, costo y caducidad de este ingreso.
+            </p>
+
+          </div>
+
+        </div>
+
+        <div class="campos-dos">
+
+          <mat-form-field appearance="outline">
+
+            <mat-label>
+              Cantidad recibida
+            </mat-label>
+
+            <input
+              matInput
+              type="number"
+              min="1"
+              step="1"
+              formControlName="cantidad">
+
+            @if (
+              formulario.controls.cantidad.touched
+              && formulario.controls.cantidad.invalid
+            ) {
+
+              <mat-error>
+                Ingresa una cantidad mayor que cero.
+              </mat-error>
+
+            }
+
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+
+            <mat-label>
+              Costo unitario
+            </mat-label>
+
+            <span matTextPrefix>
+              S/&nbsp;
+            </span>
+
+            <input
+              matInput
+              type="number"
+              min="0.01"
+              step="0.01"
+              formControlName="costo_unitario">
+
+            @if (
+              formulario.controls.costo_unitario.touched
+              && formulario.controls.costo_unitario.invalid
+            ) {
+
+              <mat-error>
+                Ingresa un costo válido.
+              </mat-error>
+
+            }
+
+          </mat-form-field>
+
+        </div>
+
+        <mat-form-field appearance="outline">
+
+          <mat-label>
+            Fecha de caducidad
+          </mat-label>
+
+          <input
+            matInput
+            type="date"
+            [min]="fechaHoy"
+            formControlName="fecha_caducidad">
+
+          <mat-icon matSuffix>
+            calendar_month
+          </mat-icon>
+
+        </mat-form-field>
+
+        <div class="costo-total">
+
+          <span>
+            Costo total del ingreso
+          </span>
+
+          <strong>
+            {{
+              formatearPrecio(
+                costoTotalIngreso
+              )
+            }}
+          </strong>
+
+        </div>
+
+      </section>
+
+      <section class="bloque">
+
+        <div class="seccion-titulo">
+
+          <mat-icon>
+            sell
+          </mat-icon>
+
+          <div>
+
+            <h3>
+              Precio de venta
+            </h3>
+
+            <p>
+              Revisa si el nuevo costo requiere cambiar el precio.
+            </p>
+
+          </div>
+
+        </div>
+
+        <div class="analisis-precio">
+
+          <div>
+
+            <span>
+              Precio actual
+            </span>
+
+            <strong>
+              {{ formatearPrecio(precioActual) }}
+            </strong>
+
+          </div>
+
+          <div>
+
+            <span>
+              Margen actual
+            </span>
+
+            <strong>
+              {{
+                formatearPorcentaje(
+                  margenActual
+                )
+              }}
+            </strong>
+
+          </div>
+
+          <div>
+
+            <span>
+              Precio sugerido
+            </span>
+
+            <strong>
+              {{
+                formatearPrecio(
+                  precioSugerido
+                )
+              }}
+            </strong>
+
+            <small>
+              Conserva aproximadamente
+              el margen actual.
+            </small>
+
+          </div>
+
+        </div>
+
+        <div class="opciones-precio">
+
+          <button
+            type="button"
+            class="opcion-precio"
+            [class.seleccionada]="
+              !cambiarPrecio
+            "
+            (click)="mantenerPrecioActual()">
+
+            <mat-icon>
+              check_circle
+            </mat-icon>
+
+            <span>
+
+              <strong>
+                Mantener precio
+              </strong>
+
+              <small>
+                {{ formatearPrecio(precioActual) }}
+              </small>
+
+            </span>
+
+          </button>
+
+          <button
+            type="button"
+            class="opcion-precio"
+            [class.seleccionada]="
+              cambiarPrecio
+            "
+            (click)="cambiarPrecioVenta()">
+
+            <mat-icon>
+              edit
+            </mat-icon>
+
+            <span>
+
+              <strong>
+                Cambiar precio
+              </strong>
+
+              <small>
+                Definir otro valor
+              </small>
+
+            </span>
+
+          </button>
+
+        </div>
+
+        @if (
+          cambiarPrecio
+        ) {
+
+          <div class="nuevo-precio">
+
+            <mat-form-field appearance="outline">
+
+              <mat-label>
+                Nuevo precio de venta
+              </mat-label>
+
+              <span matTextPrefix>
+                S/&nbsp;
+              </span>
+
+              <input
+                matInput
+                type="number"
+                min="0.01"
+                step="0.01"
+                formControlName="precio_venta">
+
+            </mat-form-field>
+
+            @if (
+              precioSugerido !== null
+            ) {
+
+              <button
+                mat-stroked-button
+                type="button"
+                (click)="usarPrecioSugerido()">
+
+                Usar sugerido
+                {{
+                  formatearPrecio(
+                    precioSugerido
+                  )
+                }}
+
+              </button>
+
+            }
+
+          </div>
+
+        }
+
+      </section>
+
+      <section class="bloque">
+
+        <div class="seccion-titulo">
+
+          <mat-icon>
+            qr_code_2
+          </mat-icon>
+
+          <div>
+
+            <h3>
+              Códigos de barras
+            </h3>
+
+            <p>
+              Puedes asociar otro código al mismo producto.
+            </p>
+
+          </div>
+
+        </div>
+
+        <span class="label-codigos">
+          Códigos actuales
+        </span>
+
+        @if (
+          codigosActuales.length > 0
+        ) {
+
+          <div class="chips-codigos">
+
+            @for (
+              codigo of codigosActuales;
+              track codigo.id_codigo_barra
+            ) {
+
+              <span>
+
+                <mat-icon>
+                  qr_code_2
+                </mat-icon>
+
+                {{ codigo.codigo_barra }}
+
+              </span>
+
+            }
+
+          </div>
+
+        } @else {
+
+          <p class="sin-codigos">
+            No tiene código de barras registrado.
+          </p>
+
+        }
+
+        <button
+          mat-stroked-button
+          type="button"
+          class="btn-nuevo-codigo"
+          (click)="alternarNuevoCodigo()">
+
+          <mat-icon>
+
+            {{
+              mostrarNuevoCodigo
+                ? 'remove'
+                : 'add'
+            }}
+
+          </mat-icon>
+
+          {{
+            mostrarNuevoCodigo
+              ? 'Cancelar nuevo código'
+              : 'Asociar otro código'
+          }}
+
+        </button>
+
+        @if (
+          mostrarNuevoCodigo
+        ) {
+
+          <mat-form-field appearance="outline">
+
+            <mat-label>
+              Nuevo código de barras
+            </mat-label>
+
+            <input
+              matInput
+              type="text"
+              maxlength="50"
+              autocomplete="off"
+              formControlName="codigo_barra"
+              placeholder="Escanea o escribe el código">
+
+            <mat-icon matSuffix>
+              qr_code_scanner
+            </mat-icon>
+
+          </mat-form-field>
+
+        }
+
+      </section>
+
+      <section class="resumen-final">
+
+        <div class="resumen-titulo">
+
+          <mat-icon>
+            fact_check
+          </mat-icon>
+
+          <div>
+
+            <strong>
+              Resumen
+            </strong>
+
+            <small>
+              Verifica los datos antes de confirmar.
+            </small>
+
+          </div>
+
+        </div>
+
+        <div class="resumen-grid">
+
+          <div>
+
+            <span>
+              Stock actual
+            </span>
+
+            <strong>
+              {{ stockActual }}
+            </strong>
+
+          </div>
+
+          <div>
+
+            <span>
+              Ingreso
+            </span>
+
+            <strong>
+              +{{ cantidadIngresada }}
+            </strong>
+
+          </div>
+
+          <div>
+
+            <span>
+              Stock resultante
+            </span>
+
+            <strong>
+              {{ stockResultante }}
+            </strong>
+
+          </div>
+
+          <div>
+
+            <span>
+              Costo unitario
+            </span>
+
+            <strong>
+              {{ formatearPrecio(costoNuevo) }}
+            </strong>
+
+          </div>
+
+          <div>
+
+            <span>
+              Costo total
+            </span>
+
+            <strong>
+              {{ formatearPrecio(costoTotalIngreso) }}
+            </strong>
+
+          </div>
+
+          <div>
+
+            <span>
+              Precio final
+            </span>
+
+            <strong>
+              {{ formatearPrecio(precioFinal) }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <footer class="acciones">
+
+        <button
+          mat-stroked-button
+          type="button"
+          [disabled]="guardando"
+          (click)="cerrarComponente()">
+
+          Cancelar
+
+        </button>
+
+        <button
+          mat-flat-button
+          type="submit"
+          class="btn-confirmar"
+          [disabled]="!formularioValido">
+
+          <mat-icon>
+
+            {{
+              guardando
+                ? 'hourglass_top'
+                : 'local_shipping'
+            }}
+
+          </mat-icon>
+
+          {{
+            guardando
+              ? 'Guardando...'
+              : 'Confirmar abastecimiento'
+          }}
+
+        </button>
+
+      </footer>
+
+    </form>
+
+  }
+
+</div>

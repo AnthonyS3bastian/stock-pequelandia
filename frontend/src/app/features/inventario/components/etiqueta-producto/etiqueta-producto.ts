@@ -25,6 +25,14 @@ import {
 } from '@angular/material/button';
 
 import {
+  MatFormFieldModule
+} from '@angular/material/form-field';
+
+import {
+  MatSelectModule
+} from '@angular/material/select';
+
+import {
   Producto
 } from '../../interfaces/producto.interface';
 
@@ -49,7 +57,9 @@ type TipoMensaje =
     CommonModule,
     FormsModule,
     MatIconModule,
-    MatButtonModule
+    MatButtonModule,
+    MatFormFieldModule,
+    MatSelectModule
   ],
   templateUrl: './etiqueta-producto.html',
   styleUrl: './etiqueta-producto.scss'
@@ -87,6 +97,9 @@ implements OnChanges {
   numeroCopias =
     1;
 
+  codigoEtiqueta =
+    '';
+
   codigoBarras:
     CodigoBarrasGenerado = {
       codigo: '',
@@ -112,10 +125,12 @@ implements OnChanges {
   ngOnChanges(
     cambios: SimpleChanges
   ): void {
+
     if (
       cambios['producto']
       && this.producto
     ) {
+
       this.numeroCopias =
         1;
 
@@ -125,63 +140,139 @@ implements OnChanges {
       this.tipoMensaje =
         'informacion';
 
-      this.codigoBarras =
-        this.codigoBarrasService
-          .generarCode128B(
-            this.producto
-              .codigo_producto
-          );
+      this.codigoEtiqueta =
+        this.codigosBarraDisponibles[0]
+        ?? '';
+
+      this.regenerarCodigoBarras();
+
     }
+
+  }
+
+  get codigosBarraDisponibles():
+    string[] {
+
+    const codigos =
+      this.producto.codigos_barra
+      ?? this.producto.codigosBarra
+      ?? [];
+
+    return codigos
+      .filter(
+        codigo =>
+          codigo.estado
+          && String(
+            codigo.codigo_barra
+            ?? ''
+          ).trim() !== ''
+      )
+      .map(
+        codigo =>
+          String(
+            codigo.codigo_barra
+          ).trim()
+      );
+
+  }
+
+  get tieneMultiplesCodigos():
+    boolean {
+
+    return (
+      this.codigosBarraDisponibles
+        .length > 1
+    );
+
+  }
+
+  cambiarCodigoEtiqueta(
+    codigo: string
+  ): void {
+
+    if (
+      this.operacionEnCurso
+    ) {
+      return;
+    }
+
+    this.codigoEtiqueta =
+      String(
+        codigo
+        ?? ''
+      ).trim();
+
+    this.regenerarCodigoBarras();
+
   }
 
   get bluetoothCompatible():
     boolean {
+
     return this.impresoraBluetooth
       .esCompatible();
+
   }
 
   get bluetoothConectado():
     boolean {
+
     return this.impresoraBluetooth
       .estaConectada();
+
   }
 
   get nombreImpresoraBluetooth():
     string {
+
     return this.impresoraBluetooth
       .obtenerNombre();
+
   }
 
   get operacionEnCurso():
     boolean {
+
     return (
       this.conectandoBluetooth
       || this.imprimiendoBluetooth
     );
+
   }
 
   get textoBotonImprimir():
     string {
-    if (this.imprimiendoBluetooth) {
+
+    if (
+      this.imprimiendoBluetooth
+    ) {
       return 'Imprimiendo...';
     }
 
-    if (this.numeroCopias === 1) {
+    if (
+      this.numeroCopias === 1
+    ) {
       return 'Imprimir etiqueta';
     }
 
     return `Imprimir ${this.numeroCopias} etiquetas`;
+
   }
 
   cerrarVista(): void {
-    if (this.operacionEnCurso) {
+
+    if (
+      this.operacionEnCurso
+    ) {
       return;
     }
 
     this.cerrar.emit();
+
   }
 
   aumentarCopias(): void {
+
     if (
       this.operacionEnCurso
       || this.numeroCopias
@@ -192,9 +283,11 @@ implements OnChanges {
 
     this.numeroCopias +=
       1;
+
   }
 
   disminuirCopias(): void {
+
     if (
       this.operacionEnCurso
       || this.numeroCopias <= 1
@@ -204,9 +297,11 @@ implements OnChanges {
 
     this.numeroCopias -=
       1;
+
   }
 
   limitarCopias(): void {
+
     const cantidad =
       Math.trunc(
         Number(
@@ -218,10 +313,12 @@ implements OnChanges {
       Number.isNaN(cantidad)
       || !Number.isFinite(cantidad)
     ) {
+
       this.numeroCopias =
         1;
 
       return;
+
     }
 
     this.numeroCopias =
@@ -232,10 +329,12 @@ implements OnChanges {
         ),
         this.maximoEtiquetas
       );
+
   }
 
   async conectarBluetooth():
     Promise<void> {
+
     if (
       this.conectandoBluetooth
       || this.imprimiendoBluetooth
@@ -243,13 +342,17 @@ implements OnChanges {
       return;
     }
 
-    if (!this.bluetoothCompatible) {
+    if (
+      !this.bluetoothCompatible
+    ) {
+
       this.establecerMensaje(
         'Este navegador no permite Web Bluetooth. Utilice Google Chrome o Microsoft Edge.',
         'error'
       );
 
       return;
+
     }
 
     this.mensajeEstado =
@@ -259,6 +362,7 @@ implements OnChanges {
       true;
 
     try {
+
       const nombre =
         await this
           .impresoraBluetooth
@@ -268,7 +372,11 @@ implements OnChanges {
         `${nombre} conectada correctamente.`,
         'exito'
       );
-    } catch (error) {
+
+    } catch (
+      error
+    ) {
+
       this.establecerMensaje(
         this.obtenerMensajeError(
           error,
@@ -276,15 +384,22 @@ implements OnChanges {
         ),
         'error'
       );
+
     } finally {
+
       this.conectandoBluetooth =
         false;
+
     }
+
   }
 
   desconectarBluetooth():
     void {
-    if (this.operacionEnCurso) {
+
+    if (
+      this.operacionEnCurso
+    ) {
       return;
     }
 
@@ -295,10 +410,12 @@ implements OnChanges {
       'Impresora Bluetooth desconectada.',
       'informacion'
     );
+
   }
 
   async imprimirBluetoothDirecto():
     Promise<void> {
+
     if (
       this.imprimiendoBluetooth
       || this.conectandoBluetooth
@@ -308,7 +425,10 @@ implements OnChanges {
 
     this.limitarCopias();
 
-    if (!this.codigoBarras.valido) {
+    if (
+      !this.codigoBarras.valido
+    ) {
+
       this.establecerMensaje(
         this.codigoBarras.mensaje
         ?? 'No se pudo generar el código de barras.',
@@ -316,15 +436,20 @@ implements OnChanges {
       );
 
       return;
+
     }
 
-    if (!this.bluetoothCompatible) {
+    if (
+      !this.bluetoothCompatible
+    ) {
+
       this.establecerMensaje(
         'Este navegador no permite Web Bluetooth. Utilice Google Chrome o Microsoft Edge.',
         'error'
       );
 
       return;
+
     }
 
     this.imprimiendoBluetooth =
@@ -338,20 +463,17 @@ implements OnChanges {
     );
 
     try {
-      if (!this.bluetoothConectado) {
+
+      if (
+        !this.bluetoothConectado
+      ) {
+
         await this
           .impresoraBluetooth
           .conectar();
+
       }
 
-      /*
-       * Se crea un único lienzo vertical
-       * con todas las etiquetas.
-       *
-       * Esto evita enviar el mismo trabajo
-       * varias veces y evita que las
-       * impresiones se superpongan.
-       */
       const canvas =
         this.crearCanvasEtiquetas(
           this.numeroCopias
@@ -363,10 +485,12 @@ implements OnChanges {
           canvas,
           1,
           porcentaje => {
+
             this.establecerMensaje(
               `Enviando etiquetas... ${porcentaje}%`,
               'informacion'
             );
+
           }
         );
 
@@ -376,7 +500,11 @@ implements OnChanges {
           : `${this.numeroCopias} etiquetas impresas correctamente.`,
         'exito'
       );
-    } catch (error) {
+
+    } catch (
+      error
+    ) {
+
       this.establecerMensaje(
         this.obtenerMensajeError(
           error,
@@ -384,35 +512,32 @@ implements OnChanges {
         ),
         'error'
       );
+
     } finally {
+
       this.imprimiendoBluetooth =
         false;
+
     }
+
   }
 
   formatearPrecio(
     valor: number
   ): string {
+
     return `S/ ${
       Number(
         valor ?? 0
       ).toFixed(2)
     }`;
+
   }
 
   private crearCanvasEtiquetas(
     cantidad: number
   ): HTMLCanvasElement {
-    /*
-     * La impresora utiliza un ancho
-     * imprimible de 384 píxeles.
-     *
-     * Cada etiqueta ocupa una sección
-     * vertical completa del papel.
-     *
-     * Entre etiquetas se deja un espacio
-     * en blanco para facilitar el corte.
-     */
+
     const anchoPapel =
       384;
 
@@ -455,10 +580,14 @@ implements OnChanges {
         '2d'
       );
 
-    if (!contexto) {
+    if (
+      !contexto
+    ) {
+
       throw new Error(
         'No se pudo preparar la impresión de etiquetas.'
       );
+
     }
 
     contexto.fillStyle =
@@ -479,6 +608,7 @@ implements OnChanges {
       indice < cantidad;
       indice += 1
     ) {
+
       const posicionY =
         margenSuperior
         + indice
@@ -492,9 +622,11 @@ implements OnChanges {
         posicionY,
         altoEtiqueta
       );
+
     }
 
     return canvas;
+
   }
 
   private dibujarEtiqueta(
@@ -505,6 +637,7 @@ implements OnChanges {
 
     altoEtiqueta: number
   ): void {
+
     const margenHorizontal =
       8;
 
@@ -533,10 +666,6 @@ implements OnChanges {
       altoEtiqueta
     );
 
-    /*
-     * Borde negro que servirá como guía
-     * cuando se utilice papel continuo.
-     */
     contexto.strokeStyle =
       '#000000';
 
@@ -603,6 +732,7 @@ implements OnChanges {
       const barra
       of this.codigoBarras.barras
     ) {
+
       contexto.fillRect(
         margenHorizontal
         + margenCodigo
@@ -619,12 +749,12 @@ implements OnChanges {
 
         altoBarras
       );
+
     }
 
     this.dibujarTextoAjustado(
       contexto,
-      this.producto
-        .codigo_producto,
+      this.codigoEtiqueta,
       centroX,
       posicionY + 158,
       anchoEtiqueta - 34,
@@ -649,6 +779,35 @@ implements OnChanges {
     );
 
     contexto.restore();
+
+  }
+
+  private regenerarCodigoBarras():
+    void {
+
+    if (
+      this.codigoEtiqueta === ''
+    ) {
+
+      this.codigoBarras = {
+        codigo: '',
+        barras: [],
+        anchoTotal: 0,
+        valido: false,
+        mensaje:
+          'Este producto no tiene un código de barras activo.'
+      };
+
+      return;
+
+    }
+
+    this.codigoBarras =
+      this.codigoBarrasService
+        .generarCode128B(
+          this.codigoEtiqueta
+        );
+
   }
 
   private dibujarTextoAjustado(
@@ -672,6 +831,7 @@ implements OnChanges {
     familia =
       'Arial'
   ): void {
+
     const textoOriginal =
       String(
         texto ?? ''
@@ -693,11 +853,13 @@ implements OnChanges {
         .width
         > anchoMaximo
     ) {
+
       tamano -=
         1;
 
       contexto.font =
         `${peso} ${tamano}px ${familia}`;
+
     }
 
     let textoFinal =
@@ -712,11 +874,13 @@ implements OnChanges {
         .width
         > anchoMaximo
     ) {
+
       textoFinal =
         `${textoFinal.slice(
           0,
           -2
         )}…`;
+
     }
 
     contexto.fillText(
@@ -724,38 +888,47 @@ implements OnChanges {
       x,
       y
     );
+
   }
 
   private establecerMensaje(
     mensaje: string,
     tipo: TipoMensaje
   ): void {
+
     this.mensajeEstado =
       mensaje;
 
     this.tipoMensaje =
       tipo;
+
   }
 
   private obtenerMensajeError(
     error: unknown,
     mensajeDefecto: string
   ): string {
+
     if (
       error instanceof Error
       && error.message
     ) {
+
       if (
         error.name
         === 'NotFoundError'
       ) {
+
         return 'No se seleccionó una impresora Bluetooth.';
+
       }
 
       return error.message;
+
     }
 
     return mensajeDefecto;
+
   }
 
 }

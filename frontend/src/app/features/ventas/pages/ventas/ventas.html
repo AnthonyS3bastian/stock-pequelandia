@@ -225,7 +225,7 @@
                       }}
 
                       · Código:
-                      {{ producto.codigo_producto }}
+                      {{ obtenerCodigoVisible(producto) }}
 
                     </small>
 
@@ -551,7 +551,9 @@
 
             </div>
 
-            <h3>Venta vacía</h3>
+            <h3>
+              Venta vacía
+            </h3>
 
             <p>
               Escanea un producto para comenzar.
@@ -674,7 +676,9 @@
 
           <div>
 
-            <span>Cliente</span>
+            <span>
+              Cliente
+            </span>
 
             <strong>
               Público general
@@ -693,7 +697,8 @@
 
           <div class="consulta-documento">
 
-            <mat-form-field appearance="outline">
+            <mat-form-field
+              appearance="outline">
 
               <mat-label>
                 {{
@@ -747,7 +752,9 @@
                 || consultandoDocumento
                 || !numeroDocumento
               "
-              (click)="consultarDocumento()">
+              (click)="
+                consultarDocumento()
+              ">
 
               <mat-icon>
                 {{
@@ -768,7 +775,9 @@
               === 'encontrado'
             ">
 
-            <mat-icon>check_circle</mat-icon>
+            <mat-icon>
+              check_circle
+            </mat-icon>
 
             <div class="resultado-contenido">
 
@@ -780,8 +789,11 @@
                 {{ nombreCliente }}
               </strong>
 
-              <p *ngIf="direccionCliente">
+              <p
+                *ngIf="direccionCliente">
+
                 {{ direccionCliente }}
+
               </p>
 
             </div>
@@ -840,7 +852,9 @@
 
           <div class="fila-total">
 
-            <span>Total</span>
+            <span>
+              Total
+            </span>
 
             <strong>
               S/ {{ total | number:'1.2-2' }}
@@ -925,12 +939,16 @@
               type="button"
               mat-stroked-button
               class="boton-conectar"
-              *ngIf="!impresoraConectada"
+              *ngIf="
+                !impresoraConectada
+              "
               [disabled]="
                 operacionEnCurso
                 || !impresoraCompatible
               "
-              (click)="conectarImpresora()">
+              (click)="
+                conectarImpresora()
+              ">
 
               <mat-icon>
                 {{
@@ -952,11 +970,18 @@
               type="button"
               mat-stroked-button
               class="boton-desconectar"
-              *ngIf="impresoraConectada"
+              *ngIf="
+                impresoraConectada
+              "
               [disabled]="operacionEnCurso"
-              (click)="desconectarImpresora()">
+              (click)="
+                desconectarImpresora()
+              ">
 
-              <mat-icon>link_off</mat-icon>
+              <mat-icon>
+                link_off
+              </mat-icon>
+
               Desconectar
 
             </button>
@@ -967,9 +992,13 @@
               class="boton-actualizar"
               title="Actualizar estado"
               [disabled]="operacionEnCurso"
-              (click)="actualizarEstadoImpresora(true)">
+              (click)="
+                actualizarEstadoImpresora(true)
+              ">
 
-              <mat-icon>refresh</mat-icon>
+              <mat-icon>
+                refresh
+              </mat-icon>
 
             </button>
 
@@ -982,7 +1011,9 @@
           mat-flat-button
           class="boton-registrar"
           [disabled]="!puedeRegistrar"
-          (click)="abrirConfirmacionVenta()">
+          (click)="
+            abrirConfirmacionVenta()
+          ">
 
           <mat-icon>
             {{
@@ -1014,15 +1045,20 @@
 
   <section
     class="vista-ventas"
-    *ngIf="vistaActual === 'anular'">
+    *ngIf="
+      vistaActual === 'anular'
+    ">
 
-    <mat-card class="panel panel-anulacion">
+    <mat-card
+      class="panel panel-anulacion">
 
       <div class="cabecera-panel">
 
         <div>
 
-          <h2>Anular venta</h2>
+          <h2>
+            Anular venta
+          </h2>
 
           <span>
             Escanee el código de barras
@@ -1076,7 +1112,9 @@
             || operacionEnCurso
             || !numeroComprobanteBusqueda.trim()
           "
-          (click)="buscarVentaParaAnular()">
+          (click)="
+            buscarVentaParaAnular()
+          ">
 
           <mat-icon>
             {{
@@ -1098,13 +1136,17 @@
 
       <div
         class="resultado-venta-anulacion"
-        *ngIf="ventaBuscada">
+        *ngIf="
+          ventaBuscada
+        ">
 
         <div class="cabecera-resultado-venta">
 
           <div>
 
-            <span>Nota de venta</span>
+            <span>
+              Nota de venta
+            </span>
 
             <strong>
               {{ ventaBuscada.numero_comprobante }}
@@ -1132,7 +1174,9 @@
 
           <div>
 
-            <span>Fecha y hora</span>
+            <span>
+              Fecha y hora
+            </span>
 
             <strong>
               {{
@@ -1146,7 +1190,9 @@
 
           <div>
 
-            <span>Cliente</span>
+            <span>
+              Cliente
+            </span>
 
             <strong>
               {{
@@ -1160,7 +1206,9 @@
 
           <div>
 
-            <span>Vendedor</span>
+            <span>
+              Vendedor
+            </span>
 
             <strong>
               {{
@@ -1174,7 +1222,9 @@
 
           <div>
 
-            <span>Unidades</span>
+            <span>
+              Unidades
+            </span>
 
             <strong>
               {{
@@ -1188,7 +1238,9 @@
 
           <div>
 
-            <span>Total</span>
+            <span>
+              Total
+            </span>
 
             <strong>
               S/
@@ -1209,7 +1261,9 @@
             && motivoBloqueoAnulacion
           ">
 
-          <mat-icon>info</mat-icon>
+          <mat-icon>
+            info
+          </mat-icon>
 
           <span>
             {{ motivoBloqueoAnulacion }}
@@ -1229,7 +1283,10 @@
             abrirConfirmacionAnulacion()
           ">
 
-          <mat-icon>cancel</mat-icon>
+          <mat-icon>
+            cancel
+          </mat-icon>
+
           Anular venta
 
         </button>
@@ -1248,7 +1305,9 @@
 
 <div
   class="modal-fondo"
-  *ngIf="confirmacionVentaVisible">
+  *ngIf="
+    confirmacionVentaVisible
+  ">
 
   <section
     class="modal-confirmacion
@@ -1266,11 +1325,13 @@
 
       <div>
 
-        <h2>Confirmar venta</h2>
+        <h2>
+          Confirmar venta
+        </h2>
 
         <p>
-          Revise los productos y el total
-          antes de registrar.
+          Revise los productos, ingrese el pago
+          y confirme el vuelto antes de registrar.
         </p>
 
       </div>
@@ -1281,7 +1342,9 @@
 
       <div>
 
-        <span>Documento</span>
+        <span>
+          Documento
+        </span>
 
         <strong>
           Nota de venta
@@ -1291,7 +1354,9 @@
 
       <div>
 
-        <span>Tipo de cliente</span>
+        <span>
+          Tipo de cliente
+        </span>
 
         <strong>
           {{ textoTipoCliente }}
@@ -1301,7 +1366,9 @@
 
       <div>
 
-        <span>Cliente</span>
+        <span>
+          Cliente
+        </span>
 
         <strong>
           {{ nombreCliente }}
@@ -1349,7 +1416,10 @@
 
         <div
           class="producto-confirmacion"
-          *ngFor="let producto of ventas">
+          *ngFor="
+            let producto
+            of ventas
+          ">
 
           <div>
 
@@ -1385,11 +1455,184 @@
 
     <div class="total-confirmacion">
 
-      <span>Total a cobrar</span>
+      <span>
+        Total a cobrar
+      </span>
 
       <strong>
         S/ {{ total | number:'1.2-2' }}
       </strong>
+
+    </div>
+
+    <div
+      class="resumen-confirmacion"
+      style="
+        margin-top: 12px;
+      ">
+
+      <div
+        style="
+          grid-column: 1 / -1;
+        ">
+
+        <span>
+          Pago en efectivo
+        </span>
+
+        <div
+          style="
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            margin-top: 8px;
+          ">
+
+          <mat-form-field
+            appearance="outline"
+            style="
+              flex: 1;
+              margin: 0;
+            ">
+
+            <mat-label>
+              Monto recibido
+            </mat-label>
+
+            <span matTextPrefix>
+              S/&nbsp;
+            </span>
+
+            <input
+              matInput
+              type="number"
+              inputmode="decimal"
+              min="0"
+              step="0.10"
+              autocomplete="off"
+              [(ngModel)]="
+                montoRecibido
+              "
+              [disabled]="
+                operacionEnCurso
+              "
+              (blur)="
+                normalizarMontoRecibido()
+              "
+              (keyup.enter)="
+                confirmarVenta()
+              ">
+
+          </mat-form-field>
+
+          <button
+            type="button"
+            mat-stroked-button
+            style="
+              height: 56px;
+              min-width: 92px;
+            "
+            [disabled]="
+              operacionEnCurso
+            "
+            (click)="
+              usarMontoExacto()
+            ">
+
+            <mat-icon>
+              price_check
+            </mat-icon>
+
+            Exacto
+
+          </button>
+
+        </div>
+
+      </div>
+
+      <div>
+
+        <span>
+          Monto recibido
+        </span>
+
+        @if (
+          montoRecibido === null
+        ) {
+
+          <strong>
+            —
+          </strong>
+
+        } @else {
+
+          <strong>
+            S/
+            {{
+              montoRecibido
+                | number:'1.2-2'
+            }}
+          </strong>
+
+        }
+
+      </div>
+
+      <div>
+
+        <span>
+          {{
+            montoRecibido !== null
+            && !pagoValido
+              ? 'Falta'
+              : 'Vuelto'
+          }}
+        </span>
+
+        @if (
+          montoRecibido === null
+        ) {
+
+          <strong>
+            —
+          </strong>
+
+        } @else if (
+          !pagoValido
+        ) {
+
+          <strong
+            style="
+              color: #c2410c;
+            ">
+
+            S/
+            {{
+              faltantePago
+                | number:'1.2-2'
+            }}
+
+          </strong>
+
+        } @else {
+
+          <strong
+            style="
+              color: #15803d;
+            ">
+
+            S/
+            {{
+              vuelto
+                | number:'1.2-2'
+            }}
+
+          </strong>
+
+        }
+
+      </div>
 
     </div>
 
@@ -1398,8 +1641,12 @@
       <button
         type="button"
         mat-stroked-button
-        [disabled]="operacionEnCurso"
-        (click)="cerrarConfirmacionVenta()">
+        [disabled]="
+          operacionEnCurso
+        "
+        (click)="
+          cerrarConfirmacionVenta()
+        ">
 
         Cancelar
 
@@ -1409,10 +1656,18 @@
         type="button"
         mat-flat-button
         class="boton-confirmar"
-        [disabled]="operacionEnCurso"
-        (click)="confirmarVenta()">
+        [disabled]="
+          operacionEnCurso
+          || !pagoValido
+        "
+        (click)="
+          confirmarVenta()
+        ">
 
-        <mat-icon>check</mat-icon>
+        <mat-icon>
+          check
+        </mat-icon>
+
         Confirmar venta
 
       </button>
@@ -1429,7 +1684,9 @@
 
 <div
   class="modal-fondo"
-  *ngIf="advertenciaImpresoraVisible">
+  *ngIf="
+    advertenciaImpresoraVisible
+  ">
 
   <section
     class="modal-confirmacion
@@ -1462,7 +1719,9 @@
 
     <div class="aviso-impresora-grande">
 
-      <mat-icon>warning_amber</mat-icon>
+      <mat-icon>
+        warning_amber
+      </mat-icon>
 
       <div>
 
@@ -1484,8 +1743,12 @@
       <button
         type="button"
         mat-stroked-button
-        [disabled]="operacionEnCurso"
-        (click)="cerrarAdvertenciaImpresora()">
+        [disabled]="
+          operacionEnCurso
+        "
+        (click)="
+          cerrarAdvertenciaImpresora()
+        ">
 
         Volver
 
@@ -1499,7 +1762,9 @@
           operacionEnCurso
           || !impresoraCompatible
         "
-        (click)="conectarYContinuarVenta()">
+        (click)="
+          conectarYContinuarVenta()
+        ">
 
         <mat-icon>
           {{
@@ -1521,10 +1786,17 @@
         type="button"
         mat-flat-button
         class="boton-continuar-sin-imprimir"
-        [disabled]="operacionEnCurso"
-        (click)="continuarSinImprimir()">
+        [disabled]="
+          operacionEnCurso
+        "
+        (click)="
+          continuarSinImprimir()
+        ">
 
-        <mat-icon>check</mat-icon>
+        <mat-icon>
+          check
+        </mat-icon>
+
         Continuar sin imprimir
 
       </button>
@@ -1546,19 +1818,24 @@
     && ventaBuscada
   ">
 
-  <section class="modal-confirmacion">
+  <section
+    class="modal-confirmacion">
 
     <div class="encabezado-modal">
 
       <div class="icono-modal advertencia">
 
-        <mat-icon>warning</mat-icon>
+        <mat-icon>
+          warning
+        </mat-icon>
 
       </div>
 
       <div>
 
-        <h2>Confirmar anulación</h2>
+        <h2>
+          Confirmar anulación
+        </h2>
 
         <p>
           La venta quedará anulada
@@ -1571,7 +1848,9 @@
 
     <div class="aviso-anulacion">
 
-      <mat-icon>inventory</mat-icon>
+      <mat-icon>
+        inventory
+      </mat-icon>
 
       <div>
 
@@ -1592,7 +1871,9 @@
 
       <div>
 
-        <span>Nota de venta</span>
+        <span>
+          Nota de venta
+        </span>
 
         <strong>
           {{ ventaBuscada.numero_comprobante }}
@@ -1602,7 +1883,9 @@
 
       <div>
 
-        <span>Cliente</span>
+        <span>
+          Cliente
+        </span>
 
         <strong>
           {{
@@ -1618,7 +1901,9 @@
 
     <div class="total-confirmacion">
 
-      <span>Total</span>
+      <span>
+        Total
+      </span>
 
       <strong>
         S/
@@ -1635,7 +1920,9 @@
       <button
         type="button"
         mat-stroked-button
-        [disabled]="anulandoVenta"
+        [disabled]="
+          anulandoVenta
+        "
         (click)="
           cerrarConfirmacionAnulacion()
         ">
@@ -1648,8 +1935,12 @@
         type="button"
         mat-flat-button
         class="boton-confirmar-anulacion"
-        [disabled]="anulandoVenta"
-        (click)="confirmarAnulacion()">
+        [disabled]="
+          anulandoVenta
+        "
+        (click)="
+          confirmarAnulacion()
+        ">
 
         <mat-icon>
           {{

@@ -86,14 +86,15 @@ export class ToolbarComponent {
   readonly nombreUsuario =
     signal(
       this.usuario()
-        ?.nombre_usuario ??
-      'Usuario'
+        ?.nombre_usuario
+      ?? 'Usuario'
     );
 
   readonly rolUsuario =
     signal(
       this.formatearRol(
-        this.usuario()?.rol_usuario
+        this.usuario()
+          ?.rol_usuario
       )
     );
 
@@ -122,13 +123,15 @@ export class ToolbarComponent {
           this.destroyRef
         )
       )
-      .subscribe(evento => {
+      .subscribe(
+        evento => {
 
-        this.actualizarTitulo(
-          evento.urlAfterRedirects
-        );
+          this.actualizarTitulo(
+            evento.urlAfterRedirects
+          );
 
-      });
+        }
+      );
 
     this.actualizarFechaHora();
 
@@ -170,35 +173,41 @@ export class ToolbarComponent {
 
   cerrarSesion(): void {
 
-    if (this.cerrandoSesion()) {
-
+    if (
+      this.cerrandoSesion()
+    ) {
       return;
-
     }
 
-    this.cerrandoSesion.set(true);
+    this.cerrandoSesion.set(
+      true
+    );
 
     this.authService
       .logout()
       .pipe(
-        finalize(() => {
+        finalize(
+          () => {
 
-          this.cerrandoSesion.set(
-            false
+            this.cerrandoSesion.set(
+              false
+            );
+
+          }
+        )
+      )
+      .subscribe(
+        () => {
+
+          this.router.navigate(
+            ['/login'],
+            {
+              replaceUrl: true
+            }
           );
 
-        })
-      )
-      .subscribe(() => {
-
-        this.router.navigate(
-          ['/login'],
-          {
-            replaceUrl: true
-          }
-        );
-
-      });
+        }
+      );
 
   }
 
@@ -206,9 +215,10 @@ export class ToolbarComponent {
     url: string
   ): void {
 
-    const ruta = url
-      .split('?')[0]
-      .split('#')[0];
+    const ruta =
+      url
+        .split('?')[0]
+        .split('#')[0];
 
     if (
       ruta.startsWith(
@@ -318,14 +328,21 @@ export class ToolbarComponent {
             'America/Lima'
         }
       )
-        .format(ahora)
-        .replace(/\./g, '');
+        .format(
+          ahora
+        )
+        .replace(
+          /\./g,
+          ''
+        );
 
     this.fechaActual.set(
       fechaFormateada
         .charAt(0)
-        .toUpperCase() +
-      fechaFormateada.slice(1)
+        .toUpperCase()
+      +
+      fechaFormateada
+        .slice(1)
     );
 
     const horaFormateada =
@@ -339,7 +356,9 @@ export class ToolbarComponent {
             'America/Lima'
         }
       )
-        .format(ahora);
+        .format(
+          ahora
+        );
 
     this.horaActual.set(
       horaFormateada
@@ -351,19 +370,25 @@ export class ToolbarComponent {
     rol: string | undefined
   ): string {
 
-    if (!rol) {
-
+    if (
+      !rol
+    ) {
       return 'Sin rol';
-
     }
 
-    return rol
-      .toLowerCase()
-      .replace(
-        /(^\w|\s\w)/g,
-        letra =>
-          letra.toUpperCase()
-      );
+    if (
+      rol === 'EMPLEADO'
+    ) {
+      return 'Vendedor';
+    }
+
+    if (
+      rol === 'ADMINISTRADOR'
+    ) {
+      return 'Administrador';
+    }
+
+    return rol;
 
   }
 
@@ -374,20 +399,31 @@ export class ToolbarComponent {
     const partes =
       nombreUsuario
         .trim()
-        .split(/[\s._-]+/)
-        .filter(Boolean);
+        .split(
+          /[\s._-]+/
+        )
+        .filter(
+          Boolean
+        );
 
-    if (partes.length >= 2) {
+    if (
+      partes.length >= 2
+    ) {
 
       return (
-        partes[0][0] +
+        partes[0][0]
+        +
         partes[1][0]
-      ).toUpperCase();
+      )
+        .toUpperCase();
 
     }
 
     return nombreUsuario
-      .substring(0, 2)
+      .substring(
+        0,
+        2
+      )
       .toUpperCase();
 
   }
