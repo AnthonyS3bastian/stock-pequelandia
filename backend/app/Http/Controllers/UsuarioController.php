@@ -15,9 +15,6 @@ class UsuarioController extends Controller
     ) {
     }
 
-    /**
-     * Listar todas las cuentas.
-     */
     public function index(): JsonResponse
     {
         return response()->json([
@@ -27,9 +24,6 @@ class UsuarioController extends Controller
         ]);
     }
 
-    /**
-     * Crear una cuenta de empleado.
-     */
     public function store(
         StoreUsuarioRequest $request
     ): JsonResponse {
@@ -42,14 +36,12 @@ class UsuarioController extends Controller
 
         return response()->json([
             'mensaje' =>
-                'Empleado creado correctamente. La contrasena inicial es su DNI.',
-            'usuario' => $usuario,
+                'Vendedor creado correctamente. La contraseña inicial es su DNI.',
+            'usuario' =>
+                $usuario,
         ], 201);
     }
 
-    /**
-     * Activar o desactivar una cuenta de empleado.
-     */
     public function cambiarEstado(
         Request $request,
         int $id
@@ -68,30 +60,34 @@ class UsuarioController extends Controller
 
         $mensaje =
             $usuario->estado_usuario
-                ? 'Cuenta activada correctamente.'
-                : 'Cuenta desactivada correctamente.';
+                ? 'Cuenta de vendedor activada correctamente.'
+                : 'Cuenta de vendedor desactivada correctamente.';
 
         return response()->json([
-            'mensaje' => $mensaje,
-            'usuario' => $usuario,
+            'mensaje' =>
+                $mensaje,
+
+            'usuario' =>
+                $usuario,
         ]);
     }
 
-    /**
-     * Restablecer la contrasena de un empleado a su DNI.
-     */
     public function restablecerPassword(
         int $id
     ): JsonResponse {
 
         $usuario =
             $this->usuarioService
-                ->restablecerPassword($id);
+                ->restablecerPassword(
+                    $id
+                );
 
         return response()->json([
             'mensaje' =>
-                'Contrasena restablecida correctamente. La nueva contrasena es el DNI del empleado.',
-            'usuario' => $usuario,
+                'Contraseña restablecida correctamente. La nueva contraseña es el DNI del vendedor.',
+
+            'usuario' =>
+                $usuario,
         ]);
     }
 }
