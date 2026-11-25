@@ -19,18 +19,40 @@
 
       @if (esAdministrador) {
 
-        <button
-          type="button"
-          class="btn-nuevo"
-          (click)="abrirDrawer()">
+        <div
+          style="
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+          ">
 
-          <mat-icon>
-            add
-          </mat-icon>
+          <button
+            type="button"
+            class="btn-nuevo"
+            (click)="abrirAbastecimiento()">
 
-          Nuevo producto
+            <mat-icon>
+              local_shipping
+            </mat-icon>
 
-        </button>
+            Abastecer productos
+
+          </button>
+
+          <button
+            type="button"
+            class="btn-nuevo"
+            (click)="abrirDrawer()">
+
+            <mat-icon>
+              add
+            </mat-icon>
+
+            Nuevo producto
+
+          </button>
+
+        </div>
 
       }
 
@@ -40,8 +62,12 @@
 
       <button
         type="button"
-        [class.activa]="vistaActual === 'productos'"
-        (click)="cambiarVista('productos')">
+        [class.activa]="
+          vistaActual === 'productos'
+        "
+        (click)="
+          cambiarVista('productos')
+        ">
 
         <mat-icon>
           inventory_2
@@ -53,8 +79,12 @@
 
       <button
         type="button"
-        [class.activa]="vistaActual === 'alertas'"
-        (click)="cambiarVista('alertas')">
+        [class.activa]="
+          vistaActual === 'alertas'
+        "
+        (click)="
+          cambiarVista('alertas')
+        ">
 
         <mat-icon>
           notifications
@@ -62,7 +92,9 @@
 
         Alertas
 
-        @if (totalAlertas > 0) {
+        @if (
+          totalAlertas > 0
+        ) {
 
           <span class="contador-alertas">
 
@@ -85,7 +117,9 @@
           filtroDisponibilidad === 'todos'
           && vistaActual === 'productos'
         "
-        (click)="filtrarPorTarjeta('todos')">
+        (click)="
+          filtrarPorTarjeta('todos')
+        ">
 
         <span class="tarjeta-icono">
 
@@ -113,9 +147,14 @@
         type="button"
         class="tarjeta-resumen bajo"
         [class.seleccionada]="
-          filtroDisponibilidad === 'stock_bajo'
+          filtroDisponibilidad
+          === 'stock_bajo'
         "
-        (click)="filtrarPorTarjeta('stock_bajo')">
+        (click)="
+          filtrarPorTarjeta(
+            'stock_bajo'
+          )
+        ">
 
         <span class="tarjeta-icono">
 
@@ -143,9 +182,14 @@
         type="button"
         class="tarjeta-resumen agotado"
         [class.seleccionada]="
-          filtroDisponibilidad === 'agotado'
+          filtroDisponibilidad
+          === 'agotado'
         "
-        (click)="filtrarPorTarjeta('agotado')">
+        (click)="
+          filtrarPorTarjeta(
+            'agotado'
+          )
+        ">
 
         <span class="tarjeta-icono">
 
@@ -173,9 +217,14 @@
         type="button"
         class="tarjeta-resumen vencer"
         [class.seleccionada]="
-          filtroDisponibilidad === 'por_vencer'
+          filtroDisponibilidad
+          === 'por_vencer'
         "
-        (click)="filtrarPorTarjeta('por_vencer')">
+        (click)="
+          filtrarPorTarjeta(
+            'por_vencer'
+          )
+        ">
 
         <span class="tarjeta-icono">
 
@@ -203,9 +252,14 @@
         type="button"
         class="tarjeta-resumen inactivos"
         [class.seleccionada]="
-          filtroDisponibilidad === 'inactivo'
+          filtroDisponibilidad
+          === 'inactivo'
         "
-        (click)="filtrarPorTarjeta('inactivo')">
+        (click)="
+          filtrarPorTarjeta(
+            'inactivo'
+          )
+        ">
 
         <span class="tarjeta-icono">
 
@@ -310,7 +364,9 @@
 
       <div class="busqueda">
 
-        @if (buscandoCodigo) {
+        @if (
+          buscandoCodigo
+        ) {
 
           <mat-spinner
             diameter="20">
@@ -331,7 +387,9 @@
           [(ngModel)]="textoBusqueda"
           (input)="buscarProducto()"
           (keydown.enter)="
-            buscarProductoPorCodigoExacto($event)
+            buscarProductoPorCodigoExacto(
+              $event
+            )
           ">
 
         @if (
@@ -356,7 +414,9 @@
       </div>
 
       <select
-        [(ngModel)]="categoriaSeleccionada">
+        [(ngModel)]="
+          categoriaSeleccionada
+        ">
 
         <option [ngValue]="0">
           Todas las categorías
@@ -368,10 +428,13 @@
         ) {
 
           <option
-            [ngValue]="categoria.id_categoria">
+            [ngValue]="
+              categoria.id_categoria
+            ">
 
             {{
-              categoria.nombre_categoria
+              categoria
+                .nombre_categoria
             }}
 
           </option>
@@ -381,7 +444,9 @@
       </select>
 
       <select
-        [(ngModel)]="estadoSeleccionado">
+        [(ngModel)]="
+          estadoSeleccionado
+        ">
 
         <option value="todos">
           Todos los estados
@@ -401,9 +466,13 @@
         type="button"
         class="btn-actualizar"
         [disabled]="cargando"
-        (click)="actualizarInventario()">
+        (click)="
+          actualizarInventario()
+        ">
 
-        @if (cargando) {
+        @if (
+          cargando
+        ) {
 
           <mat-spinner
             diameter="18">
@@ -433,7 +502,9 @@
           filtroDisponibilidad === 'todos'
         "
         (click)="
-          cambiarFiltroDisponibilidad('todos')
+          cambiarFiltroDisponibilidad(
+            'todos'
+          )
         ">
 
         Todos
@@ -447,10 +518,13 @@
         <button
           type="button"
           [class.activo]="
-            filtroDisponibilidad === 'disponible'
+            filtroDisponibilidad
+            === 'disponible'
           "
           (click)="
-            cambiarFiltroDisponibilidad('disponible')
+            cambiarFiltroDisponibilidad(
+              'disponible'
+            )
           ">
 
           Disponible
@@ -462,10 +536,13 @@
       <button
         type="button"
         [class.activo]="
-          filtroDisponibilidad === 'stock_bajo'
+          filtroDisponibilidad
+          === 'stock_bajo'
         "
         (click)="
-          cambiarFiltroDisponibilidad('stock_bajo')
+          cambiarFiltroDisponibilidad(
+            'stock_bajo'
+          )
         ">
 
         Stock bajo
@@ -475,10 +552,13 @@
       <button
         type="button"
         [class.activo]="
-          filtroDisponibilidad === 'agotado'
+          filtroDisponibilidad
+          === 'agotado'
         "
         (click)="
-          cambiarFiltroDisponibilidad('agotado')
+          cambiarFiltroDisponibilidad(
+            'agotado'
+          )
         ">
 
         Agotados
@@ -488,10 +568,13 @@
       <button
         type="button"
         [class.activo]="
-          filtroDisponibilidad === 'por_vencer'
+          filtroDisponibilidad
+          === 'por_vencer'
         "
         (click)="
-          cambiarFiltroDisponibilidad('por_vencer')
+          cambiarFiltroDisponibilidad(
+            'por_vencer'
+          )
         ">
 
         Por vencer
@@ -501,10 +584,13 @@
       <button
         type="button"
         [class.activo]="
-          filtroDisponibilidad === 'vencido'
+          filtroDisponibilidad
+          === 'vencido'
         "
         (click)="
-          cambiarFiltroDisponibilidad('vencido')
+          cambiarFiltroDisponibilidad(
+            'vencido'
+          )
         ">
 
         Vencidos
@@ -514,7 +600,9 @@
       <button
         type="button"
         class="btn-limpiar-filtros"
-        (click)="limpiarFiltros()">
+        (click)="
+          limpiarFiltros()
+        ">
 
         <mat-icon>
           filter_alt_off
@@ -545,7 +633,8 @@
               {{ productosFiltrados.length }}
 
               @if (
-                productosFiltrados.length === 1
+                productosFiltrados.length
+                === 1
               ) {
 
                 producto requiere atención
@@ -562,7 +651,9 @@
 
         </header>
 
-        @if (cargando) {
+        @if (
+          cargando
+        ) {
 
           <div class="estado-central">
 
@@ -580,7 +671,9 @@
 
           </div>
 
-        } @else if (errorCarga) {
+        } @else if (
+          errorCarga
+        ) {
 
           <div class="estado-central error">
 
@@ -602,7 +695,9 @@
 
             <button
               type="button"
-              (click)="actualizarInventario()">
+              (click)="
+                actualizarInventario()
+              ">
 
               <mat-icon>
                 refresh
@@ -615,7 +710,8 @@
           </div>
 
         } @else if (
-          productosFiltrados.length === 0
+          productosFiltrados.length
+          === 0
         ) {
 
           <div class="estado-central sin-alertas">
@@ -639,7 +735,9 @@
 
             <button
               type="button"
-              (click)="limpiarFiltros()">
+              (click)="
+                limpiarFiltros()
+              ">
 
               Ver todas las alertas
 
@@ -659,7 +757,9 @@
               <article
                 class="tarjeta-alerta"
                 [ngClass]="
-                  obtenerClaseAlerta(producto)
+                  obtenerClaseAlerta(
+                    producto
+                  )
                 ">
 
                 <div class="alerta-icono">
@@ -667,7 +767,9 @@
                   <mat-icon>
 
                     {{
-                      obtenerIconoAlerta(producto)
+                      obtenerIconoAlerta(
+                        producto
+                      )
                     }}
 
                   </mat-icon>
@@ -683,7 +785,9 @@
                       <span class="alerta-tipo">
 
                         {{
-                          obtenerTituloAlerta(producto)
+                          obtenerTituloAlerta(
+                            producto
+                          )
                         }}
 
                       </span>
@@ -691,7 +795,8 @@
                       <h3>
 
                         {{
-                          producto.nombre_producto
+                          producto
+                            .nombre_producto
                         }}
 
                       </h3>
@@ -699,7 +804,10 @@
                       <p class="alerta-codigo">
 
                         Código:
-                        {{ producto.codigo_producto }}
+                        {{
+                          producto
+                            .codigo_producto
+                        }}
 
                       </p>
 
@@ -720,7 +828,9 @@
                   <p class="alerta-mensaje">
 
                     {{
-                      obtenerTextoAlerta(producto)
+                      obtenerTextoAlerta(
+                        producto
+                      )
                     }}
 
                   </p>
@@ -734,7 +844,10 @@
                       </small>
 
                       <strong>
-                        {{ producto.stock_producto }}
+                        {{
+                          producto
+                            .stock_producto
+                        }}
                       </strong>
 
                     </span>
@@ -783,7 +896,8 @@
                       <strong>
 
                         {{
-                          producto.fecha_caducidad
+                          producto
+                            .fecha_caducidad
                           ?? 'No registrada'
                         }}
 
@@ -800,9 +914,13 @@
                   <button
                     type="button"
                     class="btn-ver-alerta"
-                    [disabled]="cargandoDetalle"
+                    [disabled]="
+                      cargandoDetalle
+                    "
                     (click)="
-                      verInformacion(producto)
+                      verInformacion(
+                        producto
+                      )
                     ">
 
                     <mat-icon>
@@ -816,8 +934,12 @@
                   @if (
                     esAdministrador
                     && (
-                      esStockBajo(producto)
-                      || esAgotado(producto)
+                      esStockBajo(
+                        producto
+                      )
+                      || esAgotado(
+                        producto
+                      )
                     )
                   ) {
 
@@ -825,14 +947,16 @@
                       type="button"
                       class="btn-stock-alerta"
                       (click)="
-                        actualizarStockProducto(producto)
+                        abrirAbastecimiento(
+                          producto
+                        )
                       ">
 
                       <mat-icon>
-                        inventory
+                        local_shipping
                       </mat-icon>
 
-                      Actualizar stock
+                      Abastecer
 
                     </button>
 
@@ -864,10 +988,13 @@
 
             <p>
 
-              {{ productosFiltrados.length }}
+              {{
+                productosFiltrados.length
+              }}
 
               @if (
-                productosFiltrados.length === 1
+                productosFiltrados.length
+                === 1
               ) {
 
                 resultado encontrado
@@ -884,7 +1011,9 @@
 
         </header>
 
-        @if (cargando) {
+        @if (
+          cargando
+        ) {
 
           <div class="estado-central">
 
@@ -903,7 +1032,9 @@
 
           </div>
 
-        } @else if (errorCarga) {
+        } @else if (
+          errorCarga
+        ) {
 
           <div class="estado-central error">
 
@@ -926,7 +1057,9 @@
 
             <button
               type="button"
-              (click)="actualizarInventario()">
+              (click)="
+                actualizarInventario()
+              ">
 
               <mat-icon>
                 refresh
@@ -939,7 +1072,8 @@
           </div>
 
         } @else if (
-          productosFiltrados.length === 0
+          productosFiltrados.length
+          === 0
         ) {
 
           <div class="estado-central">
@@ -963,7 +1097,9 @@
 
             <button
               type="button"
-              (click)="limpiarFiltros()">
+              (click)="
+                limpiarFiltros()
+              ">
 
               Limpiar filtros
 
@@ -1031,7 +1167,8 @@
                       <span class="codigo-producto">
 
                         {{
-                          producto.codigo_producto
+                          producto
+                            .codigo_producto
                         }}
 
                       </span>
@@ -1055,7 +1192,8 @@
                           <strong>
 
                             {{
-                              producto.nombre_producto
+                              producto
+                                .nombre_producto
                             }}
 
                           </strong>
@@ -1095,12 +1233,14 @@
                       <strong
                         class="cantidad-stock"
                         [class.stock-cero]="
-                          producto.stock_producto
+                          producto
+                            .stock_producto
                           === 0
                         ">
 
                         {{
-                          producto.stock_producto
+                          producto
+                            .stock_producto
                         }}
 
                       </strong>
@@ -1143,7 +1283,8 @@
 
                         {{
                           formatearPrecio(
-                            producto.precio_producto
+                            producto
+                              .precio_producto
                           )
                         }}
 
@@ -1183,9 +1324,13 @@
                         type="button"
                         class="btn-informacion"
                         title="Más información"
-                        [disabled]="cargandoDetalle"
+                        [disabled]="
+                          cargandoDetalle
+                        "
                         (click)="
-                          verInformacion(producto)
+                          verInformacion(
+                            producto
+                          )
                         ">
 
                         <mat-icon>
@@ -1218,79 +1363,127 @@
 
   </main>
 
-  @if (drawerAbierto) {
+  @if (
+    drawerAbierto
+  ) {
 
     <div
       class="drawer-fondo"
-      (click)="cerrarDrawer()">
+      (click)="
+        cerrarDrawer()
+      ">
 
       <aside
         class="drawer"
         role="dialog"
         aria-modal="true"
         aria-label="Panel de inventario"
-        (click)="$event.stopPropagation()">
+        (click)="
+          $event.stopPropagation()
+        ">
 
         @if (
-          contenidoDrawer === 'nuevo'
-          || contenidoDrawer === 'editar'
+          contenidoDrawer
+            === 'nuevo'
+          || contenidoDrawer
+            === 'editar'
         ) {
 
           <app-drawer-producto
-            [categorias]="categoriasDisponibles"
-            [productoEditar]="productoSeleccionado"
-            (cerrar)="cerrarDrawer()"
-            (guardado)="productoGuardado()">
+            [categorias]="
+              categoriasDisponibles
+            "
+            [productoEditar]="
+              productoSeleccionado
+            "
+            (cerrar)="
+              cerrarDrawer()
+            "
+            (guardado)="
+              productoGuardado()
+            ">
           </app-drawer-producto>
 
         }
 
         @if (
-          contenidoDrawer === 'detalle'
+          contenidoDrawer
+            === 'detalle'
           && productoSeleccionado
         ) {
 
           <app-detalle-producto
-            [producto]="productoSeleccionado"
-            [esAdministrador]="esAdministrador"
-            (cerrar)="cerrarDrawer()"
-            (editar)="editarProducto($event)"
-            (generarEtiqueta)="
-              abrirEtiquetaProducto($event)
+            [producto]="
+              productoSeleccionado
             "
-            (actualizarStock)="
-              actualizarStockProducto($event)
+            [esAdministrador]="
+              esAdministrador
+            "
+            (cerrar)="
+              cerrarDrawer()
+            "
+            (editar)="
+              editarProducto(
+                $event
+              )
+            "
+            (generarEtiqueta)="
+              abrirEtiquetaProducto(
+                $event
+              )
+            "
+            (abastecer)="
+              abrirAbastecimiento(
+                $event
+              )
             "
             (cambiarEstado)="
-              cambiarEstadoProducto($event)
+              cambiarEstadoProducto(
+                $event
+              )
             ">
           </app-detalle-producto>
 
         }
 
         @if (
-          contenidoDrawer === 'stock'
-          && productoSeleccionado
+          contenidoDrawer
+            === 'abastecimiento'
         ) {
 
-          <app-actualizar-stock
-            [producto]="productoSeleccionado"
-            (cerrar)="cerrarDrawer()"
-            (stockActualizado)="
-              stockActualizado($event)
+          <app-abastecer-productos
+            [productos]="productos"
+            [productoInicial]="
+              productoSeleccionado
+            "
+            (cerrar)="
+              cerrarDrawer()
+            "
+            (crearProducto)="
+              abrirDrawer()
+            "
+            (abastecimientoRegistrado)="
+              abastecimientoRegistrado(
+                $event
+              )
             ">
-          </app-actualizar-stock>
+          </app-abastecer-productos>
 
         }
 
         @if (
-          contenidoDrawer === 'etiqueta'
+          contenidoDrawer
+            === 'etiqueta'
           && productoSeleccionado
         ) {
 
           <app-etiqueta-producto
-            [producto]="productoSeleccionado"
-            (cerrar)="cerrarDrawer()">
+            [producto]="
+              productoSeleccionado
+            "
+            (cerrar)="
+              cerrarDrawer()
+            ">
           </app-etiqueta-producto>
 
         }

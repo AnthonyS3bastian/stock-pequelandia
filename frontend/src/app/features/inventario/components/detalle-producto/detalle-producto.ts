@@ -51,7 +51,7 @@ export class DetalleProductoComponent {
     new EventEmitter<Producto>();
 
   @Output()
-  actualizarStock =
+  abastecer =
     new EventEmitter<Producto>();
 
   @Output()
@@ -76,10 +76,10 @@ export class DetalleProductoComponent {
 
   }
 
-  solicitarActualizacionStock():
+  solicitarAbastecimiento():
     void {
 
-    this.actualizarStock.emit(
+    this.abastecer.emit(
       this.producto
     );
 
@@ -124,9 +124,12 @@ export class DetalleProductoComponent {
 
   }
 
-  obtenerTextoEstadoStock(): string {
+  obtenerTextoEstadoStock():
+    string {
 
-    if (!this.producto.estado) {
+    if (
+      !this.producto.estado
+    ) {
 
       return 'Inactivo';
 
@@ -158,9 +161,12 @@ export class DetalleProductoComponent {
 
   }
 
-  obtenerClaseEstadoStock(): string {
+  obtenerClaseEstadoStock():
+    string {
 
-    if (!this.producto.estado) {
+    if (
+      !this.producto.estado
+    ) {
 
       return 'inactivo';
 
@@ -204,13 +210,18 @@ export class DetalleProductoComponent {
         minimumFractionDigits: 2
       }
     ).format(
-      Number(valor ?? 0)
+      Number(
+        valor ?? 0
+      )
     );
 
   }
 
   formatearFecha(
-    fecha: string | null | undefined
+    fecha:
+      string
+      | null
+      | undefined
   ): string {
 
     if (!fecha) {
@@ -221,8 +232,13 @@ export class DetalleProductoComponent {
 
     const partes =
       fecha
-        .substring(0, 10)
-        .split('-');
+        .substring(
+          0,
+          10
+        )
+        .split(
+          '-'
+        );
 
     if (
       partes.length !== 3

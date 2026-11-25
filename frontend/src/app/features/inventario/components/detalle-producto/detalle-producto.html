@@ -6,7 +6,9 @@
 
       <span class="icono-header">
 
-        <mat-icon>inventory_2</mat-icon>
+        <mat-icon>
+          inventory_2
+        </mat-icon>
 
       </span>
 
@@ -30,7 +32,9 @@
       aria-label="Cerrar detalle"
       (click)="cerrarDetalle()">
 
-      <mat-icon>close</mat-icon>
+      <mat-icon>
+        close
+      </mat-icon>
 
     </button>
 
@@ -46,7 +50,9 @@
 
       <span class="producto-icono-grande">
 
-        <mat-icon>inventory_2</mat-icon>
+        <mat-icon>
+          inventory_2
+        </mat-icon>
 
       </span>
 
@@ -65,16 +71,12 @@
         </span>
 
         <h3>
-
           {{ producto.nombre_producto }}
-
         </h3>
 
         <p>
-
           Código:
           {{ producto.codigo_producto }}
-
         </p>
 
       </div>
@@ -85,7 +87,9 @@
 
       <div class="seccion-titulo">
 
-        <mat-icon>description</mat-icon>
+        <mat-icon>
+          description
+        </mat-icon>
 
         <div>
 
@@ -112,7 +116,8 @@
           <strong>
 
             {{
-              producto.descripcion_producto
+              producto
+                .descripcion_producto
               || 'Sin descripción'
             }}
 
@@ -144,7 +149,9 @@
             Estado
           </span>
 
-          @if (producto.estado) {
+          @if (
+            producto.estado
+          ) {
 
             <strong class="texto-activo">
               Activo
@@ -168,7 +175,9 @@
 
       <div class="seccion-titulo">
 
-        <mat-icon>payments</mat-icon>
+        <mat-icon>
+          payments
+        </mat-icon>
 
         <div>
 
@@ -177,7 +186,8 @@
           </h4>
 
           <p>
-            Precio de venta del producto.
+            Precio de venta y último costo
+            registrado.
           </p>
 
         </div>
@@ -190,19 +200,22 @@
           !esAdministrador
         ">
 
-        @if (esAdministrador) {
+        @if (
+          esAdministrador
+        ) {
 
           <div class="dato destacado compra">
 
             <span>
-              Precio de compra
+              Último costo de compra
             </span>
 
             <strong>
 
               {{
                 formatearPrecio(
-                  producto.costo_producto
+                  producto
+                    .costo_producto
                 )
               }}
 
@@ -222,7 +235,8 @@
 
             {{
               formatearPrecio(
-                producto.precio_producto
+                producto
+                  .precio_producto
               )
             }}
 
@@ -230,7 +244,9 @@
 
         </div>
 
-        @if (esAdministrador) {
+        @if (
+          esAdministrador
+        ) {
 
           <div class="dato destacado ganancia">
 
@@ -260,7 +276,9 @@
 
       <div class="seccion-titulo">
 
-        <mat-icon>warehouse</mat-icon>
+        <mat-icon>
+          warehouse
+        </mat-icon>
 
         <div>
 
@@ -285,9 +303,7 @@
           </span>
 
           <strong>
-
             {{ producto.stock_producto }}
-
           </strong>
 
         </div>
@@ -335,14 +351,15 @@
         <div class="dato">
 
           <span>
-            Fecha de caducidad
+            Próxima caducidad
           </span>
 
           <strong>
 
             {{
               formatearFecha(
-                producto.fecha_caducidad
+                producto
+                  .fecha_caducidad
               )
             }}
 
@@ -392,7 +409,9 @@
 
   </div>
 
-  @if (esAdministrador) {
+  @if (
+    esAdministrador
+  ) {
 
     <footer class="acciones">
 
@@ -402,7 +421,9 @@
         class="btn-etiqueta"
         (click)="solicitarEtiqueta()">
 
-        <mat-icon>qr_code_2</mat-icon>
+        <mat-icon>
+          qr_code_2
+        </mat-icon>
 
         Etiqueta
 
@@ -455,12 +476,14 @@
         type="button"
         class="btn-stock"
         (click)="
-          solicitarActualizacionStock()
+          solicitarAbastecimiento()
         ">
 
-        <mat-icon>inventory</mat-icon>
+        <mat-icon>
+          local_shipping
+        </mat-icon>
 
-        Actualizar stock
+        Abastecer
 
       </button>
 
@@ -468,9 +491,13 @@
         mat-flat-button
         type="button"
         class="btn-editar"
-        (click)="solicitarEdicion()">
+        (click)="
+          solicitarEdicion()
+        ">
 
-        <mat-icon>edit</mat-icon>
+        <mat-icon>
+          edit
+        </mat-icon>
 
         Editar producto
 

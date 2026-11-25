@@ -63,8 +63,8 @@ import {
 } from '../../components/detalle-producto/detalle-producto';
 
 import {
-  ActualizarStockComponent
-} from '../../components/actualizar-stock/actualizar-stock';
+  AbastecerProductosComponent
+} from '../../components/abastecer-productos/abastecer-productos';
 
 import {
   EtiquetaProductoComponent
@@ -87,7 +87,7 @@ type ContenidoDrawer =
   | 'nuevo'
   | 'detalle'
   | 'editar'
-  | 'stock'
+  | 'abastecimiento'
   | 'etiqueta';
 
 @Component({
@@ -102,7 +102,7 @@ type ContenidoDrawer =
     MatSnackBarModule,
     DrawerProductoComponent,
     DetalleProductoComponent,
-    ActualizarStockComponent,
+    AbastecerProductosComponent,
     EtiquetaProductoComponent
   ],
   templateUrl: './inventario.html',
@@ -179,7 +179,7 @@ implements OnInit {
       .listar()
       .subscribe({
 
-        next: (response) => {
+        next: response => {
 
           this.categorias =
             response.data ?? [];
@@ -191,7 +191,7 @@ implements OnInit {
 
         },
 
-        error: (error) => {
+        error: error => {
 
           console.error(
             'Error al obtener categorías:',
@@ -214,9 +214,7 @@ implements OnInit {
   obtenerProductos(): void {
 
     if (this.cargando) {
-
       return;
-
     }
 
     this.cargando = true;
@@ -227,7 +225,7 @@ implements OnInit {
       .listar()
       .subscribe({
 
-        next: (response) => {
+        next: response => {
 
           this.productos =
             response.data ?? [];
@@ -240,7 +238,7 @@ implements OnInit {
 
         },
 
-        error: (error) => {
+        error: error => {
 
           console.error(
             'Error al obtener productos:',
@@ -278,7 +276,7 @@ implements OnInit {
       );
 
     return this.productos.filter(
-      (producto) => {
+      producto => {
 
         const nombreProducto =
           this.normalizarTexto(
@@ -299,12 +297,15 @@ implements OnInit {
 
         const coincideTexto =
           texto.length === 0
-          || nombreProducto
-            .includes(texto)
-          || codigoProducto
-            .includes(texto)
-          || nombreCategoria
-            .includes(texto);
+          || nombreProducto.includes(
+            texto
+          )
+          || codigoProducto.includes(
+            texto
+          )
+          || nombreCategoria.includes(
+            texto
+          );
 
         const coincideCategoria =
           Number(
@@ -388,7 +389,9 @@ implements OnInit {
 
     return this.productos.filter(
       producto =>
-        this.esStockBajo(producto)
+        this.esStockBajo(
+          producto
+        )
     ).length;
 
   }
@@ -397,7 +400,9 @@ implements OnInit {
 
     return this.productos.filter(
       producto =>
-        this.esAgotado(producto)
+        this.esAgotado(
+          producto
+        )
     ).length;
 
   }
@@ -417,7 +422,9 @@ implements OnInit {
 
     return this.productos.filter(
       producto =>
-        this.estaVencido(producto)
+        this.estaVencido(
+          producto
+        )
     ).length;
 
   }
@@ -435,7 +442,9 @@ implements OnInit {
 
     return this.productos.filter(
       producto =>
-        this.tieneAlerta(producto)
+        this.tieneAlerta(
+          producto
+        )
     ).length;
 
   }
@@ -471,28 +480,32 @@ implements OnInit {
       || this.buscandoCodigo
       || this.cargandoDetalle
     ) {
-
       return;
-
     }
 
-    this.buscandoCodigo = true;
+    this.buscandoCodigo =
+      true;
 
     this.productoService
-      .buscarPorCodigo(codigo)
+      .buscarPorCodigo(
+        codigo
+      )
       .pipe(
-        finalize(() => {
+        finalize(
+          () => {
 
-          this.buscandoCodigo =
-            false;
+            this.buscandoCodigo =
+              false;
 
-          this.cdr.detectChanges();
+            this.cdr
+              .detectChanges();
 
-        })
+          }
+        )
       )
       .subscribe({
 
-        next: (response) => {
+        next: response => {
 
           const producto =
             response.data;
@@ -508,7 +521,8 @@ implements OnInit {
           }
 
           this.textoBusqueda =
-            producto.codigo_producto;
+            producto
+              .codigo_producto;
 
           this.vistaActual =
             'productos';
@@ -528,20 +542,23 @@ implements OnInit {
           this.contenidoDrawer =
             'detalle';
 
-          this.drawerAbierto = true;
+          this.drawerAbierto =
+            true;
 
           this.cdr.detectChanges();
 
         },
 
-        error: (error) => {
+        error: error => {
 
           console.error(
             'Error al buscar producto por código:',
             error
           );
 
-          if (error?.status === 404) {
+          if (
+            error?.status === 404
+          ) {
 
             this.mostrarMensaje(
               'No se encontró un producto con ese código.'
@@ -574,7 +591,8 @@ implements OnInit {
     vista: VistaInventario
   ): void {
 
-    this.vistaActual = vista;
+    this.vistaActual =
+      vista;
 
     this.filtroDisponibilidad =
       'todos';
@@ -643,7 +661,35 @@ implements OnInit {
     this.contenidoDrawer =
       'nuevo';
 
-    this.drawerAbierto = true;
+    this.drawerAbierto =
+      true;
+
+  }
+
+  abrirAbastecimiento(
+    producto?: Producto
+  ): void {
+
+    if (!this.esAdministrador) {
+
+      this.mostrarMensaje(
+        'Solo la administradora puede registrar abastecimientos.'
+      );
+
+      return;
+
+    }
+
+    this.productoSeleccionado =
+      producto ?? null;
+
+    this.contenidoDrawer =
+      'abastecimiento';
+
+    this.drawerAbierto =
+      true;
+
+    this.cdr.detectChanges();
 
   }
 
@@ -655,12 +701,11 @@ implements OnInit {
       !producto.id_producto
       || this.cargandoDetalle
     ) {
-
       return;
-
     }
 
-    this.cargandoDetalle = true;
+    this.cargandoDetalle =
+      true;
 
     this.productoService
       .obtenerPorId(
@@ -668,7 +713,7 @@ implements OnInit {
       )
       .subscribe({
 
-        next: (response) => {
+        next: response => {
 
           this.productoSeleccionado =
             response.data;
@@ -676,7 +721,8 @@ implements OnInit {
           this.contenidoDrawer =
             'detalle';
 
-          this.drawerAbierto = true;
+          this.drawerAbierto =
+            true;
 
           this.cargandoDetalle =
             false;
@@ -685,7 +731,7 @@ implements OnInit {
 
         },
 
-        error: (error) => {
+        error: error => {
 
           console.error(
             'Error al obtener producto:',
@@ -727,33 +773,8 @@ implements OnInit {
     this.contenidoDrawer =
       'editar';
 
-    this.drawerAbierto = true;
-
-    this.cdr.detectChanges();
-
-  }
-
-  actualizarStockProducto(
-    producto: Producto
-  ): void {
-
-    if (!this.esAdministrador) {
-
-      this.mostrarMensaje(
-        'Solo la administradora puede actualizar el stock.'
-      );
-
-      return;
-
-    }
-
-    this.productoSeleccionado =
-      producto;
-
-    this.contenidoDrawer =
-      'stock';
-
-    this.drawerAbierto = true;
+    this.drawerAbierto =
+      true;
 
     this.cdr.detectChanges();
 
@@ -779,7 +800,8 @@ implements OnInit {
     this.contenidoDrawer =
       'etiqueta';
 
-    this.drawerAbierto = true;
+    this.drawerAbierto =
+      true;
 
     this.cdr.detectChanges();
 
@@ -787,7 +809,8 @@ implements OnInit {
 
   productoGuardado(): void {
 
-    this.drawerAbierto = false;
+    this.drawerAbierto =
+      false;
 
     this.productoSeleccionado =
       null;
@@ -796,7 +819,7 @@ implements OnInit {
 
   }
 
-  stockActualizado(
+  abastecimientoRegistrado(
     producto: Producto
   ): void {
 
@@ -804,7 +827,8 @@ implements OnInit {
       producto
     );
 
-    this.drawerAbierto = false;
+    this.drawerAbierto =
+      false;
 
     this.productoSeleccionado =
       null;
@@ -835,9 +859,7 @@ implements OnInit {
       || this.cambiandoEstadoId
         !== null
     ) {
-
       return;
-
     }
 
     this.cambiandoEstadoId =
@@ -848,18 +870,21 @@ implements OnInit {
         idProducto
       )
       .pipe(
-        finalize(() => {
+        finalize(
+          () => {
 
-          this.cambiandoEstadoId =
-            null;
+            this.cambiandoEstadoId =
+              null;
 
-          this.cdr.detectChanges();
+            this.cdr
+              .detectChanges();
 
-        })
+          }
+        )
       )
       .subscribe({
 
-        next: (response) => {
+        next: response => {
 
           this.actualizarProductoEnLista(
             response.data
@@ -879,7 +904,7 @@ implements OnInit {
 
         },
 
-        error: (error) => {
+        error: error => {
 
           console.error(
             'Error al cambiar estado:',
@@ -901,7 +926,8 @@ implements OnInit {
 
   cerrarDrawer(): void {
 
-    this.drawerAbierto = false;
+    this.drawerAbierto =
+      false;
 
     this.productoSeleccionado =
       null;
@@ -941,7 +967,8 @@ implements OnInit {
       && producto.stock_producto > 0
       && producto
         .stock_minimo_producto > 0
-      && producto.stock_producto
+      && producto
+        .stock_producto
         <= producto
           .stock_minimo_producto
     );
@@ -954,8 +981,8 @@ implements OnInit {
 
     return (
       producto.estado
-      && producto.stock_producto
-        === 0
+      && producto
+        .stock_producto === 0
     );
 
   }
@@ -988,9 +1015,7 @@ implements OnInit {
       !producto.estado
       || !producto.fecha_caducidad
     ) {
-
       return false;
-
     }
 
     const dias =
@@ -1014,9 +1039,7 @@ implements OnInit {
       !producto.estado
       || !producto.fecha_caducidad
     ) {
-
       return false;
-
     }
 
     const dias =
@@ -1038,9 +1061,7 @@ implements OnInit {
     if (
       !producto.fecha_caducidad
     ) {
-
       return null;
-
     }
 
     const fechaActual =
@@ -1088,7 +1109,9 @@ implements OnInit {
           ) ?? 0
         );
 
-      if (dias === 1) {
+      if (
+        dias === 1
+      ) {
 
         return (
           'El producto venció hace 1 día.'
@@ -1138,7 +1161,9 @@ implements OnInit {
           producto
         ) ?? 0;
 
-      if (dias === 0) {
+      if (
+        dias === 0
+      ) {
 
         return (
           'El producto vence hoy.'
@@ -1146,7 +1171,9 @@ implements OnInit {
 
       }
 
-      if (dias === 1) {
+      if (
+        dias === 1
+      ) {
 
         return (
           'El producto vence mañana.'
@@ -1175,9 +1202,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'Producto vencido';
-
     }
 
     if (
@@ -1185,9 +1210,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'Producto agotado';
-
     }
 
     if (
@@ -1195,9 +1218,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'Stock bajo';
-
     }
 
     if (
@@ -1205,9 +1226,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'Producto por vencer';
-
     }
 
     return 'Alerta de inventario';
@@ -1223,9 +1242,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'alerta-vencido';
-
     }
 
     if (
@@ -1233,9 +1250,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'alerta-agotado';
-
     }
 
     if (
@@ -1243,9 +1258,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'alerta-stock-bajo';
-
     }
 
     if (
@@ -1253,9 +1266,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'alerta-por-vencer';
-
     }
 
     return 'alerta-general';
@@ -1271,9 +1282,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'event_busy';
-
     }
 
     if (
@@ -1281,9 +1290,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'remove_shopping_cart';
-
     }
 
     if (
@@ -1291,9 +1298,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'warning';
-
     }
 
     if (
@@ -1301,9 +1306,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'schedule';
-
     }
 
     return 'notifications';
@@ -1315,9 +1318,7 @@ implements OnInit {
   ): string {
 
     if (!producto.estado) {
-
       return 'Inactivo';
-
     }
 
     if (
@@ -1325,9 +1326,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'Vencido';
-
     }
 
     if (
@@ -1335,9 +1334,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'Agotado';
-
     }
 
     if (
@@ -1345,9 +1342,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'Stock bajo';
-
     }
 
     if (
@@ -1355,9 +1350,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'Por vencer';
-
     }
 
     return 'Disponible';
@@ -1369,9 +1362,7 @@ implements OnInit {
   ): string {
 
     if (!producto.estado) {
-
       return 'inactivo';
-
     }
 
     if (
@@ -1379,9 +1370,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'vencido';
-
     }
 
     if (
@@ -1389,9 +1378,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'agotado';
-
     }
 
     if (
@@ -1399,9 +1386,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'stock-bajo';
-
     }
 
     if (
@@ -1409,9 +1394,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'por-vencer';
-
     }
 
     return 'disponible';
@@ -1423,9 +1406,7 @@ implements OnInit {
   ): string {
 
     if (!producto.estado) {
-
       return 'block';
-
     }
 
     if (
@@ -1433,9 +1414,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'event_busy';
-
     }
 
     if (
@@ -1443,9 +1422,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'remove_shopping_cart';
-
     }
 
     if (
@@ -1453,9 +1430,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'warning';
-
     }
 
     if (
@@ -1463,9 +1438,7 @@ implements OnInit {
         producto
       )
     ) {
-
       return 'schedule';
-
     }
 
     return 'check_circle';
@@ -1484,7 +1457,9 @@ implements OnInit {
         minimumFractionDigits: 2
       }
     ).format(
-      Number(valor ?? 0)
+      Number(
+        valor ?? 0
+      )
     );
 
   }
@@ -1629,7 +1604,9 @@ implements OnInit {
     return valor
       .trim()
       .toLowerCase()
-      .normalize('NFD')
+      .normalize(
+        'NFD'
+      )
       .replace(
         /[\u0300-\u036f]/g,
         ''
@@ -1643,13 +1620,24 @@ implements OnInit {
 
     const partes =
       fecha
-        .substring(0, 10)
-        .split('-');
+        .substring(
+          0,
+          10
+        )
+        .split(
+          '-'
+        );
 
     return new Date(
-      Number(partes[0]),
-      Number(partes[1]) - 1,
-      Number(partes[2])
+      Number(
+        partes[0]
+      ),
+      Number(
+        partes[1]
+      ) - 1,
+      Number(
+        partes[2]
+      )
     );
 
   }
