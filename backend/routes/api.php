@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AbastecimientoController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ConsultaDocumentoController;
@@ -185,7 +186,10 @@ Route::middleware('auth:sanctum')
 
                 Route::patch(
                     '/usuarios/{id}/restablecer-password',
-                    [UsuarioController::class, 'restablecerPassword']
+                    [
+                        UsuarioController::class,
+                        'restablecerPassword',
+                    ]
                 );
 
                 /*
@@ -222,12 +226,18 @@ Route::middleware('auth:sanctum')
 
                 Route::patch(
                     '/productos/{id}/stock',
-                    [ProductoController::class, 'actualizarStock']
+                    [
+                        ProductoController::class,
+                        'actualizarStock',
+                    ]
                 );
 
                 Route::patch(
                     '/productos/{id}/estado',
-                    [ProductoController::class, 'cambiarEstado']
+                    [
+                        ProductoController::class,
+                        'cambiarEstado',
+                    ]
                 );
 
                 Route::put(
@@ -238,6 +248,28 @@ Route::middleware('auth:sanctum')
                 Route::delete(
                     '/productos/{id}',
                     [ProductoController::class, 'destroy']
+                );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Abastecimiento
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/abastecimientos',
+                    [
+                        AbastecimientoController::class,
+                        'index',
+                    ]
+                );
+
+                Route::post(
+                    '/abastecimientos',
+                    [
+                        AbastecimientoController::class,
+                        'store',
+                    ]
                 );
 
                 /*

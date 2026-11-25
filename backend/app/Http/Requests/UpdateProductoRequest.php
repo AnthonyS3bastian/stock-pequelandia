@@ -3,38 +3,33 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class UpdateProductoRequest extends FormRequest
 {
-    /**
-     * Determinar si el usuario puede realizar esta solicitud.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Reglas de validacion.
-     */
     public function rules(): array
     {
-        $idProducto =
-            $this->route('id');
-
         return [
-            'codigo_producto' => [
+            /*
+             * codigo_producto ya no se edita.
+             * Es el codigo interno generado por el sistema.
+             */
+
+            'codigos_barra' => [
+                'sometimes',
+                'array',
+                'max:10',
+            ],
+
+            'codigos_barra.*' => [
                 'required',
                 'string',
                 'max:50',
-                Rule::unique(
-                    'producto',
-                    'codigo_producto'
-                )->ignore(
-                    $idProducto,
-                    'id_producto'
-                ),
+                'distinct',
             ],
 
             'nombre_producto' => [
@@ -60,21 +55,6 @@ class UpdateProductoRequest extends FormRequest
                 'min:0',
             ],
 
-            'costo_producto' => [
-                'required',
-                'numeric',
-                'min:0',
-            ],
-
-            'fecha_caducidad' => [
-                'nullable',
-                'date',
-            ],
-
-            /*
-             * El stock actual ya no se actualiza
-             * mediante la edicion general.
-             */
             'stock_minimo_producto' => [
                 'required',
                 'integer',
@@ -88,29 +68,26 @@ class UpdateProductoRequest extends FormRequest
         ];
     }
 
-    /**
-     * Mensajes personalizados.
-     */
     public function messages(): array
     {
         return [
-            'codigo_producto.required' =>
-                'El codigo del producto es obligatorio.',
+            'codigos_barra.array' =>
+                'Los codigos de barras enviados no son validos.',
 
-            'codigo_producto.string' =>
-                'El codigo del producto debe ser un texto valido.',
+            'codigos_barra.max' =>
+                'Se pueden registrar como maximo 10 codigos de barras por producto.',
 
-            'codigo_producto.unique' =>
-                'Ya existe un producto con ese codigo.',
+            'codigos_barra.*.required' =>
+                'El codigo de barras no puede estar vacio.',
 
-            'codigo_producto.max' =>
-                'El codigo no puede superar los 50 caracteres.',
+            'codigos_barra.*.max' =>
+                'El codigo de barras no puede superar los 50 caracteres.',
+
+            'codigos_barra.*.distinct' =>
+                'No se puede repetir el mismo codigo de barras.',
 
             'nombre_producto.required' =>
                 'El nombre del producto es obligatorio.',
-
-            'nombre_producto.string' =>
-                'El nombre del producto debe ser un texto valido.',
 
             'nombre_producto.max' =>
                 'El nombre no puede superar los 150 caracteres.',
@@ -120,9 +97,6 @@ class UpdateProductoRequest extends FormRequest
 
             'id_categoria.required' =>
                 'La categoria es obligatoria.',
-
-            'id_categoria.integer' =>
-                'La categoria seleccionada no es valida.',
 
             'id_categoria.exists' =>
                 'La categoria seleccionada no existe.',
@@ -135,18 +109,6 @@ class UpdateProductoRequest extends FormRequest
 
             'precio_producto.min' =>
                 'El precio de venta no puede ser negativo.',
-
-            'costo_producto.required' =>
-                'El precio de compra es obligatorio.',
-
-            'costo_producto.numeric' =>
-                'El precio de compra debe ser numerico.',
-
-            'costo_producto.min' =>
-                'El precio de compra no puede ser negativo.',
-
-            'fecha_caducidad.date' =>
-                'La fecha de caducidad no es valida.',
 
             'stock_minimo_producto.required' =>
                 'El stock minimo es obligatorio.',
@@ -161,7 +123,7 @@ class UpdateProductoRequest extends FormRequest
                 'El estado es obligatorio.',
 
             'estado.boolean' =>
-                'El estado debe ser verdadero o falso.',
+                'El estado del producto no es valido.',
         ];
     }
 }

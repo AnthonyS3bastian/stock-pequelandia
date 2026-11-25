@@ -8,9 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Producto extends Model
 {
-    protected $table = 'producto';
+    protected $table =
+        'producto';
 
-    protected $primaryKey = 'id_producto';
+    protected $primaryKey =
+        'id_producto';
 
     protected $fillable = [
         'codigo_producto',
@@ -18,21 +20,40 @@ class Producto extends Model
         'descripcion_producto',
         'id_categoria',
         'precio_producto',
+
+        /*
+         * Estos campos se conservan temporalmente
+         * mientras el sistema migra al manejo por lotes.
+         */
         'costo_producto',
         'fecha_caducidad',
         'stock_producto',
+
         'stock_minimo_producto',
         'estado',
     ];
 
     protected $casts = [
-        'id_categoria' => 'integer',
-        'precio_producto' => 'decimal:2',
-        'costo_producto' => 'decimal:2',
-        'fecha_caducidad' => 'date:Y-m-d',
-        'stock_producto' => 'integer',
-        'stock_minimo_producto' => 'integer',
-        'estado' => 'boolean',
+        'id_categoria' =>
+            'integer',
+
+        'precio_producto' =>
+            'decimal:2',
+
+        'costo_producto' =>
+            'decimal:2',
+
+        'fecha_caducidad' =>
+            'date:Y-m-d',
+
+        'stock_producto' =>
+            'integer',
+
+        'stock_minimo_producto' =>
+            'integer',
+
+        'estado' =>
+            'boolean',
     ];
 
     public function categoria(): BelongsTo
@@ -48,6 +69,24 @@ class Producto extends Model
     {
         return $this->hasMany(
             DetalleVenta::class,
+            'id_producto',
+            'id_producto'
+        );
+    }
+
+    public function codigosBarra(): HasMany
+    {
+        return $this->hasMany(
+            CodigoBarra::class,
+            'id_producto',
+            'id_producto'
+        );
+    }
+
+    public function lotes(): HasMany
+    {
+        return $this->hasMany(
+            LoteProducto::class,
             'id_producto',
             'id_producto'
         );
